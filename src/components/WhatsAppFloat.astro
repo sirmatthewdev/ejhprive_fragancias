@@ -1,0 +1,32 @@
+---
+import BrandIcon from './ui/BrandIcon.astro';
+import { waLink } from '../config/site';
+
+const href = waLink('Hola EJH PRIVÉ, tengo una consulta.');
+---
+<a
+  href={href}
+  target="_blank"
+  rel="noopener"
+  aria-label="Escríbenos por WhatsApp"
+  class="wa-float group fixed bottom-5 right-5 z-40 flex h-14 items-center rounded-full border border-cream/15 bg-ink/70 pl-[15px] pr-[15px] text-cream shadow-[0_18px_40px_-12px_rgb(0_0_0/.7)] backdrop-blur-xl transition-[bottom,padding,border-color,background-color] duration-500 ease-[var(--ease-out-expo)] hover:border-[#25D366]/60 hover:bg-ink/85 md:bottom-7 md:right-7"
+>
+  <span class="wa-ring pointer-events-none absolute inset-0 rounded-full" aria-hidden="true"></span>
+  <BrandIcon name="whatsapp" size={24} class="relative shrink-0 text-[#25D366]" />
+  <span class="grid grid-cols-[0fr] transition-[grid-template-columns] duration-500 ease-[var(--ease-out-expo)] group-hover:grid-cols-[1fr] group-focus-visible:grid-cols-[1fr]">
+    <span class="overflow-hidden whitespace-nowrap text-sm font-semibold">
+      <span class="block pl-3">¿Te ayudamos a elegir?</span>
+    </span>
+  </span>
+</a>
+
+<style>
+  .wa-float { animation: wa-in 0.9s var(--ease-out-expo) 1.2s both; }
+  @keyframes wa-in { from { opacity: 0; transform: translateY(16px) scale(0.85); } }
+  /* soft green halo, a few pulses then calm */
+  .wa-ring { box-shadow: 0 0 0 0 rgb(37 211 102 / 0.45); animation: wa-ring 2.4s ease-out 2.2s 3; }
+  @keyframes wa-ring { to { box-shadow: 0 0 0 14px rgb(37 211 102 / 0); } }
+  /* make room for the product page's sticky buy bar on mobile */
+  :global(body:has([data-sticky-buy]:not([data-off]))) .wa-float { bottom: 92px; }
+  @media print { .wa-float { display: none; } }
+</style>

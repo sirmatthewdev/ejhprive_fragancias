@@ -1,0 +1,185 @@
+---
+import { Image, getImage } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import Icon from '../../components/ui/Icon.astro';
+import ProductBuy from '../../components/islands/ProductBuy';
+import { bySlug, relatedOf, productUrl, FORMATS } from '../../data/products';
+import { SITE, waLink } from '../../config/site';
+import { getCatalog, liveOf } from '../../lib/cms';
+
+export const prerender = false; // live prices and stock from the CMS
+
+const p = bySlug(Astro.params.slug ?? '');
+const catalog = await getCatalog({ fresh: true }); // stock must be current where people add to the bag
+if (!p || !liveOf(catalog, p.slug).active) return new Response(null, { status: 404 }); // the server answers with the 404 page
+const live = liveOf(catalog, p.slug);
+const related = relatedOf(p).filter((r) => liveOf(catalog, r.slug).active);
+const [thumbFrasco, thumbDecant] = await Promise.all([
+  getImage({ src: p.img, width: 200, format: 'webp' }),
+  getImage({ src: p.decant, width: 200, format: 'webp' }),
+]);
+const prices = live.prices;
+const pyramid = [
+  { title: 'Salida', when: '0–30 min', notes: p.notes.top, cls: 'bg-cream-2 text-plum', chip: 'bg-cream text-plum' },
+  { title: 'Corazón', when: '30 min – 4 h', notes: p.notes.heart, cls: 'bg-violet text-cream', chip: 'bg-cream/12 text-cream ring-1 ring-cream/20' },
+  { title: 'Fondo', when: '4 h en adelante', notes: p.notes.base, cls: 'bg-plum text-cream', chip: 'bg-cream/12 text-cream ring-1 ring-cream/20' },
+];
+const title = `${p.brand} ${p.name}`;
+const desc = `${title}: ${p.accord}. Original en frasco de 100 ml o decants de 3 y 5 ml fraccionados del frasco original.`;
+const ogImg = await getImage({ src: p.img, width: 1200, format: 'jpg' });
+const productLd = {
+  '@context': 'https://schema.org', '@type': 'Product', name: title, brand: { '@type': 'Brand', name: p.brand },
+  description: p.desc, image: new URL(ogImg.src, Astro.site ?? SITE.url).href, category: 'Perfume', url: new URL(productUrl(p), Astro.site ?? SITE.url).href,
+  // offers are emitted only once real prices exist
+  ...(prices['100'].price != null && { offers: { '@type': 'Offer', priceCurrency: 'PEN', price: prices['100'].price, availability: live.available['100'] ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' } }),
+};
+---
+<Base title={title} description={desc} image={ogImg.src} jsonLd={[productLd]}>
+  <section aria-labelledby="h-pdp" class="wrap pb-20 pt-8" data-pdp>
+    <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Productos', href: '/productos/' }, { label: title }]} />
+    <div class="mt-8 grid items-start gap-[clamp(28px,5vw,80px)] lg:grid-cols-[1.1fr_1fr]">
+      <!-- gallery -->
+      <div class="flex flex-col gap-3 lg:sticky lg:top-28">
+        <div class="relative aspect-[4/5] overflow-hidden rounded-[22px] bg-graphite ring-1 ring-cream/8" data-cursor="Zoom" data-zoom>
+          <Image src={p.img} alt={`Frasco de ${title} 100 ml con sus ingredientes`} widths={[600, 900, 1200]} sizes="(min-width: 1024px) 52vw, 92vw" loading="eager" fetchpriority="high"
+            class="absolute inset-0 size-full object-cover transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)]" data-view="frasco" transition:name={`img-${p.slug}`} />
+          <Image src={p.decant} alt="Decants en atomizador de vidrio, como los que preparamos" widths={[600, 900, 1200]} sizes="(min-width: 1024px) 52vw, 92vw"
+            class="absolute inset-0 size-full object-cover opacity-0 transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)]" data-view="decant" />
+        </div>
+        <div class="grid grid-cols-5 gap-3" role="group" aria-label="Elegir imagen">
+          <button type="button" data-thumb="frasco" aria-pressed="true" aria-label="Ver frasco" class="aspect-square overflow-hidden rounded-xl opacity-60 ring-1 ring-cream/12 transition-[opacity,box-shadow] aria-pressed:opacity-100 aria-pressed:ring-2 aria-pressed:ring-lilac">
+            <img src={thumbFrasco.src} alt="" width="100" height="100" class="size-full object-cover" />
+          </button>
+          <button type="button" data-thumb="decant" aria-pressed="false" aria-label="Ver decant" class="aspect-square overflow-hidden rounded-xl opacity-60 ring-1 ring-cream/12 transition-[opacity,box-shadow] aria-pressed:opacity-100 aria-pressed:ring-2 aria-pressed:ring-lilac">
+            <img src={thumbDecant.src} alt="" width="100" height="100" class="size-full object-cover" />
+          </button>
+        </div>
+      </div>
+
+      <!-- buy box -->
+      <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-3">
+          <p class="kicker" data-reveal-self>{p.brand} · Eau de Parfum · {p.gender}</p>
+          <h1 id="h-pdp" class="text-[clamp(2.8rem,5vw,4.4rem)] leading-[0.98]" data-split="load">{p.name}</h1>
+          <p class="text-[15px] text-sand" data-reveal-self="0.2">{p.familyLabel}</p>
+        </div>
+        <div data-reveal-self="0.3">
+          <ProductBuy client:load slug={p.slug} name={p.name} brand={p.brand} href={productUrl(p)} images={{ frasco: thumbFrasco.src, decant: thumbDecant.src }} prices={prices} available={live.available} stock={live.stock} formats={FORMATS} waBase={waLink()} />
+        </div>
+        <ul class="grid grid-cols-3 gap-3 rounded-2xl bg-graphite p-4 text-center text-xs text-sand" data-reveal>
+          <li class="flex flex-col items-center gap-2"><Icon name="shield" size={18} class="text-lilac" />100% original</li>
+          <li class="flex flex-col items-center gap-2"><Icon name="truck" size={18} class="text-lilac" />Envío a todo el país</li>
+          <li class="flex flex-col items-center gap-2"><Icon name="chat" size={18} class="text-lilac" />Asesoría personal</li>
+        </ul>
+        <div class="flex flex-col gap-3 border-t border-cream/10 pt-6">
+          <h2 class="font-sans text-[13px] font-semibold uppercase tracking-[0.16em] text-cream">Sobre la fragancia</h2>
+          <p class="leading-[1.8] text-[#D8CCB8]">{p.desc}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-pyr" class="on-cream surface-cream py-[clamp(64px,9vw,120px)] text-plum">
+    <div class="wrap flex flex-col gap-10">
+      <div class="flex flex-wrap items-end justify-between gap-6">
+        <h2 id="h-pyr" class="h-section" data-split>Pirámide olfativa</h2>
+        <p class="max-w-[26rem] leading-relaxed text-dust" data-reveal-self>Cómo evoluciona {p.name} en tu piel, desde la primera atomización hasta el fondo que permanece.</p>
+      </div>
+      <ol class="grid gap-4 md:grid-cols-3" data-reveal>
+        {pyramid.map((t) => (
+          <li class:list={['flex min-h-[220px] flex-col gap-5 rounded-[22px] p-7 transition-transform duration-700 ease-[var(--ease-out-expo)] hover:-translate-y-1', t.cls]}>
+            <p class="flex justify-between text-xs font-bold uppercase tracking-[0.16em]"><span>{t.title}</span><span class="opacity-70">{t.when}</span></p>
+            <ul class="mt-auto flex flex-wrap gap-2">{t.notes.map((n) => <li class:list={['rounded-full px-3.5 py-2 text-sm', t.chip]}>{n}</li>)}</ul>
+          </li>
+        ))}
+      </ol>
+      <dl class="grid gap-6 border-t border-plum/15 pt-8 sm:grid-cols-2 lg:grid-cols-4" data-meters>
+        {p.meters.map((m) => (
+          <div class="flex flex-col gap-2.5">
+            <div class="flex justify-between text-[13px]"><dt class="font-semibold">{m.label}</dt><dd class="text-dust">{m.value}</dd></div>
+            <div class="h-1.5 overflow-hidden rounded-full bg-plum/12" role="presentation"><div class="h-full origin-left rounded-full bg-violet" style={`width:${m.pct}%`} data-meter></div></div>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-dec" class="surface-onyx py-[clamp(64px,9vw,112px)]">
+    <div class="wrap grid items-center gap-[clamp(28px,5vw,72px)] md:grid-cols-2">
+      <div class="relative aspect-[4/5] max-h-[600px] overflow-hidden rounded-[22px]" data-clip>
+        <Image src={p.decant} alt="Decants en atomizador de vidrio dentro de un estuche de cuero" widths={[500, 800, 1100]} sizes="(min-width: 768px) 45vw, 92vw" class="size-full object-cover" />
+      </div>
+      <div class="flex flex-col gap-5">
+        <p class="kicker" data-reveal-self>Decant {p.name}</p>
+        <h2 id="h-dec" class="text-[clamp(2rem,3.6vw,3rem)] leading-[1.05]" data-split>¿Primera vez con {p.name}? <em class="text-gold">Empieza con 3 ml.</em></h2>
+        <p class="leading-relaxed text-sand" data-reveal-self>Fraccionado del frasco original en un atomizador de vidrio sellado. Si te enamora, el frasco de 100 ml te espera.</p>
+        <button type="button" class="btn btn-violet btn-fill self-start" data-pick5 data-magnetic>Elegir decant de 3 ml <Icon name="arrow" size={16} /></button>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-rel" class="surface-graphite py-[clamp(64px,9vw,120px)]">
+    <div class="wrap">
+      <h2 id="h-rel" class="h-section mb-10" data-split>También te puede gustar</h2>
+      <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3" data-reveal>
+        {related.map((r) => <ProductCard p={r} live={liveOf(catalog, r.slug)} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- mobile sticky buy bar -->
+  <div class="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-cream/12 bg-onyx/92 px-4 py-3 backdrop-blur-xl transition-transform duration-500 data-[off]:translate-y-full lg:hidden" data-sticky-buy data-off>
+    <p class="min-w-0 flex-1 truncate text-sm font-semibold" data-sticky-label>{p.name}</p>
+    <button type="button" class="btn btn-cream h-12 px-6" data-sticky-add>Agregar</button>
+  </div>
+</Base>
+
+<script>
+  function initPdp() {
+    const root = document.querySelector<HTMLElement>('[data-pdp]');
+    if (!root) return;
+    const views = root.querySelectorAll<HTMLElement>('[data-view]');
+    const thumbs = root.querySelectorAll<HTMLElement>('[data-thumb]');
+    const show = (v: string) => {
+      views.forEach((el) => { const on = el.dataset.view === v; el.style.opacity = on ? '1' : '0'; el.style.transform = on ? 'scale(1)' : 'scale(1.04)'; });
+      thumbs.forEach((t) => t.setAttribute('aria-pressed', String(t.dataset.thumb === v)));
+    };
+    thumbs.forEach((t) => t.addEventListener('click', () => show(t.dataset.thumb!)));
+    const q = new URL(location.href).searchParams.get('formato');
+    if (q === '3' || q === '5') show('decant');
+    const onFormat = (e: Event) => show((e as CustomEvent).detail === '100' ? 'frasco' : 'decant');
+    document.addEventListener('ejh:format', onFormat);
+
+    // pointer zoom on the main image
+    const zoom = root.querySelector<HTMLElement>('[data-zoom]')!;
+    if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      zoom.addEventListener('pointermove', (e) => {
+        const r = zoom.getBoundingClientRect();
+        views.forEach((el) => { el.style.transformOrigin = `${((e.clientX - r.left) / r.width) * 100}% ${((e.clientY - r.top) / r.height) * 100}%`; if (el.style.opacity !== '0') el.style.transform = 'scale(1.6)'; });
+      });
+      zoom.addEventListener('pointerleave', () => views.forEach((el) => { if (el.style.opacity !== '0') el.style.transform = 'scale(1)'; }));
+    }
+
+    document.querySelector('[data-pick5]')?.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('ejh:pick-format', { detail: '3' }));
+      root.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // sticky bar appears once the main add button scrolls out of view
+    const bar = document.querySelector<HTMLElement>('[data-sticky-buy]');
+    const addBtn = () => root.querySelector<HTMLElement>('[data-add-to-cart]');
+    bar?.querySelector('[data-sticky-add]')?.addEventListener('click', () => addBtn()?.click());
+    let io: IntersectionObserver | undefined;
+    const watch = () => {
+      const b = addBtn();
+      if (!b || !bar) return void setTimeout(watch, 200); // island may hydrate after this script
+      io = new IntersectionObserver(([e]) => bar.toggleAttribute('data-off', e.isIntersecting || e.boundingClientRect.top > 0));
+      io.observe(b);
+    };
+    watch();
+    document.addEventListener('astro:before-swap', () => { document.removeEventListener('ejh:format', onFormat); io?.disconnect(); }, { once: true });
+  }
+  document.addEventListener('astro:page-load', initPdp);
+</script>

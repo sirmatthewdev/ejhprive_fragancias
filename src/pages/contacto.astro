@@ -1,0 +1,61 @@
+---
+import Base from '../layouts/Base.astro';
+import BrandIcon from '../components/ui/BrandIcon.astro';
+import Icon from '../components/ui/Icon.astro';
+import { SITE, waLink } from '../config/site';
+
+const channels = [
+  { brand: 'whatsapp', title: 'WhatsApp', text: SITE.whatsapp ? `+${SITE.whatsapp}` : '[número de WhatsApp]', href: waLink() },
+  { brand: 'instagram', title: 'Instagram', text: SITE.instagram || '[@usuario]', href: SITE.instagram || '' },
+  { brand: null, title: 'Correo', text: SITE.email || '[correo de contacto]', href: SITE.email ? `mailto:${SITE.email}` : '' },
+] as const;
+const field = 'h-[52px] rounded-xl border border-plum/18 bg-[#FBF6EE] px-4 text-[15px] text-plum placeholder:text-dust/70 focus:border-violet focus:outline-none focus:ring-2 focus:ring-violet/25';
+---
+<Base title="Contacto" description="Escríbenos por WhatsApp, Instagram o correo. Te ayudamos a elegir entre frasco y decant.">
+  <section aria-labelledby="h-contact" class="wrap grid gap-[clamp(32px,6vw,88px)] py-[clamp(48px,7vw,104px)] lg:grid-cols-2">
+    <div class="flex flex-col gap-5">
+      <p class="kicker" data-reveal-self>Contacto</p>
+      <h1 id="h-contact" class="display text-[clamp(2.6rem,5.4vw,4.8rem)]" data-split="load">Hablemos de <em class="text-gold">tu firma.</em></h1>
+      <p class="max-w-[28rem] leading-relaxed text-sand" data-reveal-self="0.2">Te ayudamos a elegir entre frasco y decant, o a encontrar una fragancia parecida a la que ya te gusta.</p>
+      <ul class="mt-2 flex flex-col gap-2.5" data-reveal>
+        {channels.map((c) => (
+          <li>
+            <a href={c.href || undefined} aria-disabled={c.href ? undefined : 'true'} target={c.href.startsWith('http') ? '_blank' : undefined} rel="noopener" class="group aria-disabled:pointer-events-none aria-disabled:opacity-60 flex items-center gap-4 rounded-2xl border border-cream/8 bg-graphite p-4 transition-[border-color,transform] duration-500 hover:-translate-y-0.5 hover:border-lilac/45">
+              <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-lilac/12 text-lilac transition-colors group-hover:bg-lilac group-hover:text-plum">
+                {c.brand ? <BrandIcon name={c.brand} size={18} /> : <Icon name="mail" size={18} />}
+              </span>
+              <span class="flex flex-col"><strong class="font-semibold">{c.title}</strong><span class="text-sm text-mist">{c.text}</span></span>
+              <Icon name="arrow-up-right" size={16} class="ml-auto text-mist transition-transform duration-500 group-hover:rotate-45" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <form class="flex flex-col gap-4 self-start rounded-[26px] bg-cream p-[clamp(24px,3vw,40px)] text-plum" data-reveal-self="0.3" data-contact>
+      <h2 class="text-4xl">Escríbenos</h2>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="flex flex-col gap-2 text-[13px] font-semibold">Nombre<input class={field} name="nombre" autocomplete="name" required placeholder="Tu nombre" /></label>
+        <label class="flex flex-col gap-2 text-[13px] font-semibold">Teléfono<input class={field} name="telefono" type="tel" autocomplete="tel" placeholder="Tu número" /></label>
+      </div>
+      <label class="flex flex-col gap-2 text-[13px] font-semibold">Correo electrónico<input class={field} name="email" type="email" autocomplete="email" required placeholder="tu@correo.com" /></label>
+      <label class="flex flex-col gap-2 text-[13px] font-semibold">Mensaje<textarea class:list={[field, 'h-auto py-3.5']} name="mensaje" rows="5" required placeholder="Me gusta Khamrah, ¿qué decant me recomiendan?"></textarea></label>
+      <button class="btn btn-plum btn-fill mt-1 h-[54px]">Enviar por WhatsApp <Icon name="arrow" size={16} /></button>
+      <p class="text-xs text-dust">Respondemos en el día, de lunes a sábado.</p>
+    </form>
+  </section>
+</Base>
+
+<script>
+  import { waLink } from '../config/site';
+  // Without a backend the form composes a WhatsApp message; swap for an Astro Action or form service later.
+  document.addEventListener('astro:page-load', () => {
+    const f = document.querySelector<HTMLFormElement>('[data-contact]');
+    f?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const d = new FormData(f);
+      const text = `Hola EJH PRIVÉ, soy ${d.get('nombre')} (${d.get('email')}${d.get('telefono') ? ', ' + d.get('telefono') : ''}).\n\n${d.get('mensaje')}`;
+      window.open(waLink(text), '_blank', 'noopener');
+    });
+  });
+</script>

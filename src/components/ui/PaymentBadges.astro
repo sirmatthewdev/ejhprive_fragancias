@@ -1,0 +1,24 @@
+---
+import BrandIcon from './BrandIcon.astro';
+import powerpay from '../../assets/payments/powerpay.svg';
+import yape from '../../assets/payments/yape.png';
+import plin from '../../assets/payments/plin.png';
+
+interface Props { class?: string }
+const { class: cls } = Astro.props;
+const card = 'flex h-8 w-12 items-center justify-center rounded-md bg-[#FBF8F2] shadow-[inset_0_0_0_1px_rgb(0_0_0/.06)]';
+---
+<ul class:list={['flex flex-wrap items-center gap-2', cls]} aria-label="Medios de pago aceptados">
+  <li class={card} title="Yape"><img src={yape.src} alt="Yape" width="26" height="26" class="size-[26px] rounded-[6px]" /></li>
+  <li class={card} title="Plin"><img src={plin.src} alt="Plin" width="24" height="24" class="size-6" /></li>
+  <li class={card} title="Visa"><BrandIcon name="visa" size={30} color="brand" /></li>
+  <li class={card} title="Mastercard">
+    <svg width="30" height="19" viewBox="0 0 32 20" role="img" aria-label="Mastercard">
+      <circle cx="12" cy="10" r="8" fill="#EB001B" /><circle cx="20" cy="10" r="8" fill="#F79E1B" />
+      <path d="M16 3.07a8 8 0 0 1 0 13.86 8 8 0 0 1 0-13.86z" fill="#FF5F00" />
+    </svg>
+  </li>
+  <li class={card} title="American Express"><BrandIcon name="amex" size={22} color="brand" /></li>
+  <li class={card} title="Mercado Pago"><BrandIcon name="mercadopago" size={24} color="brand" /></li>
+  <li class:list={[card, 'w-auto px-2.5']} title="Powerpay: paga en cuotas"><img src={powerpay.src} alt="Powerpay" width="62" height="18" class="h-[18px] w-auto" /></li>
+</ul>

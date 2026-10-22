@@ -1,0 +1,161 @@
+---
+import Icon from '../ui/Icon.astro';
+import { bySlug, productUrl } from '../../data/products';
+
+// The 12 s loop shows three bottles, 4 s each. Order must match the video.
+const SCENES = ['khamrah', '9-pm', 'odyssey-mandarin-sky'].map((s) => bySlug(s)!);
+---
+<section class="hero relative isolate flex h-svh min-h-[640px] items-end overflow-hidden bg-[#09080B]" aria-labelledby="hero-title" data-hero>
+  <!-- media layer: drifts against the pointer -->
+  <div class="absolute -inset-12 -z-10" data-hero-media>
+    <picture>
+      <source media="(max-width: 767px)" srcset="/media/hero-poster-mobile.webp" width="720" height="900" />
+      <img src="/media/hero-poster.webp" alt="" width="1600" height="900" fetchpriority="high" decoding="async" class="absolute inset-0 size-full object-cover" />
+    </picture>
+    <video class="absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-1000" muted loop playsinline preload="none" aria-hidden="true" data-hero-video
+      data-src-desktop="/media/hero-loop.mp4" data-src-mobile="/media/hero-loop-mobile.mp4"></video>
+  </div>
+  <!-- light that follows the pointer + legibility scrims + film grain -->
+  <div class="pointer-events-none absolute inset-0 -z-10 opacity-0 mix-blend-soft-light transition-opacity duration-700 [background:radial-gradient(520px_circle_at_var(--px,70%)_var(--py,40%),rgb(241_232_216/.55),transparent_65%)]" data-hero-light></div>
+  <div class="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgb(9_8_11/.78)_0%,rgb(9_8_11/.25)_55%,transparent_80%),linear-gradient(180deg,rgb(9_8_11/.55)_0%,transparent_22%,transparent_60%,rgb(9_8_11/.9)_100%)]"></div>
+  <div class="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(180deg,transparent_25%,rgb(9_8_11/.7)_55%,rgb(9_8_11/.95)_80%)] md:hidden"></div>
+  <div class="grain grain-static pointer-events-none absolute inset-0 -z-10 overflow-hidden"></div>
+
+  <div class="wrap pb-[clamp(40px,9vh,96px)]">
+    <div class="flex max-w-[640px] flex-col gap-6" data-hero-copy>
+      <p class="kicker hero-in" style="--d:.05s">Perfumería árabe · 100% original</p>
+      <h1 id="hero-title" class="display">
+        <span class="hero-line"><span style="--d:.1s">El arte de llevar</span></span>
+        <span class="hero-line"><em class="text-gold" style="--d:.22s">una firma.</em></span>
+      </h1>
+      <p class="hero-in max-w-[30rem] text-[clamp(15px,1.25vw,18px)] leading-relaxed text-[#D8CCB8]" style="--d:.45s">
+        Khamrah, 9 PM, Hawas Ice y más, en frasco de 100 ml o en decants de 3 y 5 ml para descubrirlos en tu piel.
+      </p>
+      <div class="hero-in mt-1 flex flex-wrap gap-3" style="--d:.6s">
+        <a href="/productos/" class="btn btn-cream btn-fill" data-magnetic>Explorar colección <Icon name="arrow" size={16} stroke={1.8} /></a>
+        <a href="#decants" class="btn btn-ghost" data-magnetic>Descubrir decants</a>
+      </div>
+      <!-- scene index: typography only, synced with the video -->
+      <nav aria-label="Fragancias del video" class="hero-in mt-6 hidden max-w-[600px] md:block" style="--d:.8s">
+        <p class="sr-only">En escena: <span data-scene-no>01</span> de 03</p>
+        <ol class="grid grid-cols-3 gap-6">
+          {SCENES.map((p, i) => (
+            <li class="scene group/s" data-scene={i} aria-current={i === 0 ? 'true' : undefined}>
+              <a href={productUrl(p)} class="flex flex-col gap-2.5 text-cream/45 transition-colors duration-700 hover:text-cream group-aria-[current=true]/s:text-cream">
+                <span class="relative block h-px overflow-hidden bg-cream/20"><span class="absolute inset-0 origin-left scale-x-0 bg-cream" data-scene-bar></span></span>
+                <span class="flex items-baseline gap-2.5">
+                  <span class="font-sans text-[10px] tabular-nums tracking-[0.12em]">0{i + 1}</span>
+                  <span class="truncate font-serif text-[1.2rem] leading-none">{p.name.replace('Odyssey ', '')}</span>
+                </span>
+                <span class="text-[10px] font-semibold uppercase tracking-[0.2em] text-mist transition-colors group-aria-[current=true]/s:text-lilac">{p.brand}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+</section>
+
+
+<style>
+  .hero-line { display: block; overflow: hidden; padding-bottom: .06em; }
+  .hero-line > * { display: inline-block; animation: hero-line 1.3s var(--ease-out-expo) var(--d, 0s) both; }
+  .hero-in { animation: hero-in 1.1s var(--ease-out-expo) var(--d, 0s) both; }
+  @keyframes hero-line { from { transform: translateY(110%) rotate(2deg); } }
+  @keyframes hero-in { from { opacity: 0; transform: translateY(24px); } }
+  .grain-static::after { animation: none; }
+</style>
+
+<script>
+  import { gsap } from '../../lib/motion';
+
+  function initHero() {
+    const hero = document.querySelector<HTMLElement>('[data-hero]');
+    if (!hero) return;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    // 1) scene index follows the visible video's timeline
+    const scenes = [...hero.querySelectorAll<HTMLElement>('[data-scene]')];
+    const bars = scenes.map((s) => s.querySelector<HTMLElement>('[data-scene-bar]')!);
+    const no = hero.querySelector('[data-scene-no]');
+    let current = 0;
+    const tick = () => {
+      const v = hero.querySelector<HTMLVideoElement>('[data-hero-video]');
+      if (v && v.duration) {
+        const t = v.currentTime % 12, i = Math.min(2, Math.floor(t / 4)), local = (t - i * 4) / 4;
+        bars.forEach((b, j) => (b.style.transform = `scaleX(${j < i ? 1 : j === i ? local : 0})`));
+        if (i !== current) {
+          scenes[current]?.removeAttribute('aria-current');
+          scenes[i]?.setAttribute('aria-current', 'true');
+          if (no) no.textContent = `0${i + 1}`;
+          current = i;
+        }
+      }
+    };
+    gsap.ticker.add(tick);
+
+    // 2) pointer: media drifts away, copy drifts toward, light follows
+    let cleanupPointer = () => {};
+    if (fine && !reduced) {
+      const media = hero.querySelector('[data-hero-media]')!;
+      const copy = hero.querySelector('[data-hero-copy]')!;
+      const light = hero.querySelector<HTMLElement>('[data-hero-light]')!;
+      const mx = gsap.quickTo(media, 'x', { duration: 1.6, ease: 'power3' });
+      const my = gsap.quickTo(media, 'y', { duration: 1.6, ease: 'power3' });
+      const cx = gsap.quickTo(copy, 'x', { duration: 1.8, ease: 'power3' });
+      const cy = gsap.quickTo(copy, 'y', { duration: 1.8, ease: 'power3' });
+      const pos = { x: 70, y: 40 };
+      const paint = () => { light.style.setProperty('--px', `${pos.x}%`); light.style.setProperty('--py', `${pos.y}%`); };
+      const lx = gsap.quickTo(pos, 'x', { duration: 0.9, ease: 'power3', onUpdate: paint });
+      const ly = gsap.quickTo(pos, 'y', { duration: 0.9, ease: 'power3', onUpdate: paint });
+      const move = (e: PointerEvent) => {
+        const r = hero.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+        mx(x * -40); my(y * -26); cx(x * 14); cy(y * 10);
+        lx((x + 0.5) * 100); ly((y + 0.5) * 100);
+        light.style.opacity = '1';
+      };
+      const leave = () => { mx(0); my(0); cx(0); cy(0); light.style.opacity = '0'; };
+      hero.addEventListener('pointermove', move);
+      hero.addEventListener('pointerleave', leave);
+      cleanupPointer = () => { hero.removeEventListener('pointermove', move); hero.removeEventListener('pointerleave', leave); };
+    }
+
+    // 3) on scroll the hero recedes: media zooms in slowly, copy lifts and fades
+    let st: gsap.core.Tween | undefined;
+    if (!reduced) {
+      st = gsap.to(hero.querySelector('[data-hero-media]'), {
+        scale: 1.12, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true },
+      });
+    }
+
+    // load the clip that fits the screen after first paint; skip it when the user prefers less data/motion
+    const video = hero.querySelector<HTMLVideoElement>('[data-hero-video]')!;
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    let inView = true;
+    const start = () => {
+      if (reduced || saveData || video.src) return;
+      video.src = matchMedia('(max-width: 767px)').matches ? video.dataset.srcMobile! : video.dataset.srcDesktop!;
+      video.addEventListener('playing', () => video.classList.remove('opacity-0'), { once: true });
+      if (inView) video.play().catch(() => {});
+    };
+    if (document.readyState === 'complete') setTimeout(start, 200);
+    else addEventListener('load', () => setTimeout(start, 200), { once: true });
+
+    // pause the video when the hero leaves the viewport
+    const io = new IntersectionObserver(([e]) => {
+      inView = e.isIntersecting;
+      if (!video.src) return;
+      inView ? video.play().catch(() => {}) : video.pause();
+    });
+    io.observe(hero);
+
+    document.addEventListener('astro:before-swap', () => {
+      gsap.ticker.remove(tick); cleanupPointer(); st?.scrollTrigger?.kill(); st?.kill(); io.disconnect();
+    }, { once: true });
+  }
+  document.addEventListener('astro:page-load', initHero);
+</script>

@@ -1,0 +1,13 @@
+---
+import { siInstagram, siTiktok, siWhatsapp, siFacebook, siVisa, siMastercard, siAmericanexpress, siMercadopago } from 'simple-icons';
+
+const ICONS = {
+  instagram: siInstagram, tiktok: siTiktok, whatsapp: siWhatsapp, facebook: siFacebook,
+  visa: siVisa, mastercard: siMastercard, amex: siAmericanexpress, mercadopago: siMercadopago,
+};
+
+interface Props { name: keyof typeof ICONS; size?: number; color?: 'brand' | 'current'; class?: string }
+const { name, size = 18, color = 'current', class: cls } = Astro.props;
+const icon = ICONS[name];
+---
+<svg class={cls} width={size} height={size} viewBox="0 0 24 24" fill={color === 'brand' ? `#${icon.hex}` : 'currentColor'} role="img" aria-label={icon.title}><path d={icon.path} /></svg>

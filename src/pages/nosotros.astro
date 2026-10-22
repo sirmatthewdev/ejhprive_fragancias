@@ -1,0 +1,52 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Icon from '../components/ui/Icon.astro';
+import about from '../assets/img/about-wide.jpg';
+
+const pillars = [
+  { n: '01', title: 'Curaduría', text: 'Pocas fragancias, todas elegidas por su carácter y su rendimiento.' },
+  { n: '02', title: 'Autenticidad', text: 'Solo frascos originales y sellados; los decants se fraccionan de esos mismos frascos.' },
+  { n: '03', title: 'Cercanía', text: 'Asesoría personal por WhatsApp, antes y después de tu compra.' },
+];
+---
+<Base title="Quiénes somos" description="EJH PRIVÉ: perfumería árabe original con curaduría propia, decants fraccionados del frasco original y asesoría personal.">
+  <section aria-labelledby="h-about" class="wrap flex flex-col gap-5 pb-14 pt-12">
+    <p class="kicker" data-reveal-self>Quiénes somos</p>
+    <h1 id="h-about" class="display max-w-[14ch]" data-split="load">Perfumería con <em class="text-gold">criterio propio.</em></h1>
+  </section>
+  <div class="relative aspect-[21/9] min-h-[280px] overflow-hidden" data-clip>
+    <div class="absolute -inset-y-[12%] inset-x-0" data-parallax="14">
+      <Image src={about} alt="Las seis fragancias de EJH PRIVÉ sobre un pedestal oscuro" widths={[800, 1400, 2100]} sizes="100vw" loading="eager" class="size-full object-cover" />
+    </div>
+  </div>
+
+  <section aria-label="Nuestra historia" class="wrap grid gap-[clamp(32px,6vw,96px)] py-[clamp(64px,9vw,128px)] lg:grid-cols-2">
+    <p class="font-serif text-[clamp(1.8rem,3vw,2.6rem)] leading-[1.25]" data-split>EJH PRIVÉ nace de una idea simple: que acceder a una gran fragancia sea una experiencia tan cuidada como el perfume mismo.</p>
+    <div class="flex flex-col gap-5 leading-[1.8] text-[#D8CCB8]" data-reveal>
+      <p>Trabajamos con una selección corta y deliberada de perfumería árabe: Lattafa, Armaf, Rasasi y Afnan. Fragancias con carácter, buen rendimiento y una relación precio-calidad difícil de igualar.</p>
+      <p>Además de los frascos completos, preparamos decants de 3 y 5 ml a partir del frasco original, para que puedas probar en piel antes de decidir, llevar tu perfume de viaje o rotar entre varios.</p>
+      <p>Todos nuestros perfumes son originales, y te asesoramos de forma personal por WhatsApp para ayudarte a encontrar tu próxima firma.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-pillars" class="on-cream surface-cream py-[clamp(64px,9vw,128px)] text-plum">
+    <div class="wrap">
+      <h2 id="h-pillars" class="h-section mb-10" data-split>Lo que nos define</h2>
+      <ol class="grid gap-4 md:grid-cols-3" data-reveal>
+        {pillars.map((p) => (
+          <li class="flex min-h-[220px] flex-col gap-3 rounded-[22px] bg-cream-2 p-7 transition-transform duration-700 hover:-translate-y-1">
+            <span class="font-serif text-2xl text-violet">{p.n}</span>
+            <h3 class="mt-auto text-3xl">{p.title}</h3>
+            <p class="leading-relaxed text-[#4A3F52]">{p.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-next" class="wrap flex flex-wrap items-center justify-between gap-6 py-[clamp(56px,8vw,104px)]">
+    <h2 id="h-next" class="text-[clamp(2rem,3.4vw,2.8rem)]" data-split>Encuentra tu próxima firma</h2>
+    <a href="/productos/" class="btn btn-cream btn-fill" data-magnetic>Ver la colección <Icon name="arrow" size={16} /></a>
+  </section>
+</Base>

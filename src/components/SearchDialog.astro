@@ -1,0 +1,113 @@
+---
+import { getImage } from 'astro:assets';
+import Icon from './ui/Icon.astro';
+import { products, productUrl } from '../data/products';
+
+// small index shipped with the page: ~1 KB, no extra requests
+const index = await Promise.all(
+  products.map(async (p) => ({
+    name: p.name, brand: p.brand, accord: p.accord, href: productUrl(p),
+    img: (await getImage({ src: p.img, width: 96, height: 120, format: 'webp' })).src,
+    text: [p.brand, p.name, p.family, p.familyLabel, p.accord, ...p.notes.top, ...p.notes.heart, ...p.notes.base]
+      .join(' ').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(),
+  })),
+);
+const suggestions = ['Vainilla', 'Café', 'Fresca', 'Lattafa', 'Decants'];
+---
+<dialog id="search" data-search-dialog aria-label="Buscar fragancias"
+  class="m-0 mx-auto mt-[12vh] w-[min(640px,calc(100%-32px))] max-w-none overflow-hidden rounded-[22px] border border-cream/12 bg-graphite/95 p-0 text-cream shadow-[0_40px_120px_rgb(0_0_0/.7)] backdrop-blur-xl backdrop:bg-ink/70 backdrop:backdrop-blur-sm">
+  <form method="get" action="/productos/" class="flex items-center gap-3 border-b border-cream/10 px-5" data-search-form>
+    <Icon name="search" size={20} class="shrink-0 text-mist" />
+    <label for="search-q" class="sr-only">Buscar por nombre, marca o nota</label>
+    <input id="search-q" name="q" type="search" autocomplete="off" maxlength="60" placeholder="Buscar por nombre, marca o nota…"
+      class="h-16 min-w-0 flex-1 bg-transparent text-lg text-cream placeholder:text-mist focus:outline-none" data-search-input />
+    <button type="button" class="rounded-md border border-cream/15 px-2 py-1 text-[11px] text-mist hover:text-cream" data-search-close aria-label="Cerrar búsqueda">Esc</button>
+  </form>
+  <div class="max-h-[60vh] overflow-y-auto p-3" data-lenis-prevent>
+    <div class="flex flex-wrap gap-2 p-2" data-search-suggest>
+      <span class="w-full text-[11px] font-bold uppercase tracking-[0.18em] text-mist">Sugerencias</span>
+      {suggestions.map((s) => <button type="button" class="chip border border-cream/15 text-sand hover:border-cream/40 hover:text-cream" data-suggest={s}>{s}</button>)}
+    </div>
+    <ul class="flex flex-col" role="listbox" aria-label="Resultados" data-search-results></ul>
+    <p class="hidden px-3 py-8 text-center text-sm text-mist" data-search-empty>Sin resultados. Prueba con otra nota o marca.</p>
+  </div>
+</dialog>
+
+<script type="application/json" data-search-index set:html={JSON.stringify(index)} />
+
+<script>
+  type Item = { name: string; brand: string; accord: string; href: string; img: string; text: string };
+  const norm = (v: string) => v.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+  const esc = (v: string) => v.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+  function initSearch() {
+    const dlg = document.querySelector<HTMLDialogElement>('[data-search-dialog]');
+    if (!dlg || dlg.dataset.ready) return;
+    dlg.dataset.ready = '1';
+    const index: Item[] = JSON.parse(document.querySelector('[data-search-index]')?.textContent || '[]');
+    const input = dlg.querySelector<HTMLInputElement>('[data-search-input]')!;
+    const list = dlg.querySelector<HTMLUListElement>('[data-search-results]')!;
+    const empty = dlg.querySelector<HTMLElement>('[data-search-empty]')!;
+    const suggest = dlg.querySelector<HTMLElement>('[data-search-suggest]')!;
+    let active = -1;
+
+    const render = () => {
+      const q = norm(input.value);
+      const words = q.split(/\s+/).filter(Boolean);
+      // "decant(s)" is a format, not a note: show everything and link to the decant catalog
+      const isDecant = words.some((w) => w.startsWith('decant'));
+      const hits = !q ? [] : index.filter((i) => words.filter((w) => !w.startsWith('decant')).every((w) => i.text.includes(w)));
+      suggest.hidden = !!q;
+      empty.classList.toggle('hidden', !q || hits.length > 0);
+      active = hits.length ? 0 : -1;
+      list.innerHTML = hits.map((i, n) => `
+        <li role="option" id="sr-${n}" aria-selected="${n === 0}">
+          <a href="${i.href}${isDecant ? '?formato=5' : ''}" class="flex items-center gap-4 rounded-xl p-2.5 transition-colors hover:bg-cream/5 aria-selected:bg-cream/5" data-hit>
+            <img src="${i.img}" alt="" width="48" height="60" class="h-[60px] w-12 shrink-0 rounded-lg object-cover" />
+            <span class="flex min-w-0 flex-col">
+              <span class="text-[10px] font-bold uppercase tracking-[0.16em] text-lilac">${esc(i.brand)}</span>
+              <span class="font-serif text-xl leading-tight">${esc(i.name)}${isDecant ? ' · decant' : ''}</span>
+              <span class="truncate text-xs text-mist">${esc(i.accord)}</span>
+            </span>
+          </a>
+        </li>`).join('') + (q ? `<li><a href="/productos/?q=${encodeURIComponent(input.value.trim())}${isDecant ? '&formato=decant' : ''}" class="mt-1 block rounded-xl p-3 text-center text-sm text-lilac hover:bg-cream/5">Ver resultados en el catálogo</a></li>` : '');
+      input.setAttribute('aria-activedescendant', active >= 0 ? `sr-${active}` : '');
+    };
+    const highlight = (i: number) => {
+      const opts = [...list.querySelectorAll<HTMLElement>('[role=option]')];
+      if (!opts.length) return;
+      active = (i + opts.length) % opts.length;
+      opts.forEach((o, n) => o.setAttribute('aria-selected', String(n === active)));
+      opts[active].scrollIntoView({ block: 'nearest' });
+      input.setAttribute('aria-activedescendant', `sr-${active}`);
+    };
+
+    const open = () => { if (!dlg.open) { dlg.showModal(); input.select(); render(); } };
+    input.addEventListener('input', render);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); highlight(active + 1); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); highlight(active - 1); }
+      if (e.key === 'Enter' && active >= 0) {
+        const a = list.querySelector<HTMLAnchorElement>(`#sr-${active} a`);
+        if (a) { e.preventDefault(); dlg.close(); a.click(); }
+      }
+    });
+    dlg.querySelector('[data-search-form]')!.addEventListener('submit', () => dlg.close());
+    dlg.querySelector('[data-search-close]')!.addEventListener('click', () => dlg.close());
+    dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); }); // click on the backdrop
+    list.addEventListener('click', (e) => { if ((e.target as Element).closest('a')) dlg.close(); });
+    suggest.addEventListener('click', (e) => {
+      const b = (e.target as Element).closest<HTMLElement>('[data-suggest]');
+      if (b) { input.value = b.dataset.suggest!; render(); input.focus(); }
+    });
+    // the trigger lives in the header (swapped on every page), so listen at document level once
+    document.addEventListener('click', (e) => {
+      if ((e.target as Element).closest('[data-search-open]')) { e.preventDefault(); e.stopPropagation(); open(); }
+    }, true);
+    document.addEventListener('keydown', (e) => {
+      const typing = (e.target as Element).closest('input, textarea, select, [contenteditable]');
+      if ((e.key === '/' && !typing) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k')) { e.preventDefault(); open(); }
+    });
+  }
+  document.addEventListener('astro:page-load', initSearch);
+</script>

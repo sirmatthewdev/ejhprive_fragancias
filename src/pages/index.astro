@@ -1,0 +1,234 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Hero from '../components/home/Hero.astro';
+import FamilyIndex from '../components/home/FamilyIndex.astro';
+import ProductCard from '../components/ProductCard.astro';
+import SectionHead from '../components/ui/SectionHead.astro';
+import Faq from '../components/ui/Faq.astro';
+import Icon from '../components/ui/Icon.astro';
+import { products as allProducts, bySlug, productUrl } from '../data/products';
+import { getCatalog, liveOf } from '../lib/cms';
+import { FAQ, faqJsonLd } from '../data/faq';
+import { waLink } from '../config/site';
+
+import catFrascos from '../assets/img/cat-frascos.jpg';
+import decantsWide from '../assets/img/decants-real-wide.jpg';
+import brandLattafa from '../assets/img/brand-lattafa.jpg';
+import brandArmaf from '../assets/img/brand-armaf.jpg';
+import decantsPhoto from '../assets/img/decants-real.jpg';
+import logoLattafa from '../assets/brands/lattafa.png';
+import logoArmaf from '../assets/brands/armaf.png';
+import logoRasasi from '../assets/brands/rasasi.png';
+import logoAfnan from '../assets/brands/afnan.png';
+
+export const prerender = false; // live prices and stock from the CMS
+
+const catalog = await getCatalog();
+const products = allProducts.filter((p) => liveOf(catalog, p.slug).active);
+const homeFaq = FAQ.filter((f) => f.home);
+const cats = [
+  { href: '/productos/?formato=frasco', kicker: 'Colección completa', title: 'Frascos 100 ml', text: 'Originales, sellados, listos para regalar.', img: catFrascos, alt: 'Frascos de Khamrah, 9 PM y Khamrah Qahwa' },
+  { href: '/productos/?formato=decant', kicker: 'Prueba antes de elegir', title: 'Decants 3 · 5 ml', text: 'Las seis fragancias, del frasco original.', img: decantsWide, alt: 'Tres decants en atomizador de vidrio dentro de un estuche de cuero', tone: 'brightness-[.8] saturate-[.9]' },
+];
+const steps = [
+  { n: '01', title: 'Elige fragancia y tamaño', text: 'Decant de 3 ml (≈ 40 atomizaciones) o 5 ml (≈ 70).' },
+  { n: '02', title: 'Lo fraccionamos del original', text: 'Sin diluir ni alterar, en vidrio sellado y etiquetado.' },
+  { n: '03', title: 'Recíbelo y pruébalo', text: 'Si te enamora, pasa al frasco de 100 ml.' },
+];
+// official logos, recoloured to cream (see src/assets/brands)
+const LOGOS = { Lattafa: logoLattafa, Armaf: logoArmaf, Rasasi: logoRasasi, Afnan: logoAfnan };
+// optical balance: wide script logos read larger than the round badge
+const LOGO_W = { Lattafa: 'max-w-[220px]', Armaf: 'max-w-[220px]', Rasasi: 'max-w-[175px]', Afnan: 'max-w-[220px]' };
+const BRANDS = (['Lattafa', 'Armaf', 'Rasasi', 'Afnan'] as const).map((name) => {
+  const items = products.filter((p) => p.brand === name);
+  return { name, logo: LOGOS[name], logoW: LOGO_W[name], count: items.length };
+}).filter((b) => b.count > 0);
+const houses = [
+  { name: 'Lattafa', logo: logoLattafa, logoH: 'h-[clamp(64px,7vw,96px)]', pos: 'object-center', img: brandLattafa, alt: 'Lattafa Khamrah y Khamrah Qahwa', slugs: ['khamrah', 'khamrah-qahwa'],
+    text: 'La casa de Dubái detrás de dos de las fragancias árabes más buscadas: Khamrah, especiada y golosa, y su versión con café, Khamrah Qahwa.' },
+  { name: 'Armaf', logo: logoArmaf, logoH: 'h-[clamp(96px,10vw,136px)]', pos: 'object-[50%_18%]', img: brandArmaf, alt: 'Armaf Odyssey Mandarin Sky y Odyssey Spectra', slugs: ['odyssey-mandarin-sky', 'odyssey-spectra'],
+    text: 'La línea Odyssey reinterpreta perfiles de diseñador con carácter propio: Mandarin Sky, cítrica y caramelizada, y Spectra, especiada y versátil.' },
+];
+const promises = [
+  { icon: 'shield', title: '100% originales', text: 'Frascos sellados e importados. Nunca réplicas.' },
+  { icon: 'drop', title: 'Fraccionado del original', text: 'Decants en vidrio, sellados y con lote.' },
+  { icon: 'truck', title: 'Envío en 24–48 h', text: 'A todo el país, con seguimiento.' },
+  { icon: 'chat', title: 'Asesoría personal', text: 'Te ayudamos a elegir por WhatsApp.' },
+] as const;
+const itemList = {
+  '@context': 'https://schema.org', '@type': 'ItemList', name: 'Colección EJH PRIVÉ',
+  itemListElement: products.map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: productUrl(p), name: `${p.brand} ${p.name}` })),
+};
+---
+<Base overlay jsonLd={[itemList, faqJsonLd(homeFaq)]}>
+  <Hero />
+
+  <!-- 1 · formats: the business' core choice -->
+  <section id="descubrir" aria-labelledby="h-cat" class="surface-onyx py-[clamp(72px,10vw,140px)]">
+    <div class="wrap">
+      <SectionHead id="h-cat" title="Elige cómo" em="descubrirlo" lead="El frasco completo para tu firma de siempre, o un decant para probar antes de decidir." />
+      <div class="grid gap-6 md:grid-cols-2">
+        {cats.map((c, i) => (
+          <a href={c.href} class="group relative block aspect-[4/4.4] overflow-hidden rounded-[22px] ring-1 ring-cream/8" data-clip data-cursor="Ver">
+            <div class="absolute -inset-y-[8%] inset-x-0" data-parallax="10">
+              <Image src={c.img} alt={c.alt} widths={[640, 960, 1280]} sizes="(min-width: 768px) 46vw, 92vw" class:list={['size-full object-cover transition-transform duration-[1400ms] ease-[var(--ease-out-expo)] group-hover:scale-105', c.tone]} />
+            </div>
+            <div class="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgb(11_10_13/.88))]"></div>
+            <div class="absolute inset-x-7 bottom-7 flex items-end justify-between gap-4">
+              <div class="flex flex-col gap-2">
+                <p class="kicker">{c.kicker}</p>
+                <h3 class="text-[clamp(2rem,3.2vw,2.8rem)] leading-none">{c.title}</h3>
+                <p class="text-sm text-[#D8CCB8]">{c.text}</p>
+              </div>
+              <span class="flex size-14 shrink-0 items-center justify-center rounded-full bg-cream text-plum transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:rotate-45">
+                <Icon name="arrow-up-right" size={18} stroke={1.8} />
+              </span>
+            </div>
+            <span class="absolute right-7 top-6 font-sans text-xs tabular-nums text-cream/70">0{i + 1}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · collection -->
+  <section aria-labelledby="h-col" class="surface-graphite py-[clamp(72px,10vw,140px)]">
+    <div class="wrap">
+      <SectionHead id="h-col" kicker="Seis fragancias, una selección" title="La colección">
+        <a href="/productos/" class="btn btn-ghost h-11 px-5" data-magnetic>Ver catálogo <Icon name="arrow" size={14} /></a>
+      </SectionHead>
+      <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3" data-reveal>
+        {products.map((p) => <ProductCard p={p} live={liveOf(catalog, p.slug)} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · decants explained (cream break) -->
+  <section id="decants" aria-labelledby="h-dec" class="on-cream surface-cream py-[clamp(72px,10vw,150px)] text-plum">
+    <div class="wrap grid items-center gap-[clamp(40px,7vw,104px)] lg:grid-cols-2">
+      <div class="flex flex-col gap-6">
+        <p class="kicker" data-reveal-self>Decants EJH</p>
+        <h2 id="h-dec" class="h-section" data-split>Pruébalo en tu piel <em class="text-violet">antes de elegir tu frasco.</em></h2>
+        <p class="max-w-[34rem] leading-relaxed text-[#4A3F52]" data-reveal-self>Fraccionamos cada fragancia directamente del frasco original, en atomizadores de vidrio sellados y etiquetados con nombre, volumen y lote.</p>
+        <ol class="mt-2 border-t border-plum/15" data-reveal>
+          {steps.map((s) => (
+            <li class="flex items-baseline gap-6 border-b border-plum/15 py-5">
+              <span class="font-serif text-2xl text-violet">{s.n}</span>
+              <span class="flex flex-col gap-1"><strong class="font-semibold">{s.title}</strong><span class="text-sm text-dust">{s.text}</span></span>
+            </li>
+          ))}
+        </ol>
+        <dl class="grid grid-cols-3 gap-2.5" data-reveal>
+          <div class="rounded-2xl bg-cream-2 p-4"><dt class="font-serif text-3xl leading-none">3 ml</dt><dd class="mt-1 text-xs text-dust">≈ 40 atomizaciones</dd></div>
+          <div class="rounded-2xl bg-cream-2 p-4"><dt class="font-serif text-3xl leading-none">5 ml</dt><dd class="mt-1 text-xs text-dust">≈ 70 atomizaciones</dd></div>
+          <div class="rounded-2xl bg-plum p-4 text-cream"><dt class="font-serif text-3xl leading-none">Set ×3</dt><dd class="mt-1 text-xs text-sand">Tres decants a elección</dd></div>
+        </dl>
+        <a href="/productos/?formato=decant" class="btn btn-plum btn-fill mt-2 self-start" data-magnetic>Elegir mis decants <Icon name="arrow" size={16} stroke={1.8} /></a>
+      </div>
+      <figure class="relative aspect-[4/5] overflow-hidden rounded-[26px] shadow-[0_50px_100px_-30px_rgb(26_19_32/.45)]" data-clip data-cursor="Ver">
+        <div data-parallax="8" class="absolute inset-x-0 -inset-y-[6%]">
+          <Image src={decantsPhoto} alt="Decants en atomizador de vidrio dentro de un estuche de cuero, sobre una concha de nácar" widths={[600, 900, 1200]} sizes="(min-width: 1024px) 45vw, 92vw" class="size-full object-cover" />
+        </div>
+        <figcaption class="absolute bottom-5 left-5 flex flex-col rounded-xl bg-cream/92 px-4 py-3 text-sm backdrop-blur"><strong class="font-semibold">Decants EJH</strong><span class="text-dust">3 ml · 5 ml</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 4 · olfactive families: editorial index with floating preview -->
+  <FamilyIndex />
+
+  <!-- 5 · houses -->
+  <section aria-labelledby="h-brands" class="overflow-hidden bg-[linear-gradient(180deg,#170E1D,#1F1229)] pt-[clamp(72px,10vw,140px)]">
+    <div class="wrap flex flex-col gap-[clamp(56px,8vw,112px)]">
+      <SectionHead id="h-brands" title="Las casas detrás" em="de cada fragancia" align="center" />
+      {houses.map((h, i) => (
+        <article class:list={['grid items-center gap-[clamp(28px,5vw,72px)] md:grid-cols-[1.15fr_1fr]', i % 2 && 'md:grid-cols-[1fr_1.15fr] md:[&>*:first-child]:order-2']} aria-labelledby={`house-${i}`}>
+          <a href={productUrl(bySlug(h.slugs[0])!)} class="group relative block aspect-[16/10] overflow-hidden rounded-[22px]" data-clip data-cursor="Ver">
+            <div class="absolute -inset-y-[4%] inset-x-0" data-parallax="6">
+              <Image src={h.img} alt={h.alt} widths={[700, 1100, 1600]} sizes="(min-width: 768px) 55vw, 92vw" class:list={['size-full object-cover transition-transform duration-[1400ms] ease-[var(--ease-out-expo)] group-hover:scale-105', h.pos]} />
+            </div>
+          </a>
+          <div class="flex flex-col gap-5" data-reveal>
+            <h3 id={`house-${i}`} class="m-0">
+              <Image src={h.logo} alt={h.name} height={272} class:list={['w-auto max-w-[280px] object-contain object-left', h.logoH]} />
+            </h3>
+            <p class="max-w-[28rem] leading-relaxed text-[#D8CCB8]">{h.text}</p>
+            <ul class="flex flex-wrap gap-2">
+              {h.slugs.map((s) => { const p = bySlug(s)!; return <li><a href={productUrl(p)} class="btn btn-ghost h-10 px-4 text-[13px]">{p.name}</a></li>; })}
+            </ul>
+          </div>
+        </article>
+      ))}
+    </div>
+    <!-- static brand row: official logos -->
+    <nav aria-label="Comprar por marca" class="mt-[clamp(56px,7vw,96px)] pb-[clamp(56px,7vw,96px)]">
+      <ul class="wrap grid grid-cols-2 items-center gap-x-6 gap-y-10 lg:grid-cols-4" data-reveal>
+        {BRANDS.map((b) => (
+          <li>
+            <a href={`/productos/?marca=${b.name}`} class="group mx-auto flex h-24 items-center justify-center px-4" aria-label={`Ver fragancias de ${b.name}`}>
+              <span class:list={['flex h-full w-full items-center justify-center', b.logoW]}>
+                <Image src={b.logo} alt={b.name} height={192} class="max-h-full w-auto max-w-full object-contain opacity-70 transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)] group-hover:scale-105 group-hover:opacity-100" />
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </section>
+
+  <!-- 6 · promise + manifesto -->
+  <section aria-labelledby="h-trust" class="surface-onyx py-[clamp(72px,10vw,140px)]">
+    <div class="wrap">
+      <h2 id="h-trust" class="sr-only">Por qué comprar en EJH PRIVÉ</h2>
+      <blockquote class="mx-auto mb-[clamp(56px,8vw,96px)] max-w-[22ch] text-center font-serif text-[clamp(2rem,4.4vw,3.8rem)] italic leading-[1.12]">
+        <p data-split>“Un perfume no se elige: se reconoce.”</p>
+      </blockquote>
+      <ul class="grid gap-px overflow-hidden rounded-[22px] bg-cream/10 sm:grid-cols-2 lg:grid-cols-4" data-reveal>
+        {promises.map((k, i) => (
+          <li class="flex flex-col gap-10 bg-onyx p-7 transition-colors duration-500 hover:bg-graphite">
+            <span class="flex items-center justify-between text-lilac"><Icon name={k.icon} size={22} stroke={1.4} /><span class="font-sans text-xs tabular-nums text-mist">0{i + 1}</span></span>
+            <span class="flex flex-col gap-1.5"><strong class="font-serif text-2xl font-medium">{k.title}</strong><span class="text-sm text-mist">{k.text}</span></span>
+          </li>
+        ))}
+      </ul>
+      <p class="mt-8 text-center"><a href="/nosotros/" class="link-u inline-block py-2 text-sm font-semibold tracking-[0.06em] text-lilac">Conoce EJH PRIVÉ</a></p>
+    </div>
+  </section>
+
+  <!-- 7 · objections -->
+  <section aria-labelledby="h-faq" class="surface-graphite py-[clamp(72px,10vw,128px)]">
+    <div class="wrap grid gap-10 lg:grid-cols-[1fr_1.5fr]">
+      <div class="flex flex-col gap-4">
+        <p class="kicker" data-reveal-self>Antes de comprar</p>
+        <h2 id="h-faq" class="h-section" data-split>Preguntas frecuentes</h2>
+        <a href="/como-comprar/#faq" class="link-u mt-1 self-start py-2 text-sm text-sand">Ver todas</a>
+      </div>
+      <Faq items={homeFaq} />
+    </div>
+  </section>
+
+  <!-- 8 · final CTA: deep plum with a lit decant shot fading in from the right -->
+  <section aria-labelledby="h-wa" class="relative isolate overflow-hidden bg-[#160d1d]">
+    <div class="absolute inset-y-0 right-0 -z-10 w-full md:w-[62%]" aria-hidden="true">
+      <Image src={decantsWide} alt="" widths={[640, 1000, 1400]} sizes="(min-width: 768px) 62vw, 100vw" loading="lazy"
+        class="size-full object-cover object-[60%_55%] opacity-60 [mask-image:linear-gradient(90deg,transparent,#000_55%)] max-md:opacity-30 max-md:[mask-image:linear-gradient(180deg,transparent,#000_70%)]" />
+    </div>
+    <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(700px_380px_at_12%_20%,rgb(91_58_142/.55),transparent_70%),radial-gradient(600px_320px_at_70%_110%,rgb(201_182_228/.18),transparent_70%)]"></div>
+    <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-px bg-[linear-gradient(90deg,transparent,rgb(201_182_228/.45),transparent)]"></div>
+    <div class="grain grain-static pointer-events-none absolute inset-0 -z-10 overflow-hidden"></div>
+    <div class="wrap flex flex-wrap items-center justify-between gap-8 py-[clamp(64px,8vw,112px)]">
+      <div class="flex max-w-[34rem] flex-col gap-4">
+        <p class="kicker" data-reveal-self>Asesoría personal</p>
+        <h2 id="h-wa" class="h-section" data-split>¿No sabes cuál elegir?</h2>
+        <p class="leading-relaxed text-[#EDE3F7]" data-reveal-self>Cuéntanos qué perfumes te gustan y te recomendamos tu próxima firma. Si dudas, empieza con un decant de 3 ml.</p>
+        <div class="mt-3 flex flex-wrap gap-3" data-reveal-self>
+          <a href={waLink('Hola EJH PRIVÉ, ¿me ayudan a elegir un perfume?')} target="_blank" rel="noopener" class="btn btn-cream btn-fill h-14 px-8" data-magnetic>
+            <Icon name="chat" size={18} /> Asesoría por WhatsApp
+          </a>
+          <a href="/productos/?formato=decant" class="btn btn-ghost h-14 px-7">Ver decants</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

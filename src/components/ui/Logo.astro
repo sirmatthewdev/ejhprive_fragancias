@@ -1,0 +1,8 @@
+---
+interface Props { size?: 'md' | 'lg'; align?: 'center' | 'start' }
+const { size = 'md', align = 'center' } = Astro.props;
+---
+<a href="/" aria-label="EJH PRIVÉ, inicio" class:list={['flex flex-col leading-none text-cream', align === 'center' ? 'items-center' : 'items-start']}>
+  <span class:list={['font-serif font-medium tracking-[0.34em]', align === 'center' && 'pl-[0.34em]', size === 'lg' ? 'text-[2.2rem]' : 'text-[1.75rem]']}>EJH</span>
+  <span class:list={['mt-1 text-[9px] font-semibold tracking-[0.55em] text-lilac', align === 'center' && 'pl-[0.55em]']}>PRIVÉ</span>
+</a>

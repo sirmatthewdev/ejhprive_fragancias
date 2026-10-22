@@ -1,0 +1,73 @@
+---
+import { Image } from 'astro:assets';
+import SectionHead from '../ui/SectionHead.astro';
+import Icon from '../ui/Icon.astro';
+import { FAMILIES, products } from '../../data/products';
+
+const rows = FAMILIES.map((f) => ({ ...f, items: products.filter((p) => p.family === f.id) })).filter((f) => f.items.length);
+---
+<section aria-labelledby="h-fam" class="surface-onyx py-[clamp(72px,10vw,140px)]" data-family-index data-active="0">
+  <div class="wrap">
+    <SectionHead id="h-fam" kicker="Encuentra tu firma" title="Por familia olfativa" lead="Si ya sabes qué te gusta, empieza por aquí." />
+    <div class="grid items-start gap-12 lg:grid-cols-[1.45fr_1fr] lg:gap-16">
+      <ul class="border-t border-cream/12" data-reveal>
+        {rows.map((f, i) => (
+          <li class="fam-row border-b border-cream/12" data-row={i}>
+            <a href={`/productos/?familia=${encodeURIComponent(f.id)}`} class="group/row grid grid-cols-[2.5rem_1fr_auto] items-center gap-x-5 py-7 md:py-8">
+              <span class="font-sans text-xs tabular-nums text-mist">0{i + 1}</span>
+              <span class="flex min-w-0 flex-col gap-2">
+                <span class="fam-name font-serif text-[clamp(2.1rem,4.4vw,3.8rem)] leading-none transition-colors duration-500">{f.id}</span>
+                <span class="text-sm text-mist">{f.blurb} · {f.items.map((p) => p.name).join(' · ')}</span>
+              </span>
+              <span class="fam-arrow flex size-12 items-center justify-center rounded-full border border-cream/20 transition-[background-color,color,border-color] duration-500">
+                <Icon name="arrow-up-right" size={16} />
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <!-- preview: follows the hovered/focused row, stays in its column -->
+      <div class="sticky top-28 hidden overflow-hidden rounded-[22px] ring-1 ring-cream/10 lg:block" aria-hidden="true">
+        <div class="relative aspect-[4/5]">
+          {rows.map((f, i) => (
+            <div class="fam-preview absolute inset-0" data-preview={i}>
+              <Image src={f.items[0].img} alt="" widths={[480, 720]} sizes="34vw" loading="lazy" class="size-full object-cover" />
+              <div class="absolute inset-0" style={`background: linear-gradient(180deg, transparent 45%, ${f.tone}cc 100%)`}></div>
+              <div class="absolute inset-x-6 bottom-6 flex flex-col gap-1">
+                <span class="kicker text-cream/80">{f.items.length} {f.items.length === 1 ? 'fragancia' : 'fragancias'}</span>
+                <span class="font-serif text-3xl leading-tight">{f.items.map((p) => p.name).join(' · ')}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .fam-preview { opacity: 0; transform: scale(1.04); transition: opacity .6s var(--ease-silk), transform 1.2s var(--ease-out-expo); }
+  .fam-row .fam-name { color: var(--color-cream); }
+  /* the active row (hover / focus / default first) lights up and drives the preview */
+  [data-family-index][data-active='0'] [data-preview='0'],
+  [data-family-index][data-active='1'] [data-preview='1'],
+  [data-family-index][data-active='2'] [data-preview='2'],
+  [data-family-index][data-active='3'] [data-preview='3'] { opacity: 1; transform: none; }
+  @media (hover: hover) {
+    .fam-row:hover .fam-name, .fam-row:focus-within .fam-name { color: var(--color-gold); }
+    .fam-row:hover .fam-arrow, .fam-row:focus-within .fam-arrow { background: var(--color-cream); color: var(--color-plum); border-color: var(--color-cream); }
+  }
+</style>
+
+<script>
+  function initFamilyIndex() {
+    const root = document.querySelector<HTMLElement>('[data-family-index]');
+    root?.querySelectorAll<HTMLElement>('[data-row]').forEach((row) => {
+      const activate = () => (root.dataset.active = row.dataset.row);
+      row.addEventListener('pointerenter', activate);
+      row.addEventListener('focusin', activate);
+    });
+  }
+  document.addEventListener('astro:page-load', initFamilyIndex);
+</script>

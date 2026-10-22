@@ -1,0 +1,58 @@
+---
+import Base from '../layouts/Base.astro';
+import Faq from '../components/ui/Faq.astro';
+import Icon from '../components/ui/Icon.astro';
+import PaymentBadges from '../components/ui/PaymentBadges.astro';
+import { FAQ, faqJsonLd } from '../data/faq';
+
+const steps = [
+  { n: '01', title: 'Elige tu perfume', text: 'Explora la colección y elige formato: decant de 3 ml, 5 ml o frasco de 100 ml.' },
+  { n: '02', title: 'Confirma y paga', text: 'Agrégalo a tu bolsa y finaliza por WhatsApp. Pagas con Yape, Plin, tarjeta o en cuotas con Powerpay.' },
+  { n: '03', title: 'Recíbelo', text: 'Lo preparamos en 24 a 48 horas hábiles y lo enviamos con seguimiento.' },
+];
+const pay = [
+  { icon: 'bag', title: 'Tarjeta', text: 'Crédito o débito mediante enlace de pago seguro.' },
+  { icon: 'cash', title: 'Yape y Plin', text: 'Paga al instante desde tu celular; te enviamos el número por WhatsApp.' },
+  { icon: 'chat', title: 'Cuotas con Powerpay', text: 'Divide tu compra en cuotas. Te enviamos el enlace de pago por WhatsApp.' },
+  { icon: 'truck', title: 'Envío', text: 'A todo el país, con número de seguimiento.' },
+  { icon: 'shield', title: 'Embalaje', text: 'Protegido, con los decants sellados e identificados.' },
+] as const;
+---
+<Base title="Cómo comprar" description="Comprar en EJH PRIVÉ: elige tu perfume, confirma por WhatsApp y recíbelo en 24 a 48 horas hábiles. Pagos con Yape, Plin, tarjeta o cuotas con Powerpay." jsonLd={[faqJsonLd()]}>
+  <section aria-labelledby="h-how" class="wrap flex flex-col gap-4 pb-10 pt-12">
+    <p class="kicker" data-reveal-self>Cómo comprar</p>
+    <h1 id="h-how" class="display" data-split="load">Tres pasos, <em class="text-gold">sin vueltas.</em></h1>
+  </section>
+
+  <section aria-label="Pasos" class="wrap pb-[clamp(64px,8vw,104px)]">
+    <ol class="grid gap-4 md:grid-cols-3" data-reveal>
+      {steps.map((s) => (
+        <li class="flex flex-col gap-4 rounded-[22px] border border-cream/8 bg-graphite p-7 transition-[transform,border-color] duration-700 hover:-translate-y-1 hover:border-lilac/45">
+          <span class="font-serif text-6xl leading-none text-lilac">{s.n}</span>
+          <h2 class="text-3xl">{s.title}</h2>
+          <p class="leading-relaxed text-sand">{s.text}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section id="pagos" aria-labelledby="h-pay" class="on-cream surface-cream py-[clamp(64px,8vw,112px)] text-plum">
+    <div class="wrap grid gap-10 lg:grid-cols-[1fr_2fr]">
+      <div class="flex flex-col gap-4">
+        <h2 id="h-pay" class="h-section" data-split>Pagos y envíos</h2>
+        <p class="leading-relaxed text-[#4A3F52]">Te confirmamos precio y costo de envío antes de que pagues.</p>
+        <PaymentBadges class="mt-2" />
+      </div>
+      <ul class="grid gap-3 sm:grid-cols-2" data-reveal>
+        {pay.map((p) => (
+          <li class="flex flex-col gap-2 rounded-2xl bg-cream-2 p-6 sm:[&:last-child:nth-child(odd)]:col-span-2"><Icon name={p.icon} size={20} class="text-violet" /><strong class="mt-2 font-semibold">{p.title}</strong><span class="text-sm leading-relaxed text-[#4A3F52]">{p.text}</span></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section id="faq" aria-labelledby="h-faq" class="wrap max-w-[960px] py-[clamp(64px,8vw,112px)]">
+    <h2 id="h-faq" class="h-section mb-8" data-split>Preguntas frecuentes</h2>
+    <Faq items={FAQ} />
+  </section>
+</Base>

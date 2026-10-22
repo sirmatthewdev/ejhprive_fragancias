@@ -1,0 +1,230 @@
+---
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
+import Faq from '../components/ui/Faq.astro';
+import Icon from '../components/ui/Icon.astro';
+import BrandIcon from '../components/ui/BrandIcon.astro';
+import PaymentBadges from '../components/ui/PaymentBadges.astro';
+import Logo from '../components/ui/Logo.astro';
+import { bySlug } from '../data/products';
+import { FAQ } from '../data/faq';
+
+// living style guide: everything below renders the real components and tokens
+const colors = [
+  { name: 'Ink', token: 'ink', hex: '#070609', use: 'Footer' },
+  { name: 'Ónix', token: 'onyx', hex: '#0B0A0D', use: 'Fondo base' },
+  { name: 'Grafito', token: 'graphite', hex: '#131017', use: 'Sección alterna, superficies' },
+  { name: 'Ciruela', token: 'plum', hex: '#1A1320', use: 'Texto sobre crema, botón oscuro' },
+  { name: 'Violeta', token: 'violet', hex: '#5B3A8E', use: 'Acento sobre crema, CTA de decant' },
+  { name: 'Lila', token: 'lilac', hex: '#C9B6E4', use: 'Kickers, foco, cursor' },
+  { name: 'Crema', token: 'cream', hex: '#F1E8D8', use: 'Texto principal, CTA, sección clara' },
+  { name: 'Crema 2', token: 'cream-2', hex: '#E7DCC8', use: 'Tarjetas sobre crema' },
+  { name: 'Oro', token: 'gold', hex: '#E4D3BC', use: 'Énfasis en títulos (cursiva)' },
+  { name: 'Arena', token: 'sand', hex: '#CDBFA8', use: 'Texto secundario' },
+  { name: 'Niebla', token: 'mist', hex: '#9D93A8', use: 'Texto terciario, metadatos' },
+];
+// WCAG contrast ratio against a background
+const lum = (hex: string) => {
+  const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+};
+const ratio = (a: string, b: string) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return ((x + 0.05) / (y + 0.05)).toFixed(1); };
+const pairs = [
+  ['#F1E8D8', '#0B0A0D', 'Crema / Ónix'], ['#CDBFA8', '#0B0A0D', 'Arena / Ónix'], ['#9D93A8', '#0B0A0D', 'Niebla / Ónix'],
+  ['#C9B6E4', '#0B0A0D', 'Lila / Ónix'], ['#1A1320', '#F1E8D8', 'Ciruela / Crema'], ['#5B3A8E', '#F1E8D8', 'Violeta / Crema'],
+];
+const icons = ['arrow', 'arrow-up-right', 'bag', 'search', 'user', 'menu', 'close', 'chevron', 'plus', 'drop', 'shield', 'truck', 'chat', 'mail', 'bank', 'cash'] as const;
+const motion = [
+  { attr: 'data-split', what: 'Titulares que aparecen línea por línea desde una máscara', where: 'Todos los h1/h2' },
+  { attr: 'data-reveal', what: 'Los hijos entran en cascada (fade + subida)', where: 'Grillas, listas' },
+  { attr: 'data-clip', what: 'Cortina que descubre la imagen con zoom-out', where: 'Fotos editoriales' },
+  { attr: 'data-parallax', what: 'La imagen se desplaza más lento que el scroll', where: 'Categorías, casas' },
+  { attr: 'data-magnetic', what: 'El botón sigue levemente al puntero', where: 'CTA principales' },
+  { attr: 'data-cursor', what: 'El cursor se agranda y muestra una etiqueta', where: 'Imágenes, tarjetas' },
+];
+const sections = ['Marca', 'Color', 'Tipografía', 'Botones', 'Etiquetas', 'Íconos', 'Formularios', 'Tarjetas', 'Acordeón', 'Movimiento'];
+const field = 'h-[52px] rounded-xl border border-cream/16 bg-graphite px-4 text-cream placeholder:text-mist focus:border-lilac focus:outline-none';
+---
+<Base title="Sistema de diseño" noindex>
+  <div class="wrap grid gap-12 py-12 lg:grid-cols-[200px_1fr]">
+    <nav aria-label="Secciones del sistema" class="lg:sticky lg:top-32 lg:self-start">
+      <p class="kicker mb-4">Sistema</p>
+      <ol class="flex flex-wrap gap-x-4 gap-y-2 text-sm text-sand lg:flex-col">
+        {sections.map((s, i) => <li><a class="link-u hover:text-cream" href={`#s-${i}`}><span class="mr-2 text-xs text-mist">{String(i + 1).padStart(2, '0')}</span>{s}</a></li>)}
+      </ol>
+    </nav>
+
+    <div class="flex min-w-0 flex-col gap-24">
+      <header class="flex flex-col gap-4 border-b border-cream/10 pb-12">
+        <h1 class="display" data-split="load">Sistema <em class="text-gold">EJH PRIVÉ.</em></h1>
+        <p class="max-w-[40rem] leading-relaxed text-sand">Tokens y componentes reales del sitio. Todo lo que ves aquí se renderiza con el mismo código que la tienda, así que cualquier cambio se refleja en ambos lados.</p>
+      </header>
+
+      <!-- 01 brand -->
+      <section id="s-0" aria-labelledby="h-s0" class="scroll-mt-32">
+        <h2 id="h-s0" class="h-section mb-8">Marca</h2>
+        <div class="grid gap-4 md:grid-cols-3">
+          <div class="flex h-48 items-center justify-center rounded-2xl bg-onyx ring-1 ring-cream/10"><Logo size="lg" /></div>
+          <div class="flex h-48 items-center justify-center rounded-2xl bg-cream [&_a]:text-plum [&_a_span:last-child]:text-violet"><Logo size="lg" /></div>
+          <div class="flex h-48 items-center justify-center rounded-2xl bg-[linear-gradient(120deg,#3B2150,#5B3A8E)]"><Logo size="lg" /></div>
+        </div>
+        <p class="mt-4 text-sm text-mist">Logotipo tipográfico: «EJH» en Cormorant Garamond con tracking 0.34em; «PRIVÉ» en Manrope 9px, tracking 0.55em, lila.</p>
+      </section>
+
+      <!-- 02 color -->
+      <section id="s-1" aria-labelledby="h-s1" class="scroll-mt-32">
+        <h2 id="h-s1" class="h-section mb-8">Color</h2>
+        <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" data-reveal>
+          {colors.map((c) => (
+            <li class="overflow-hidden rounded-2xl ring-1 ring-cream/10">
+              <div class="h-24" style={`background:${c.hex}`}></div>
+              <div class="flex flex-col gap-1 bg-graphite p-4 text-sm">
+                <span class="flex justify-between"><strong class="font-semibold">{c.name}</strong><code class="text-xs text-mist">{c.hex}</code></span>
+                <code class="text-xs text-lilac">bg-{c.token} · text-{c.token}</code>
+                <span class="text-xs text-mist">{c.use}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <h3 class="mb-4 mt-10 font-sans text-[13px] font-semibold uppercase tracking-[0.16em]">Contraste (WCAG)</h3>
+        <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {pairs.map(([fg, bg, label]) => {
+            const r = Number(ratio(fg, bg));
+            return (
+              <li class="flex items-center justify-between rounded-2xl p-5" style={`background:${bg};color:${fg}`}>
+                <span class="flex flex-col"><span class="font-serif text-3xl">Aa</span><span class="text-xs opacity-80">{label}</span></span>
+                <span class="text-right"><span class="block text-2xl font-semibold">{r}:1</span><span class="text-[11px] font-bold uppercase tracking-[0.14em]">{r >= 7 ? 'AAA' : r >= 4.5 ? 'AA' : r >= 3 ? 'AA grande' : 'No apto'}</span></span>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <!-- 03 type -->
+      <section id="s-2" aria-labelledby="h-s2" class="scroll-mt-32">
+        <h2 id="h-s2" class="h-section mb-8">Tipografía</h2>
+        <dl class="divide-y divide-cream/10 border-y border-cream/10">
+          <div class="grid gap-2 py-6 md:grid-cols-[180px_1fr]"><dt class="text-xs text-mist">Display · .display<br />Cormorant 500 · clamp(42–102px)</dt><dd class="display">El arte de llevar <em class="text-gold">una firma.</em></dd></div>
+          <div class="grid gap-2 py-6 md:grid-cols-[180px_1fr]"><dt class="text-xs text-mist">Sección · .h-section<br />clamp(34–58px)</dt><dd class="h-section">Pirámide olfativa</dd></div>
+          <div class="grid gap-2 py-6 md:grid-cols-[180px_1fr]"><dt class="text-xs text-mist">Título de tarjeta<br />Cormorant 26px</dt><dd class="font-serif text-[1.65rem]">Odyssey Mandarin Sky</dd></div>
+          <div class="grid gap-2 py-6 md:grid-cols-[180px_1fr]"><dt class="text-xs text-mist">Kicker · .kicker<br />Manrope 700 · 12px · 0.22em</dt><dd class="kicker">Perfumería árabe · 100% original</dd></div>
+          <div class="grid gap-2 py-6 md:grid-cols-[180px_1fr]"><dt class="text-xs text-mist">Cuerpo<br />Manrope 400 · 16px · 1.7</dt><dd class="max-w-[60ch] leading-relaxed text-[#D8CCB8]">Fraccionamos cada fragancia directamente del frasco original, en atomizadores de vidrio sellados y etiquetados con nombre, volumen y lote.</dd></div>
+          <div class="grid gap-2 py-6 md:grid-cols-[180px_1fr]"><dt class="text-xs text-mist">Meta<br />Manrope 13px · niebla</dt><dd class="text-[13px] text-mist">Canela · Dátiles · Vainilla</dd></div>
+        </dl>
+      </section>
+
+      <!-- 04 buttons -->
+      <section id="s-3" aria-labelledby="h-s3" class="scroll-mt-32">
+        <h2 id="h-s3" class="h-section mb-8">Botones</h2>
+        <div class="grid gap-4 md:grid-cols-2">
+          <div class="flex flex-wrap items-center gap-3 rounded-2xl bg-onyx p-8 ring-1 ring-cream/10">
+            <a href="#s-3" class="btn btn-cream btn-fill" data-magnetic>Primario <Icon name="arrow" size={16} /></a>
+            <a href="#s-3" class="btn btn-ghost" data-magnetic>Secundario</a>
+            <a href="#s-3" class="btn btn-violet btn-fill">Decant</a>
+            <p class="w-full text-xs text-mist">.btn + .btn-cream / .btn-ghost / .btn-violet · .btn-fill = relleno lila al pasar el mouse · data-magnetic</p>
+          </div>
+          <div class="on-cream flex flex-wrap items-center gap-3 rounded-2xl bg-cream p-8 text-plum">
+            <a href="#s-3" class="btn btn-plum btn-fill" data-magnetic>Sobre crema <Icon name="arrow" size={16} /></a>
+            <a href="#s-3" class="link-u text-sm font-semibold text-violet">Enlace subrayado</a>
+            <p class="w-full text-xs text-dust">.btn-plum en secciones claras · .link-u = subrayado que entra de izquierda a derecha</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 05 chips -->
+      <section id="s-4" aria-labelledby="h-s4" class="scroll-mt-32">
+        <h2 id="h-s4" class="h-section mb-8">Etiquetas y medios de pago</h2>
+        <div class="flex flex-col gap-6 rounded-2xl bg-graphite p-8">
+          <div class="flex flex-wrap gap-2">
+            <span class="chip border border-lilac/35 bg-onyx/70 text-[#E5D9F5]">Más vendido</span>
+            <span class="chip border border-cream/20 bg-onyx/60">3 ml</span>
+            <span class="chip border border-cream/20 bg-onyx/60">5 ml</span>
+            <span class="chip bg-cream text-plum">100 ml</span>
+            <span class="chip bg-cream/12 ring-1 ring-cream/20">Vainilla</span>
+          </div>
+          <PaymentBadges />
+          <ul class="flex gap-2" aria-label="Redes">
+            {(['instagram', 'tiktok', 'whatsapp'] as const).map((n) => <li class="flex size-11 items-center justify-center rounded-full border border-cream/15"><BrandIcon name={n} size={17} /></li>)}
+          </ul>
+        </div>
+      </section>
+
+      <!-- 06 icons -->
+      <section id="s-5" aria-labelledby="h-s5" class="scroll-mt-32">
+        <h2 id="h-s5" class="h-section mb-8">Íconos</h2>
+        <ul class="grid grid-cols-4 gap-2 sm:grid-cols-8">
+          {icons.map((n) => (
+            <li class="flex flex-col items-center gap-2 rounded-xl bg-graphite py-5 text-[10px] text-mist"><Icon name={n} size={22} class="text-cream" />{n}</li>
+          ))}
+        </ul>
+        <p class="mt-4 text-sm text-mist">Trazo 1.6 px, extremos redondeados, 24×24. Los íconos de marca vienen de simple-icons.</p>
+      </section>
+
+      <!-- 07 forms -->
+      <section id="s-6" aria-labelledby="h-s6" class="scroll-mt-32">
+        <h2 id="h-s6" class="h-section mb-8">Formularios</h2>
+        <div class="grid gap-4 md:grid-cols-2">
+          <form class="flex flex-col gap-4 rounded-2xl bg-graphite/60 p-8 ring-1 ring-cream/10" onsubmit="event.preventDefault()">
+            <label class="flex flex-col gap-2 text-[13px] font-semibold">Correo electrónico<input class={field} type="email" placeholder="tu@correo.com" /></label>
+            <label class="flex items-center gap-3 text-[13px] text-mist">Ordenar
+              <select class="h-10 rounded-full border border-cream/16 bg-graphite px-4 text-cream"><option>Destacados</option></select>
+            </label>
+          </form>
+          <div class="flex flex-col gap-4 rounded-2xl bg-graphite/60 p-8 ring-1 ring-cream/10">
+            <div class="inline-flex self-start rounded-full border border-cream/10 bg-graphite p-1">
+              <span class="flex h-10 items-center rounded-full bg-cream px-5 text-[13px] font-semibold text-plum">Frascos 100 ml</span>
+              <span class="flex h-10 items-center px-5 text-[13px] font-semibold text-sand">Decants 3 · 5 ml</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2.5">
+              {[['3 ml', 'Decant'], ['5 ml', 'Decant'], ['100 ml', 'Frasco']].map(([s, k], i) => (
+                <span class:list={['flex flex-col gap-1 rounded-2xl border p-3.5', i === 1 ? 'border-cream bg-cream text-plum' : 'border-cream/14 bg-graphite']}><span class="font-serif text-[1.6rem] leading-none">{s}</span><span class="text-xs opacity-80">{k}</span></span>
+              ))}
+            </div>
+            <p class="text-xs text-mist">Segmento de formato y selector de la ficha (estado activo en crema).</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 08 cards -->
+      <section id="s-7" aria-labelledby="h-s7" class="scroll-mt-32">
+        <h2 id="h-s7" class="h-section mb-8">Tarjeta de producto</h2>
+        <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          <ProductCard p={bySlug('khamrah')!} />
+          <ProductCard p={bySlug('hawas-ice')!} variant="decant" />
+          <div class="flex flex-col justify-center gap-3 text-sm leading-relaxed text-mist">
+            <p><strong class="text-cream">Variante frasco / decant</strong> (prop <code>variant</code>).</p>
+            <p>Al pasar el mouse: zoom lento, cambio a la segunda foto, cursor «Ver» y flecha «Ver».</p>
+            <p>Semántica: <code>article</code> con un solo enlace extendido; los formatos van en una lista.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 09 accordion -->
+      <section id="s-8" aria-labelledby="h-s8" class="scroll-mt-32">
+        <h2 id="h-s8" class="h-section mb-8">Acordeón</h2>
+        <Faq items={FAQ.slice(0, 3)} />
+      </section>
+
+      <!-- 10 motion -->
+      <section id="s-9" aria-labelledby="h-s9" class="scroll-mt-32">
+        <h2 id="h-s9" class="h-section mb-8" data-split>Movimiento</h2>
+        <div class="mb-8 grid gap-4 md:grid-cols-2">
+          <div class="relative aspect-[16/10] overflow-hidden rounded-2xl" data-clip data-cursor="Ver">
+            <img src="/media/hero-poster.jpg" alt="Ejemplo de revelado tipo cortina" class="size-full object-cover" loading="lazy" />
+          </div>
+          <div class="flex flex-col justify-center gap-3 rounded-2xl bg-graphite p-8 text-sm text-sand">
+            <p><strong class="text-cream">Curva principal:</strong> <code>expo.out</code> / <code>cubic-bezier(.16,1,.3,1)</code>.</p>
+            <p><strong class="text-cream">Duraciones:</strong> 0.5 s en hover, 1.1–1.5 s en revelados, 0.7 s entre páginas.</p>
+            <p><strong class="text-cream">Accesibilidad:</strong> con «reducir movimiento» todo queda estático y el contenido visible.</p>
+          </div>
+        </div>
+        <table class="w-full text-left text-sm">
+          <thead class="text-xs uppercase tracking-[0.14em] text-mist"><tr><th class="py-3 font-semibold">Atributo</th><th class="py-3 font-semibold">Efecto</th><th class="hidden py-3 font-semibold md:table-cell">Dónde</th></tr></thead>
+          <tbody class="divide-y divide-cream/10 border-t border-cream/10">
+            {motion.map((m) => <tr><td class="py-4 pr-4"><code class="text-lilac">{m.attr}</code></td><td class="py-4 pr-4 text-sand">{m.what}</td><td class="hidden py-4 text-mist md:table-cell">{m.where}</td></tr>)}
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+</Base>

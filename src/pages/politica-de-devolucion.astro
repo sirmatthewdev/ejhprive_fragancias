@@ -1,0 +1,30 @@
+---
+import Base from '../layouts/Base.astro';
+
+const sections = [
+  { id: 'devoluciones', title: 'Cambios y devoluciones', body: ['[Plazo y condiciones a confirmar por EJH PRIVÉ.]', 'Por razones de higiene, los decants y los frascos abiertos solo se aceptan si presentan una falla de origen. Los frascos sellados pueden devolverse en su empaque original y sin uso.'] },
+  { id: 'reclamaciones', title: 'Libro de Reclamaciones', body: ['Conforme al Código de Protección y Defensa del Consumidor (Ley N.º 29571), ponemos a tu disposición un Libro de Reclamaciones virtual. Al registrar tu reclamo o queja recibes un número de hoja y te respondemos en un plazo máximo de 15 días hábiles.'], link: { href: '/libro-de-reclamaciones/', label: 'Ir al Libro de Reclamaciones' } },
+  { id: 'terminos', title: 'Términos y condiciones', body: ['[Términos de venta a redactar con asesoría legal de EJH PRIVÉ: precios en soles (S/), disponibilidad, medios de pago y envíos.]'] },
+  { id: 'privacidad', title: 'Privacidad', body: ['Usamos tus datos de contacto solo para gestionar tu pedido y, si lo aceptas, enviarte novedades. No los compartimos con terceros. Puedes ejercer tus derechos de acceso, rectificación, cancelación y oposición escribiéndonos, conforme a la Ley N.º 29733 de Protección de Datos Personales y su reglamento.'] },
+];
+---
+<Base title="Cambios, devoluciones y legales" description="Cambios y devoluciones, Libro de Reclamaciones, términos y privacidad de EJH PRIVÉ.">
+  <div class="wrap grid gap-12 py-[clamp(48px,7vw,104px)] lg:grid-cols-[260px_1fr]">
+    <nav aria-label="En esta página" class="lg:sticky lg:top-32 lg:self-start">
+      <p class="kicker mb-4">Legales</p>
+      <ul class="flex flex-col gap-2 text-sm text-sand">
+        {sections.map((s) => <li><a href={`#${s.id}`} class="link-u hover:text-cream">{s.title}</a></li>)}
+      </ul>
+    </nav>
+    <article class="max-w-[68ch]">
+      <h1 class="mb-12 text-[clamp(2.6rem,5vw,4.2rem)] leading-none" data-split="load">Cambios y legales</h1>
+      {sections.map((s) => (
+        <section id={s.id} aria-labelledby={`h-${s.id}`} class="scroll-mt-32 border-t border-cream/10 py-10">
+          <h2 id={`h-${s.id}`} class="mb-4 text-3xl">{s.title}</h2>
+          {s.body.map((p) => <p class="mb-4 leading-[1.8] text-[#D8CCB8]">{p}</p>)}
+          {s.link && <a href={s.link.href} class="btn btn-cream btn-fill mt-2">{s.link.label}</a>}
+        </section>
+      ))}
+    </article>
+  </div>
+</Base>

@@ -1,0 +1,12 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/ui/Icon.astro';
+---
+<Base title="Página no encontrada" noindex>
+  <section class="wrap flex min-h-[70vh] flex-col items-center justify-center gap-6 text-center">
+    <p class="kicker">Error 404</p>
+    <h1 class="display" data-split="load">Esta nota <em class="text-gold">se evaporó.</em></h1>
+    <p class="max-w-[28rem] text-sand">La página que buscas no existe o cambió de lugar.</p>
+    <a href="/productos/" class="btn btn-cream btn-fill" data-magnetic>Ver la colección <Icon name="arrow" size={16} /></a>
+  </section>
+</Base>

@@ -1,0 +1,149 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './ui/Icon.astro';
+import Logo from './ui/Logo.astro';
+import CartButton from './islands/CartButton';
+import { NAV } from '../config/site';
+import { products, productUrl, FAMILIES } from '../data/products';
+
+interface Props { overlay?: boolean }
+const { overlay = false } = Astro.props;
+const path = Astro.url.pathname;
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href.replace(/#.*/, '')) && !href.includes('#'));
+---
+<header
+  data-header
+  data-overlay={overlay ? '' : undefined}
+  class="group/h fixed inset-x-0 top-0 z-50 text-cream transition-transform duration-700 ease-[var(--ease-out-expo)] data-[hidden]:-translate-y-full"
+>
+  <a href="#contenido" class="sr-only-focusable absolute left-4 top-2 z-10 rounded-full bg-cream px-4 py-2 text-sm font-semibold text-plum">Saltar al contenido</a>
+
+  <!-- announcement collapses once the page scrolls -->
+  <div class="grid grid-rows-[1fr] transition-[grid-template-rows] duration-500 group-data-[scrolled]/h:grid-rows-[0fr]">
+    <div class="overflow-hidden">
+      <p class="flex h-9 items-center justify-center gap-5 border-b border-cream/[0.07] bg-ink/55 text-[10.5px] font-medium uppercase tracking-[0.22em] text-sand backdrop-blur-xl backdrop-saturate-150">
+        <span>Decants de 3 y 5 ml</span>
+        <span class="hidden text-[8px] text-lilac/80 sm:inline" aria-hidden="true">✦</span>
+        <span class="hidden sm:inline">Fragancias 100% originales</span>
+        <span class="hidden text-[8px] text-lilac/80 md:inline" aria-hidden="true">✦</span>
+        <span class="hidden md:inline">Envíos a todo el Perú</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="relative border-b border-transparent transition-[background-color,border-color,backdrop-filter] duration-500 group-data-[scrolled]/h:border-cream/10 group-data-[scrolled]/h:bg-onyx/80 group-data-[scrolled]/h:backdrop-blur-xl group-[:not([data-overlay])]/h:bg-onyx group-[:not([data-overlay])]/h:border-cream/10">
+    <div class="wrap grid h-[72px] grid-cols-[1fr_auto_1fr] items-center gap-4">
+      <div class="flex items-center">
+        <button type="button" data-menu-open class="-ml-2.5 flex size-11 items-center justify-center lg:hidden" aria-label="Abrir menú" aria-controls="menu-m" aria-expanded="false">
+          <Icon name="menu" size={22} stroke={1.5} />
+        </button>
+        <nav aria-label="Principal" class="hidden lg:block">
+          <ul class="flex items-center gap-1">
+            {NAV.slice(0, 5).map((n) => (
+              <li class={n.label === 'Productos' ? 'group/mega' : undefined}>
+                <a
+                  href={n.href}
+                  aria-current={isActive(n.href) ? 'page' : undefined}
+                  class="link-u mx-3 inline-flex items-center gap-1 py-2 text-[13.5px] tracking-[0.02em] text-sand transition-colors hover:text-cream aria-[current=page]:text-cream"
+                >
+                  {n.label}
+                  {n.label === 'Productos' && <Icon name="chevron" size={12} stroke={2} class="transition-transform duration-500 group-hover/mega:rotate-180" />}
+                </a>
+                {n.label === 'Productos' && (
+                  <div class="mega invisible absolute inset-x-0 top-full -translate-y-2 border-y border-cream/10 bg-graphite/95 opacity-0 shadow-[0_40px_80px_rgb(0_0_0/.55)] backdrop-blur-xl transition-[opacity,transform,visibility] duration-500 ease-[var(--ease-out-expo)] group-hover/mega:visible group-hover/mega:translate-y-0 group-hover/mega:opacity-100 group-focus-within/mega:visible group-focus-within/mega:translate-y-0 group-focus-within/mega:opacity-100">
+                    <div class="wrap grid grid-cols-[1fr_1fr_2.2fr] gap-10 py-10">
+                      <div class="flex flex-col gap-3">
+                        <p class="kicker">Formato</p>
+                        <a class="link-u self-start text-[15px] text-sand hover:text-cream" href="/productos/?formato=frasco">Frascos 100 ml</a>
+                        <a class="link-u self-start text-[15px] text-sand hover:text-cream" href="/productos/?formato=decant">Decants 3 y 5 ml</a>
+                        <a class="link-u self-start text-[15px] text-sand hover:text-cream" href="/#decants">Cómo funcionan los decants</a>
+                      </div>
+                      <div class="flex flex-col gap-3">
+                        <p class="kicker">Familia</p>
+                        {FAMILIES.map((f) => <a class="link-u self-start text-[15px] text-sand hover:text-cream" href={`/productos/?familia=${encodeURIComponent(f.id)}`}>{f.id}</a>)}
+                      </div>
+                      <ul class="grid grid-cols-2 gap-x-3 gap-y-1">
+                        {products.map((p) => (
+                          <li>
+                            <a href={productUrl(p)} class="group/t flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-cream/5">
+                              <Image src={p.img} alt="" width={96} height={120} class="h-15 w-12 rounded-lg object-cover" />
+                              <span class="flex min-w-0 flex-col">
+                                <span class="text-[10px] font-bold uppercase tracking-[0.16em] text-lilac">{p.brand}</span>
+                                <span class="font-serif text-lg leading-tight">{p.name}</span>
+                              </span>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+
+      <Logo />
+
+      <div class="flex items-center justify-end gap-0.5">
+        <button type="button" class="flex size-11 items-center justify-center" aria-label="Buscar fragancias" aria-haspopup="dialog" aria-controls="search" data-search-open><Icon name="search" size={20} stroke={1.5} /></button>
+        <a href="/cuenta/" class="hidden size-11 items-center justify-center sm:flex" aria-label="Acceso al panel"><Icon name="user" size={20} stroke={1.5} /></a>
+        <CartButton client:load />
+      </div>
+    </div>
+  </div>
+</header>
+
+<dialog id="menu-m" data-menu class="m-0 h-dvh max-h-none w-full max-w-none bg-onyx p-0 text-cream backdrop:bg-black/60 open:flex open:flex-col">
+  <div class="wrap flex h-[72px] items-center justify-between">
+    <Logo />
+    <button type="button" data-menu-close class="-mr-2.5 flex size-11 items-center justify-center" aria-label="Cerrar menú"><Icon name="close" size={22} stroke={1.5} /></button>
+  </div>
+  <nav aria-label="Menú móvil" class="wrap flex flex-1 flex-col justify-center gap-1">
+    {NAV.map((n, i) => (
+      <a href={n.href} class="menu-item flex items-baseline justify-between border-b border-cream/10 py-4 font-serif text-[2.4rem] leading-none" style={`--i:${i}`}>
+        {n.label}<span class="font-sans text-xs text-mist">0{i + 1}</span>
+      </a>
+    ))}
+  </nav>
+  <div class="wrap flex flex-col gap-3 pb-8 text-sm text-sand">
+    <a class="btn btn-cream" href="/productos/?formato=decant">Probar con un decant</a>
+  </div>
+</dialog>
+
+<style>
+  /* close the mega menu with a short grace period so a diagonal move toward the panel doesn't drop it */
+  .mega { transition-delay: 280ms; }
+  :global(.group\/mega:hover) .mega, :global(.group\/mega:focus-within) .mega { transition-delay: 0ms; }
+  .menu-item { opacity: 0; transform: translateY(24px); }
+  dialog[open] .menu-item { animation: menu-in .8s var(--ease-out-expo) both; animation-delay: calc(var(--i) * 60ms + 120ms); }
+  @keyframes menu-in { to { opacity: 1; transform: none; } }
+</style>
+
+<script>
+  // Header: solid after scrolling, hides on scroll down, returns on scroll up. Re-binds after each view transition.
+  function initHeader() {
+    const h = document.querySelector<HTMLElement>('[data-header]');
+    if (!h) return;
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      h.toggleAttribute('data-scrolled', y > 24);
+      h.toggleAttribute('data-hidden', y > 320 && y > last + 4 && !h.matches(':focus-within'));
+      if (y < last - 4) h.removeAttribute('data-hidden');
+      last = y;
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    document.addEventListener('astro:before-swap', () => window.removeEventListener('scroll', onScroll), { once: true });
+
+    const dlg = document.querySelector<HTMLDialogElement>('[data-menu]');
+    const open = document.querySelector<HTMLButtonElement>('[data-menu-open]');
+    open?.addEventListener('click', () => { dlg?.showModal(); open.setAttribute('aria-expanded', 'true'); });
+    dlg?.querySelector('[data-menu-close]')?.addEventListener('click', () => dlg.close());
+    dlg?.addEventListener('close', () => open?.setAttribute('aria-expanded', 'false'));
+    dlg?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => dlg.close()));
+  }
+  document.addEventListener('astro:page-load', initHeader);
+</script>

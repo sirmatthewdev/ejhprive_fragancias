@@ -1,0 +1,203 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
+import Icon from '../../components/ui/Icon.astro';
+import { products as allProducts, FAMILIES } from '../../data/products';
+import { getCatalog, liveOf } from '../../lib/cms';
+
+export const prerender = false; // live prices and stock from the CMS
+const catalog = await getCatalog();
+const products = allProducts.filter((p) => liveOf(catalog, p.slug).active);
+// accent-free, lowercase text the client-side search matches against
+const searchText = (p: (typeof products)[number]) =>
+  [p.brand, p.name, p.family, p.familyLabel, p.accord, ...p.notes.top, ...p.notes.heart, ...p.notes.base]
+    .join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+const chip = 'h-10 rounded-full border px-4 text-[13px] font-medium transition-[background-color,color,border-color] duration-400 border-cream/16 text-sand hover:border-cream/40 aria-pressed:border-lilac aria-pressed:bg-lilac/18 aria-pressed:text-cream';
+const seg = 'h-10 rounded-full px-5 text-[13px] font-semibold tracking-[0.02em] text-sand transition-colors duration-400 aria-pressed:bg-cream aria-pressed:text-plum';
+---
+<Base title="Productos" description="Seis fragancias árabes originales en frasco de 100 ml o decants de 3 y 5 ml: Khamrah, Khamrah Qahwa, 9 PM, Odyssey Mandarin Sky, Odyssey Spectra y Hawas Ice.">
+  <section aria-labelledby="h-cat" class="bg-[linear-gradient(180deg,#170E1D,#0B0A0D)]">
+    <div class="wrap flex flex-col gap-4 pb-8 pt-10">
+      <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Productos' }]} />
+      <h1 id="h-cat" class="text-[clamp(2.6rem,5.4vw,4.6rem)] leading-none" data-split="load">Productos</h1>
+      <p class="max-w-[36rem] leading-relaxed text-sand" data-reveal-self="0.2">Seis fragancias originales. Elige el formato: frasco de 100 ml o decants de 3 y 5 ml preparados del frasco original.</p>
+    </div>
+  </section>
+
+  <section aria-label="Filtros y resultados" class="wrap pb-24" data-catalog>
+    <div data-toolbar class="sticky top-[72px] z-20 -mx-[clamp(16px,4vw,40px)] mb-8 transition-[top] duration-700 ease-[var(--ease-out-expo)] flex flex-wrap items-center gap-3 border-b border-cream/10 bg-onyx px-[clamp(16px,4vw,40px)] py-3 shadow-[0_18px_30px_-20px_rgb(0_0_0/.8)]">
+      <div role="group" aria-label="Formato" class="inline-flex rounded-full border border-cream/10 bg-graphite p-1">
+        <button type="button" class={seg} data-format="frasco" aria-pressed="true">Frascos 100 ml</button>
+        <button type="button" class={seg} data-format="decant" aria-pressed="false">Decants 3 · 5 ml</button>
+      </div>
+      <div role="group" aria-label="Familia olfativa" class="flex flex-wrap gap-2">
+        <button type="button" class={chip} data-fam="Todas" aria-pressed="true">Todas</button>
+        {FAMILIES.map((f) => <button type="button" class={chip} data-fam={f.id} aria-pressed="false">{f.id}</button>)}
+      </div>
+      <div class="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:ml-auto">
+      <form role="search" class="relative w-full sm:w-auto" action="/productos/">
+        <label for="cat-q" class="sr-only">Buscar fragancia</label>
+        <input id="cat-q" name="q" type="search" data-search maxlength="60" autocomplete="off" placeholder="Buscar: vainilla, Lattafa…"
+          class="h-10 w-full rounded-full border border-cream/16 bg-graphite pl-10 pr-4 text-[13px] text-cream placeholder:text-mist focus:border-lilac focus:outline-none sm:w-48" />
+        <Icon name="search" size={16} class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-mist" />
+      </form>
+      <label class="flex items-center gap-3 text-[13px] text-mist">
+        <span class="sr-only">Ordenar</span>
+        <select data-sort class="h-10 rounded-full border border-cream/16 bg-graphite px-4 text-cream">
+          <option value="featured">Destacados</option>
+          <option value="name">Nombre A–Z</option>
+          <option value="brand">Marca</option>
+        </select>
+      </label>
+      </div>
+    </div>
+
+    <div class="mb-6 flex flex-wrap items-center gap-3">
+      <p class="text-[13px] text-mist" aria-live="polite" data-count>6 fragancias en frasco</p>
+      <button type="button" hidden data-brand-clear class="chip gap-2 border border-lilac/40 bg-lilac/12 text-cream hover:bg-lilac/20">
+        Marca: <span data-brand-label></span> <Icon name="close" size={12} stroke={2} /><span class="sr-only">Quitar filtro de marca</span>
+      </button>
+    </div>
+
+    <ul class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3" data-grid>
+      {products.map((p, i) => ['frasco', 'decant'].map((v) => (
+        <li data-item data-variant={v} data-family={p.family} data-name={p.name} data-brand={p.brand} data-order={i} data-search={searchText(p)} hidden={v === 'decant'}>
+          <ProductCard p={p} live={liveOf(catalog, p.slug)} variant={v as 'frasco' | 'decant'} priority={i < 3 && v === 'frasco'} headingLevel="h2" />
+        </li>
+      )))}
+    </ul>
+    <div class="hidden flex-col items-center gap-4 py-16 text-center" data-empty>
+      <p class="font-serif text-3xl">No encontramos fragancias con esos filtros</p>
+      <p class="text-sm text-mist">Prueba con otra familia o borra la búsqueda.</p>
+      <button type="button" class="btn btn-ghost h-11 px-5" data-reset>Ver todas</button>
+    </div>
+
+    <aside class="on-cream mt-20 flex flex-wrap items-center justify-between gap-6 rounded-[22px] bg-cream p-8 text-plum md:p-10" aria-labelledby="h-set">
+      <div class="flex max-w-[40rem] flex-col gap-2">
+        <p class="kicker">Set descubrimiento</p>
+        <h2 id="h-set" class="text-[clamp(1.8rem,3vw,2.4rem)] leading-tight">Elige 3 decants y pruébalos en casa</h2>
+      </div>
+      <button type="button" class="btn btn-plum btn-fill" data-format-jump="decant">Armar mi set <Icon name="arrow" size={16} /></button>
+    </aside>
+  </section>
+</Base>
+
+<script>
+  import { gsap } from '../../lib/motion';
+
+  const norm = (v: string) => v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+
+  function initCatalog() {
+    const root = document.querySelector<HTMLElement>('[data-catalog]');
+    if (!root) return;
+    const grid = root.querySelector<HTMLElement>('[data-grid]')!;
+    const items = [...grid.querySelectorAll<HTMLElement>('[data-item]')];
+    const count = root.querySelector('[data-count]')!;
+    const empty = root.querySelector<HTMLElement>('[data-empty]')!;
+    const sortSel = root.querySelector<HTMLSelectElement>('[data-sort]')!;
+    const search = root.querySelector<HTMLInputElement>('[data-search]')!;
+    const brandBtn = root.querySelector<HTMLButtonElement>('[data-brand-clear]')!;
+    const brandLabel = root.querySelector('[data-brand-label]')!;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // only accept values that exist on the page; anything else falls back to the default
+    const FAMS = [...root.querySelectorAll<HTMLElement>('[data-fam]')].map((b) => b.dataset.fam!);
+    const BRANDS = [...new Set(items.map((i) => i.dataset.brand!))];
+    const SORTS = [...sortSel.options].map((o) => o.value);
+    const pick = <T extends string>(v: string | null, allowed: T[], fallback: T) => (v && allowed.includes(v as T) ? (v as T) : fallback);
+    const params = new URL(location.href).searchParams;
+    const state = {
+      format: pick(params.get('formato'), ['frasco', 'decant'], 'frasco'),
+      fam: pick(params.get('familia'), FAMS, 'Todas'),
+      brand: pick<string>(params.get('marca'), BRANDS, ''),
+      sort: pick(params.get('orden'), SORTS, 'featured'),
+      q: (params.get('q') ?? '').slice(0, 60),
+    };
+    search.value = state.q;
+    sortSel.value = state.sort;
+
+    // every change gets a version; only the latest one is allowed to render
+    let version = 0;
+    const settle = () => {
+      gsap.killTweensOf([grid, ...items]);
+      gsap.set([grid, ...items], { clearProps: 'opacity,transform' });
+    };
+
+    const apply = (animate = true) => {
+      const v = ++version;
+      if (!animate || reduced) { settle(); render(); return; }
+      gsap.killTweensOf([grid, ...items]);
+      gsap.to(grid, {
+        opacity: 0, duration: 0.18, ease: 'power1.out',
+        onComplete: () => {
+          if (v !== version) return; // a newer filter already took over
+          render();
+          // keep the results in view if the grid shrank above the viewport
+          const top = grid.getBoundingClientRect().top;
+          if (top < 140) window.scrollTo({ top: window.scrollY + top - 160, behavior: 'instant' as ScrollBehavior });
+          const shown = items.filter((i) => !i.hidden);
+          gsap.set(grid, { opacity: 1 });
+          gsap.fromTo(shown, { opacity: 0, y: 18 }, {
+            opacity: 1, y: 0, duration: 0.5, ease: 'expo.out', stagger: 0.05,
+            onComplete: () => { if (v === version) settle(); },
+          });
+        },
+      });
+    };
+
+    const render = () => {
+      const key = state.sort === 'name' ? 'name' : state.sort === 'brand' ? 'brand' : 'order';
+      [...items]
+        .sort((a, b) => (key === 'order' ? +a.dataset.order! - +b.dataset.order! : a.dataset[key]!.localeCompare(b.dataset[key]!, 'es')))
+        .forEach((el) => grid.appendChild(el));
+      const q = norm(state.q);
+      let n = 0;
+      items.forEach((el) => {
+        const show = el.dataset.variant === state.format
+          && (state.fam === 'Todas' || el.dataset.family === state.fam)
+          && (!state.brand || el.dataset.brand === state.brand)
+          && (!q || q.split(/\s+/).every((w) => el.dataset.search!.includes(w)));
+        el.hidden = !show;
+        if (show) n++;
+      });
+
+      root.querySelectorAll<HTMLElement>('[data-format]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.format === state.format)));
+      root.querySelectorAll<HTMLElement>('[data-fam]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fam === state.fam)));
+      count.textContent = `${n} ${n === 1 ? 'fragancia' : 'fragancias'} en ${state.format}${state.q ? ` para «${state.q}»` : ''}`;
+      empty.classList.toggle('hidden', n > 0);
+      empty.classList.toggle('flex', n === 0);
+      brandBtn.hidden = !state.brand;
+      brandLabel.textContent = state.brand;
+
+      const url = new URL(location.href);
+      const set = (k: string, v: string, def: string) => (v && v !== def ? url.searchParams.set(k, v) : url.searchParams.delete(k));
+      set('formato', state.format, 'frasco'); set('familia', state.fam, 'Todas'); set('marca', state.brand, '');
+      set('orden', state.sort, 'featured'); set('q', state.q, '');
+      history.replaceState(history.state, '', url);
+    };
+
+    const on = (sel: string, fn: (b: HTMLElement) => void) => root.querySelectorAll<HTMLElement>(sel).forEach((b) => b.addEventListener('click', () => fn(b)));
+    const press = () => {
+      root.querySelectorAll<HTMLElement>('[data-format]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.format === state.format)));
+      root.querySelectorAll<HTMLElement>('[data-fam]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fam === state.fam)));
+    };
+    on('[data-format]', (b) => { if (state.format !== b.dataset.format) { state.format = b.dataset.format as 'frasco' | 'decant'; press(); apply(); } });
+    on('[data-fam]', (b) => { if (state.fam !== b.dataset.fam) { state.fam = b.dataset.fam!; press(); apply(); } });
+    on('[data-reset]', () => { Object.assign(state, { fam: 'Todas', brand: '', q: '' }); search.value = ''; apply(); });
+    brandBtn.addEventListener('click', () => { state.brand = ''; apply(); });
+    root.querySelector<HTMLElement>('[data-format-jump]')?.addEventListener('click', () => {
+      Object.assign(state, { format: 'decant', fam: 'Todas', brand: '', q: '' }); search.value = ''; apply();
+      grid.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    });
+    sortSel.addEventListener('change', () => { state.sort = pick(sortSel.value, SORTS, 'featured'); apply(); });
+    let t: number | undefined;
+    search.addEventListener('input', () => { clearTimeout(t); t = window.setTimeout(() => { state.q = search.value.slice(0, 60); apply(); }, 180); });
+    search.closest('form')?.addEventListener('submit', (e) => { e.preventDefault(); clearTimeout(t); state.q = search.value.slice(0, 60); apply(); });
+
+    apply(false);
+    document.addEventListener('astro:before-swap', () => { version++; settle(); }, { once: true });
+  }
+  document.addEventListener('astro:page-load', initCatalog);
+</script>

@@ -1,0 +1,73 @@
+---
+import Logo from './ui/Logo.astro';
+import BrandIcon from './ui/BrandIcon.astro';
+import PaymentBadges from './ui/PaymentBadges.astro';
+import Icon from './ui/Icon.astro';
+import { SITE, waLink } from '../config/site';
+
+const socials = ([
+  { name: 'instagram', label: 'Instagram', href: SITE.instagram },
+  { name: 'tiktok', label: 'TikTok', href: SITE.tiktok },
+  { name: 'whatsapp', label: 'WhatsApp', href: waLink() },
+] as const).filter((s) => s.href); // networks without a URL yet stay hidden
+
+const cols = [
+  { title: 'Tienda', links: [['Todos los perfumes', '/productos/'], ['Frascos 100 ml', '/productos/?formato=frasco'], ['Decants 3 y 5 ml', '/productos/?formato=decant'], ['Set descubrimiento', '/productos/?formato=decant']] },
+  { title: 'Ayuda', links: [['Cómo comprar', '/como-comprar/'], ['Envíos y pagos', '/como-comprar/#pagos'], ['Cambios y devoluciones', '/politica-de-devolucion/'], ['Libro de Reclamaciones', '/libro-de-reclamaciones/'], ['Contacto', '/contacto/']] },
+  { title: 'EJH PRIVÉ', links: [['Quiénes somos', '/nosotros/'], ['Acceso', '/cuenta/'], ['Preguntas frecuentes', '/como-comprar/#faq']] },
+];
+const year = new Date().getFullYear();
+---
+<footer class="relative overflow-hidden bg-ink text-sand">
+  <div class="wrap grid gap-12 pb-12 pt-20 md:grid-cols-[1.4fr_repeat(3,1fr)] md:gap-10">
+    <div class="flex max-w-xs flex-col gap-5">
+      <Logo size="lg" align="start" />
+      <p class="text-sm leading-relaxed text-mist">{SITE.description}</p>
+      <ul class="flex gap-2" aria-label="Redes sociales">
+        {socials.map((s) => (
+          <li>
+            <a href={s.href} target={s.href.startsWith('http') ? '_blank' : undefined} rel="noopener" aria-label={s.label}
+              class="flex size-11 items-center justify-center rounded-full border border-cream/15 text-cream transition-[background-color,color,border-color,transform] duration-500 hover:-translate-y-0.5 hover:border-cream hover:bg-cream hover:text-plum">
+              <BrandIcon name={s.name} size={17} />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+    {cols.map((c) => (
+      <nav aria-label={c.title} class="flex flex-col gap-1 text-sm md:gap-2.5">
+        <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-cream">{c.title}</p>
+        {c.links.map(([label, href]) => <a href={href} class="link-u self-start py-1.5 transition-colors hover:text-cream md:py-0.5">{label}</a>)}
+      </nav>
+    ))}
+  </div>
+
+  <div class="wrap">
+    <form class="grid items-end gap-6 border-t border-cream/10 py-10 md:grid-cols-[1fr_auto]" data-newsletter>
+      <div>
+        <p class="font-serif text-3xl text-cream">Lanzamientos y reposiciones, primero para ti.</p>
+        <p class="mt-2 text-sm text-mist">Un correo al mes. Sin spam.</p>
+      </div>
+      <div class="flex w-full max-w-md gap-2">
+        <label for="nl-mail" class="sr-only">Correo electrónico</label>
+        <input id="nl-mail" type="email" required autocomplete="email" placeholder="tu@correo.com"
+          class="h-12 min-w-0 flex-1 rounded-full border border-cream/20 bg-graphite px-5 text-cream placeholder:text-mist focus:border-lilac focus:outline-none" />
+        <button class="btn btn-cream h-12 px-6">Suscribirme</button>
+      </div>
+    </form>
+
+    <div class="flex flex-col gap-6 border-t border-cream/10 py-8 text-xs text-mist lg:flex-row lg:items-center lg:justify-between">
+      <PaymentBadges />
+      <nav aria-label="Legal" class="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <a class="link-u py-2 hover:text-cream" href="/politica-de-devolucion/#terminos">Términos y condiciones</a>
+        <a class="link-u py-2 hover:text-cream" href="/politica-de-devolucion/#privacidad">Privacidad</a>
+        <a href="/libro-de-reclamaciones/" class="inline-flex items-center gap-2 rounded-md border border-cream/20 px-3 py-2 text-cream transition-colors hover:border-cream hover:bg-cream hover:text-plum">
+          <Icon name="book" size={16} /> Libro de Reclamaciones
+        </a>
+      </nav>
+      <p class="lg:text-right">© {year} EJH PRIVÉ · {SITE.legal.businessName} · RUC {SITE.legal.ruc}</p>
+    </div>
+  </div>
+
+  <p aria-hidden="true" class="pointer-events-none select-none whitespace-nowrap text-center font-serif text-[16.5vw] leading-[0.78] tracking-[0.04em] -mb-[2vw] text-cream/[0.035]">EJH PRIVÉ</p>
+</footer>

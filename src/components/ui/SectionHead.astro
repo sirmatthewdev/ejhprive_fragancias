@@ -1,0 +1,12 @@
+---
+interface Props { id: string; kicker?: string; title: string; em?: string; lead?: string; align?: 'split' | 'center'; as?: 'h1' | 'h2' }
+const { id, kicker, title, em, lead, align = 'split', as: H = 'h2' } = Astro.props;
+---
+<div class:list={['mb-[clamp(32px,5vw,56px)] flex gap-6', align === 'center' ? 'flex-col items-center text-center' : 'flex-wrap items-end justify-between']}>
+  <div class:list={['flex flex-col gap-4', align === 'center' && 'items-center']}>
+    {kicker && <p class="kicker" data-reveal-self>{kicker}</p>}
+    <H id={id} class="h-section max-w-[18ch]" data-split>{title}{em && <> <em class="text-gold [.on-cream_&]:text-violet">{em}</em></>}</H>
+  </div>
+  {lead && <p class:list={['max-w-[26rem] leading-relaxed text-mist [.on-cream_&]:text-dust', align === 'center' && 'mx-auto']} data-reveal-self="0.15">{lead}</p>}
+  <slot />
+</div>

@@ -1,0 +1,127 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/ui/Icon.astro';
+import { SITE } from '../config/site';
+
+const today = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+const field = 'h-12 w-full rounded-xl border border-cream/16 bg-onyx px-4 text-[15px] text-cream placeholder:text-mist focus:border-lilac focus:outline-none';
+const label = 'flex flex-col gap-2 text-[13px] font-semibold';
+---
+<Base title="Libro de Reclamaciones" description="Libro de Reclamaciones virtual de EJH PRIVÉ, conforme al Código de Protección y Defensa del Consumidor.">
+  <section aria-labelledby="h-lr" class="wrap max-w-[920px] py-[clamp(40px,6vw,88px)]">
+    <div class="mb-10 flex flex-col gap-4">
+      <p class="kicker flex items-center gap-2" data-reveal-self><Icon name="book" size={16} /> Libro de Reclamaciones</p>
+      <h1 id="h-lr" class="text-[clamp(2.4rem,5vw,4rem)] leading-none" data-split="load">Hoja de reclamación</h1>
+      <p class="max-w-[60ch] leading-relaxed text-sand" data-reveal-self="0.2">Conforme al Código de Protección y Defensa del Consumidor (Ley N.º 29571). Te responderemos en un plazo máximo de 15 días hábiles al correo que indiques.</p>
+    </div>
+
+    <dl class="mb-10 grid gap-4 rounded-2xl border border-cream/10 bg-graphite p-6 text-sm sm:grid-cols-3">
+      <div><dt class="text-xs uppercase tracking-[0.14em] text-mist">Proveedor</dt><dd class="mt-1">{SITE.legal.businessName}</dd></div>
+      <div><dt class="text-xs uppercase tracking-[0.14em] text-mist">RUC</dt><dd class="mt-1">{SITE.legal.ruc}</dd></div>
+      <div><dt class="text-xs uppercase tracking-[0.14em] text-mist">Fecha</dt><dd class="mt-1">{today}</dd></div>
+      <div class="sm:col-span-3"><dt class="text-xs uppercase tracking-[0.14em] text-mist">Domicilio</dt><dd class="mt-1">{SITE.legal.address}</dd></div>
+    </dl>
+
+    <form class="flex flex-col gap-10" data-lr novalidate>
+      <fieldset class="flex flex-col gap-4">
+        <legend class="mb-4 font-serif text-2xl">1. Tus datos</legend>
+        <label class={label}>Nombre completo<input name="name" required minlength="3" maxlength="120" autocomplete="name" class={field} /></label>
+        <div class="grid gap-4 sm:grid-cols-[160px_1fr]">
+          <label class={label}>Documento
+            <select name="docType" class={field}><option>DNI</option><option>CE</option><option>Pasaporte</option><option>RUC</option></select>
+          </label>
+          <label class={label}>Número de documento<input name="docNumber" required minlength="6" maxlength="15" inputmode="numeric" class={field} /></label>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class={label}>Teléfono<input name="phone" type="tel" required minlength="6" maxlength="30" autocomplete="tel" placeholder="+51 9…" class={field} /></label>
+          <label class={label}>Correo electrónico<input name="email" type="email" required maxlength="120" autocomplete="email" class={field} /></label>
+        </div>
+        <label class={label}>Domicilio<input name="address" required minlength="5" maxlength="200" autocomplete="street-address" class={field} /></label>
+        <label class={label}>Padre, madre o apoderado <span class="font-normal text-mist">(solo si eres menor de edad)</span><input name="guardian" maxlength="120" class={field} /></label>
+      </fieldset>
+
+      <fieldset class="flex flex-col gap-4">
+        <legend class="mb-4 font-serif text-2xl">2. Producto o servicio</legend>
+        <div class="flex gap-6 text-sm" role="radiogroup" aria-label="Tipo de bien">
+          <label class="flex items-center gap-2"><input type="radio" name="itemType" value="producto" checked class="accent-lilac" /> Producto</label>
+          <label class="flex items-center gap-2"><input type="radio" name="itemType" value="servicio" class="accent-lilac" /> Servicio</label>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class={label}>Monto reclamado (S/) <span class="font-normal text-mist">(opcional)</span><input name="amount" type="number" min="0" step="0.01" class={field} /></label>
+          <label class={label}>N.º de pedido <span class="font-normal text-mist">(opcional)</span><input name="order" maxlength="20" placeholder="EJH-0001" class={field} /></label>
+        </div>
+        <label class={label}>Descripción<textarea name="description" required minlength="3" maxlength="1000" rows="3" class:list={[field, 'h-auto py-3']}></textarea></label>
+      </fieldset>
+
+      <fieldset class="flex flex-col gap-4">
+        <legend class="mb-4 font-serif text-2xl">3. Detalle</legend>
+        <div class="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Tipo de reclamación">
+          <label class="flex cursor-pointer gap-3 rounded-xl border border-cream/16 p-4 has-[:checked]:border-lilac has-[:checked]:bg-lilac/10">
+            <input type="radio" name="kind" value="reclamo" checked class="mt-1 accent-lilac" />
+            <span class="flex flex-col gap-1"><strong class="font-semibold">Reclamo</strong><span class="text-xs text-mist">Disconformidad con el producto o servicio.</span></span>
+          </label>
+          <label class="flex cursor-pointer gap-3 rounded-xl border border-cream/16 p-4 has-[:checked]:border-lilac has-[:checked]:bg-lilac/10">
+            <input type="radio" name="kind" value="queja" class="mt-1 accent-lilac" />
+            <span class="flex flex-col gap-1"><strong class="font-semibold">Queja</strong><span class="text-xs text-mist">Disconformidad con la atención recibida.</span></span>
+          </label>
+        </div>
+        <label class={label}>Detalle<textarea name="detail" required minlength="10" maxlength="3000" rows="5" class:list={[field, 'h-auto py-3']}></textarea></label>
+        <label class={label}>¿Qué solicitas?<textarea name="request" required minlength="5" maxlength="2000" rows="3" class:list={[field, 'h-auto py-3']}></textarea></label>
+      </fieldset>
+
+      <label class="flex items-start gap-3 text-sm text-sand">
+        <input type="checkbox" name="accept" required class="mt-1 accent-lilac" />
+        Declaro que los datos son verdaderos y acepto que EJH PRIVÉ los use solo para atender esta reclamación (Ley N.º 29733).
+      </label>
+      <p class="hidden rounded-xl border border-[#E58A8A]/40 bg-[#E58A8A]/10 px-4 py-3 text-sm text-[#F3C4C4]" role="alert" data-lr-error></p>
+      <button class="btn btn-cream btn-fill self-start" data-lr-submit>Enviar hoja de reclamación <Icon name="arrow" size={16} /></button>
+      <p class="text-xs text-mist">La formulación del reclamo no impide acudir a otras vías de solución de controversias ni es requisito previo para interponer una denuncia ante el INDECOPI.</p>
+    </form>
+
+    <div class="hidden flex-col items-start gap-5 rounded-[22px] border border-lilac/30 bg-graphite p-8" data-lr-done role="status">
+      <span class="flex size-14 items-center justify-center rounded-full bg-lilac/15 text-lilac"><Icon name="book" size={24} /></span>
+      <h2 class="text-3xl">Reclamación registrada</h2>
+      <p class="text-sand">Hoja N.º <strong class="text-cream" data-lr-number></strong>, registrada el <span data-lr-date></span>. Te responderemos a más tardar el <strong class="text-cream" data-lr-due></strong>.</p>
+      <p class="text-sm text-mist">Guarda o imprime esta constancia.</p>
+      <button type="button" class="btn btn-ghost" onclick="window.print()">Imprimir constancia</button>
+    </div>
+  </section>
+</Base>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const form = document.querySelector<HTMLFormElement>('[data-lr]');
+    if (!form) return;
+    const err = document.querySelector<HTMLElement>('[data-lr-error]')!;
+    const done = document.querySelector<HTMLElement>('[data-lr-done]')!;
+    const btn = form.querySelector<HTMLButtonElement>('[data-lr-submit]')!;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!form.reportValidity()) return;
+      const f = new FormData(form);
+      const s = (k: string) => String(f.get(k) ?? '').trim();
+      const body = {
+        consumer: { name: s('name'), docType: s('docType'), docNumber: s('docNumber'), phone: s('phone'), email: s('email'), address: s('address'), guardian: s('guardian') || undefined },
+        item: { type: s('itemType'), amount: s('amount') ? Number(s('amount')) : undefined, order: s('order') || undefined, description: s('description') },
+        kind: s('kind'), detail: s('detail'), request: s('request'), accept: f.get('accept') === 'on',
+      };
+      btn.disabled = true; err.classList.add('hidden');
+      try {
+        const r = await fetch('/api/reclamos/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error);
+        const fmt = (d: string) => new Date(d).toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric' });
+        done.querySelector('[data-lr-number]')!.textContent = j.number;
+        done.querySelector('[data-lr-date]')!.textContent = fmt(j.createdAt);
+        done.querySelector('[data-lr-due]')!.textContent = fmt(j.dueAt);
+        form.classList.add('hidden'); done.classList.replace('hidden', 'flex');
+        done.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (x) {
+        err.textContent = (x as Error).message || 'No pudimos registrar tu reclamo.';
+        err.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+</script>

@@ -1,0 +1,84 @@
+---
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import CartDrawer from '../components/islands/CartDrawer';
+import WhatsAppFloat from '../components/WhatsAppFloat.astro';
+import SearchDialog from '../components/SearchDialog.astro';
+import { SITE, waLink } from '../config/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  /** Header floats transparent over a full-bleed hero. */
+  overlay?: boolean;
+  jsonLd?: Record<string, unknown>[];
+  noindex?: boolean;
+}
+const { title, description = SITE.description, image = '/media/og.jpg', overlay = false, jsonLd = [], noindex = false } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE.name}` : `${SITE.name} · Perfumería árabe original y decants`;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url).href;
+const ogImage = new URL(image, Astro.site ?? SITE.url).href;
+const org = {
+  '@context': 'https://schema.org', '@type': 'Store', name: SITE.name, url: SITE.url, image: ogImage,
+  description: SITE.description, priceRange: '$$', currenciesAccepted: 'PEN', paymentAccepted: 'Yape, Plin, tarjeta de crédito y débito, Powerpay',
+  address: { '@type': 'PostalAddress', addressCountry: 'PE' },
+};
+---
+<!doctype html>
+<html lang="es-PE">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="theme-color" content="#0B0A0D" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content={SITE.locale} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline>
+      (() => {
+        const flag = () => { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('js-motion'); };
+        flag();
+        // never leave content hidden if the motion bundle fails to boot
+        setTimeout(() => { if (!document.documentElement.dataset.motion) document.documentElement.classList.remove('js-motion'); }, 3000);
+        if (!window.__ejhFlag) { window.__ejhFlag = 1; document.addEventListener('astro:after-swap', flag); }
+      })();
+    </script>
+    <script type="application/ld+json" set:html={JSON.stringify([org, ...jsonLd])} />
+    <ClientRouter />
+    <slot name="head" />
+  </head>
+  <body class="bg-onyx">
+    <Header overlay={overlay} />
+    {!overlay && <div class="h-[108px]" aria-hidden="true"></div>}
+    <main id="contenido" transition:name="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <WhatsAppFloat transition:persist="wa" />
+    <div transition:persist="search"><SearchDialog /></div>
+    <CartDrawer client:only="react" waBase={waLink()} transition:persist="cart" />
+    <div class="cursor" data-cursor-root aria-hidden="true" transition:persist="cursor">
+      <div class="cursor-ring" data-cursor-ring><span class="cursor-label" data-cursor-label></span></div>
+      <div class="cursor-dot" data-cursor-dot></div>
+    </div>
+
+    <script>
+      import { bootMotion } from '../lib/motion';
+      bootMotion();
+    </script>
+  </body>
+</html>
+

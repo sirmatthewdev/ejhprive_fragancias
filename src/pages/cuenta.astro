@@ -1,0 +1,7 @@
+---
+import { CMS_URL } from 'astro:env/server';
+
+// The admin panel lives in the CMS (Payload); this keeps the old link working.
+export const prerender = false;
+return Astro.redirect(`${CMS_URL}/admin`, 302);
+---
