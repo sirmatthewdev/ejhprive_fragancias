@@ -92,6 +92,6 @@ docs/ANALISIS.md          análisis de maquetación, semántica y SEO
 
 ## Créditos de imágenes
 
-- Decants en estuche de cuero: foto de [Pexels #7000326](https://www.pexels.com/photo/7000326/) (licencia Pexels: uso comercial gratuito, sin atribución obligatoria). Ajuste de color propio.
+- Decants: fotos de Pexels [#7000326](https://www.pexels.com/photo/7000326/) (estuche de cuero; también recortado sobre fondo transparente para las fichas), [#7000410](https://www.pexels.com/photo/7000410/) (plato de cerámica) y [#30599186](https://www.pexels.com/photo/30599186/) (muestras sobre seda). Licencia Pexels: uso comercial gratuito, sin atribución obligatoria. Ajuste de color y recorte propios.
 - Logos de Lattafa, Armaf, Rasasi, Afnan, Powerpay, Yape y Plin: marcas de sus respectivos titulares, usadas para identificar los productos y medios de pago que se comercializan.
 - Fotos de producto, video del hero y composiciones: generadas para este proyecto a partir de recortes de producto.

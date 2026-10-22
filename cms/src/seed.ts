@@ -25,7 +25,9 @@ for (const p of PRODUCTS) {
   const exists = await payload.count({ collection: 'products', where: { slug: { equals: p.slug } } })
   if (exists.totalDocs) continue
   // demo stock so the shop is browsable; replace with the real count from the panel
-  await payload.create({ collection: 'products', data: { ...p, active: true, stock: { sealed: 2, decantMl: 100, lowSealed: 1 } } })
+  // 100 ml bottle: S/ 139, Hawas Ice S/ 159 (decant prices are set from the panel)
+  const prices = { p100: p.slug === 'hawas-ice' ? 159 : 139 }
+  await payload.create({ collection: 'products', data: { ...p, active: true, prices, stock: { sealed: 2, decantMl: 100, lowSealed: 1 } } })
   out.push(`Producto creado: ${p.name}`)
 }
 

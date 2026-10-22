@@ -6,8 +6,8 @@ import mandarin from '../assets/img/product-mandarin.jpg';
 import spectra from '../assets/img/product-spectra.jpg';
 import hawas from '../assets/img/product-hawas.jpg';
 import ninepm from '../assets/img/product-ninepm.jpg';
-// real photo of the spray decants (Pexels 7000326, free licence); the same vial is used for every fragrance
-import decantPhoto from '../assets/img/decants-real.jpg';
+// transparent cut-out of real spray decants (from Pexels 7000326, free licence), shown on each product's own tone
+import decantPhoto from '../assets/img/decants-cutout.png';
 
 export type Family = 'Gourmand' | 'Ámbar especiada' | 'Nocturna' | 'Fresca';
 export type FormatId = '3' | '5' | '100';

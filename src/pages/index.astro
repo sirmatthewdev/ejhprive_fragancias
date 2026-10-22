@@ -16,7 +16,8 @@ import catFrascos from '../assets/img/cat-frascos.jpg';
 import decantsWide from '../assets/img/decants-real-wide.jpg';
 import brandLattafa from '../assets/img/brand-lattafa.jpg';
 import brandArmaf from '../assets/img/brand-armaf.jpg';
-import decantsPhoto from '../assets/img/decants-real.jpg';
+import decantsSilk from '../assets/img/decants-silk.jpg';
+import decantsPlate from '../assets/img/decants-plate.jpg';
 import logoLattafa from '../assets/brands/lattafa.png';
 import logoArmaf from '../assets/brands/armaf.png';
 import logoRasasi from '../assets/brands/rasasi.png';
@@ -29,7 +30,7 @@ const products = allProducts.filter((p) => liveOf(catalog, p.slug).active);
 const homeFaq = FAQ.filter((f) => f.home);
 const cats = [
   { href: '/productos/?formato=frasco', kicker: 'Colección completa', title: 'Frascos 100 ml', text: 'Originales, sellados, listos para regalar.', img: catFrascos, alt: 'Frascos de Khamrah, 9 PM y Khamrah Qahwa' },
-  { href: '/productos/?formato=decant', kicker: 'Prueba antes de elegir', title: 'Decants 3 · 5 ml', text: 'Las seis fragancias, del frasco original.', img: decantsWide, alt: 'Tres decants en atomizador de vidrio dentro de un estuche de cuero', tone: 'brightness-[.8] saturate-[.9]' },
+  { href: '/productos/?formato=decant', kicker: 'Prueba antes de elegir', title: 'Decants 3 · 5 ml', text: 'Las seis fragancias, del frasco original.', img: decantsPlate, alt: 'Tres decants en atomizador sobre un estuche de cuero y un plato de cerámica', tone: 'brightness-[.78] saturate-[.85]' },
 ];
 const steps = [
   { n: '01', title: 'Elige fragancia y tamaño', text: 'Decant de 3 ml (≈ 40 atomizaciones) o 5 ml (≈ 70).' },
@@ -128,7 +129,7 @@ const itemList = {
       </div>
       <figure class="relative aspect-[4/5] overflow-hidden rounded-[26px] shadow-[0_50px_100px_-30px_rgb(26_19_32/.45)]" data-clip data-cursor="Ver">
         <div data-parallax="8" class="absolute inset-x-0 -inset-y-[6%]">
-          <Image src={decantsPhoto} alt="Decants en atomizador de vidrio dentro de un estuche de cuero, sobre una concha de nácar" widths={[600, 900, 1200]} sizes="(min-width: 1024px) 45vw, 92vw" class="size-full object-cover" />
+          <Image src={decantsSilk} alt="Cuatro decants de muestra numerados sobre seda, junto a flores secas" widths={[600, 900, 1200]} sizes="(min-width: 1024px) 45vw, 92vw" class="size-full object-cover" />
         </div>
         <figcaption class="absolute bottom-5 left-5 flex flex-col rounded-xl bg-cream/92 px-4 py-3 text-sm backdrop-blur"><strong class="font-semibold">Decants EJH</strong><span class="text-dust">3 ml · 5 ml</span></figcaption>
       </figure>

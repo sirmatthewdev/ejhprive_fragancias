@@ -5,7 +5,7 @@ import ProductCard from '../../components/ProductCard.astro';
 import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
 import Icon from '../../components/ui/Icon.astro';
 import ProductBuy from '../../components/islands/ProductBuy';
-import { bySlug, relatedOf, productUrl, FORMATS } from '../../data/products';
+import { bySlug, relatedOf, productUrl, FORMATS, FAMILIES } from '../../data/products';
 import { SITE, waLink } from '../../config/site';
 import { getCatalog, liveOf } from '../../lib/cms';
 
@@ -15,6 +15,7 @@ const p = bySlug(Astro.params.slug ?? '');
 const catalog = await getCatalog({ fresh: true }); // stock must be current where people add to the bag
 if (!p || !liveOf(catalog, p.slug).active) return new Response(null, { status: 404 }); // the server answers with the 404 page
 const live = liveOf(catalog, p.slug);
+const tone = FAMILIES.find((f) => f.id === p.family)?.tone ?? '#5B3A8E';
 const related = relatedOf(p).filter((r) => liveOf(catalog, r.slug).active);
 const [thumbFrasco, thumbDecant] = await Promise.all([
   getImage({ src: p.img, width: 200, format: 'webp' }),
@@ -45,8 +46,10 @@ const productLd = {
         <div class="relative aspect-[4/5] overflow-hidden rounded-[22px] bg-graphite ring-1 ring-cream/8" data-cursor="Zoom" data-zoom>
           <Image src={p.img} alt={`Frasco de ${title} 100 ml con sus ingredientes`} widths={[600, 900, 1200]} sizes="(min-width: 1024px) 52vw, 92vw" loading="eager" fetchpriority="high"
             class="absolute inset-0 size-full object-cover transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)]" data-view="frasco" transition:name={`img-${p.slug}`} />
-          <Image src={p.decant} alt="Decants en atomizador de vidrio, como los que preparamos" widths={[600, 900, 1200]} sizes="(min-width: 1024px) 52vw, 92vw"
-            class="absolute inset-0 size-full object-cover opacity-0 transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)]" data-view="decant" />
+          <div class="absolute inset-0 opacity-0 transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)] bg-[radial-gradient(70%_60%_at_50%_45%,var(--tone),transparent_75%),linear-gradient(180deg,#1a141f,#0b0a0d)]" style={`--tone:${tone}77`} data-view="decant">
+            <Image src={p.decant} alt="Decants en atomizador de vidrio dentro de un estuche de cuero" widths={[600, 900]} sizes="(min-width: 1024px) 52vw, 92vw"
+              class="size-full object-contain p-[10%] drop-shadow-[0_30px_40px_rgb(0_0_0/.6)]" />
+          </div>
         </div>
         <div class="grid grid-cols-5 gap-3" role="group" aria-label="Elegir imagen">
           <button type="button" data-thumb="frasco" aria-pressed="true" aria-label="Ver frasco" class="aspect-square overflow-hidden rounded-xl opacity-60 ring-1 ring-cream/12 transition-[opacity,box-shadow] aria-pressed:opacity-100 aria-pressed:ring-2 aria-pressed:ring-lilac">
@@ -108,8 +111,8 @@ const productLd = {
 
   <section aria-labelledby="h-dec" class="surface-onyx py-[clamp(64px,9vw,112px)]">
     <div class="wrap grid items-center gap-[clamp(28px,5vw,72px)] md:grid-cols-2">
-      <div class="relative aspect-[4/5] max-h-[600px] overflow-hidden rounded-[22px]" data-clip>
-        <Image src={p.decant} alt="Decants en atomizador de vidrio dentro de un estuche de cuero" widths={[500, 800, 1100]} sizes="(min-width: 768px) 45vw, 92vw" class="size-full object-cover" />
+      <div class="relative aspect-[4/5] max-h-[600px] overflow-hidden rounded-[22px] ring-1 ring-cream/8 bg-[radial-gradient(70%_60%_at_50%_45%,var(--tone),transparent_75%),linear-gradient(180deg,#1a141f,#0b0a0d)]" style={`--tone:${tone}55`} data-clip>
+        <Image src={p.decant} alt="Decants en atomizador de vidrio dentro de un estuche de cuero" widths={[500, 800]} sizes="(min-width: 768px) 45vw, 92vw" class="size-full object-contain p-[12%] drop-shadow-[0_30px_40px_rgb(0_0_0/.6)]" />
       </div>
       <div class="flex flex-col gap-5">
         <p class="kicker" data-reveal-self>Decant {p.name}</p>
