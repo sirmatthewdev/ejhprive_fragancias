@@ -102,7 +102,7 @@ El panel es un **segundo proyecto de Vercel** que usa la carpeta `cms/` del mism
 3. **Settings → Environment Variables** del panel:
    - `PAYLOAD_SECRET`: cadena aleatoria de 32+ caracteres.
    - `CMS_URL`: `https://admin.ejhprive.com` (o la URL `.vercel.app` del panel mientras no haya dominio).
-   - `STORE_URL`: `https://ejhprive.com` (la tienda).
+   - `STORE_URL`: `https://ejhprive-fragancias.vercel.app` (la tienda; luego el dominio propio).
    - `SEED_ADMIN1_EMAIL`, `SEED_ADMIN1_NAME`, `SEED_ADMIN1_PASSWORD`, `SEED_ADMIN2_EMAIL`, `SEED_ADMIN2_NAME`, `SEED_ADMIN2_PASSWORD`: las dos personas que administran.
    - `SEED_API_KEY`: una clave aleatoria larga; la misma va en la tienda como `CMS_API_KEY`.
 4. **Deploy.** En el primer arranque se crean solas las tablas, las 6 fragancias (sin stock), los 2 administradores y el usuario de la tienda.

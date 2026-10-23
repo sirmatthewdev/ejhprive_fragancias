@@ -8,7 +8,8 @@ import vercel from '@astrojs/vercel';
 
 // https://astro.build/config
 export default defineConfig({
-  site: process.env.SITE_URL || 'https://ejhprive.com',
+  // public URL for canonical, sitemap and Open Graph; set SITE_URL in Vercel once the own domain is live
+  site: process.env.SITE_URL || 'https://ejhprive-fragancias.vercel.app',
   trailingSlash: 'always',
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
   integrations: [react(), sitemap({ filter: (page) => !/\/(sistema|cuenta|admin)\//.test(page) })],

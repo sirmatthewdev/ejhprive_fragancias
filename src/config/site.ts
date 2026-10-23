@@ -4,7 +4,7 @@
  */
 export const SITE = {
   name: 'EJH PRIVÉ',
-  url: 'https://ejhprive.com', // [dominio a confirmar]
+  url: 'https://ejhprive-fragancias.vercel.app', // cambiar por el dominio propio cuando esté activo
   locale: 'es_PE',
   country: 'PE',
   description:
