@@ -6,6 +6,7 @@ import Footer from '../components/Footer.astro';
 import CartDrawer from '../components/islands/CartDrawer';
 import WhatsAppFloat from '../components/WhatsAppFloat.astro';
 import SearchDialog from '../components/SearchDialog.astro';
+import Tracking from '../components/Tracking.astro';
 import { SITE, waLink } from '../config/site';
 
 interface Props {
@@ -37,7 +38,14 @@ const org = {
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}
     <meta name="theme-color" content="#0B0A0D" />
+    <!-- Google Fonts API: Cormorant Garamond (display) + Manrope (text) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400..800&display=swap" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content={SITE.locale} />
     <meta property="og:site_name" content={SITE.name} />
@@ -67,6 +75,7 @@ const org = {
     </main>
     <Footer />
 
+    <Tracking />
     <WhatsAppFloat transition:persist="wa" />
     <div transition:persist="search"><SearchDialog /></div>
     <CartDrawer client:only="react" waBase={waLink()} transition:persist="cart" />

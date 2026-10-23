@@ -2,6 +2,7 @@ import { useStore } from '@nanostores/react';
 import { useEffect, useState } from 'react';
 import { $cart, addToCart, discount, fetchStock, fmtLabel, hydrateCart, money } from '../../lib/cart';
 import { ML, remaining, type Stock } from '../../lib/stock';
+import { trackAddToCart, trackViewItem } from '../../lib/track';
 import type { FormatId } from '../../data/products';
 
 interface Props {
@@ -36,6 +37,7 @@ export default function ProductBuy({ slug, name, brand, href, images, prices, av
   useEffect(() => {
     hydrateCart(); setMounted(true);
     fetchStock([slug]).then((r) => { const st = r?.[slug]?.stock; if (st) setStock(st); });
+    setTimeout(() => trackViewItem({ slug, name, brand, fmt, qty: 1, price: prices[fmt].price }), 400);
   }, []);
   // if the chosen format ran out after a refresh, move to one that is still available
   useEffect(() => {
@@ -70,6 +72,7 @@ export default function ProductBuy({ slug, name, brand, href, images, prices, av
     if (fresh) setStock(fresh);
     const n = addToCart({ slug, name, brand, fmt, price: prices[fmt].price, img: images.frasco, href, stock: fresh }, qty);
     if (n === 0) { setNotice('Ya no queda stock para este formato.'); return; }
+    trackAddToCart({ slug, name, brand, fmt, qty: n, price: prices[fmt].price });
     setNotice(n < qty ? `Solo pudimos agregar ${n}: es todo el stock disponible.` : null);
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);

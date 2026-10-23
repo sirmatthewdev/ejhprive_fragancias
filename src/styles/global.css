@@ -1,8 +1,4 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/manrope';
-@import '@fontsource/cormorant-garamond/500.css';
-@import '@fontsource/cormorant-garamond/500-italic.css';
-@import '@fontsource/cormorant-garamond/600.css';
 
 @theme {
   --color-ink: #070609;
@@ -19,7 +15,7 @@
   --color-mist: #9d93a8;
   --color-dust: #5e5266;
 
-  --font-sans: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
   --font-serif: 'Cormorant Garamond', ui-serif, Georgia, serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);

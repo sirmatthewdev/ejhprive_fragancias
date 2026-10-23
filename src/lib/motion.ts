@@ -54,8 +54,10 @@ function initCursor() {
     const t = e.target as Element;
     const labeled = t.closest<HTMLElement>('[data-cursor]');
     const interactive = t.closest('a, button, input, select, textarea, label, [role="button"]');
-    root.dataset.mode = labeled ? 'label' : interactive ? 'link' : '';
-    label.textContent = labeled?.dataset.cursor ?? '';
+    // buttons inside a labelled area (e.g. format chips on a card) get the small ring so they stay visible
+    const onButton = !!interactive && interactive.matches('button, input, select, textarea, label');
+    root.dataset.mode = onButton ? 'link' : labeled ? 'label' : interactive ? 'link' : '';
+    label.textContent = onButton ? '' : labeled?.dataset.cursor ?? '';
   });
   document.addEventListener('pointerdown', () => gsap.to(ring, { scale: 0.85, duration: 0.2 }));
   document.addEventListener('pointerup', () => gsap.to(ring, { scale: 1, duration: 0.5, ease: 'elastic.out(1,.5)' }));

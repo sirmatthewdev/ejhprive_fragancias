@@ -35,7 +35,7 @@ npm run dev                             # http://localhost:3000/admin
 npm install
 cp .env.example .env                    # pegar CMS_API_KEY que imprimió el seed
 npm run dev                             # http://localhost:4321
-npm run build && npm start              # producción
+npm run build                           # genera .vercel/output (producción en Vercel)
 ```
 
 ## Panel de administración (cms/)
@@ -88,7 +88,17 @@ docs/ANALISIS.md          análisis de maquetación, semántica y SEO
 2. Cargar los datos de contacto, la razón social, el RUC y la dirección fiscal (se muestran en el Libro de Reclamaciones y el footer) y el dominio en `src/config/site.ts` y `astro.config.mjs` (`site`).
 3. Redactar los textos legales en `src/pages/politica-de-devolucion.astro`. Configurar un adaptador de correo en el panel (por ejemplo Resend) para enviar al consumidor la copia de su hoja de reclamación.
 4. Desplegar el panel (`cms/`) en Vercel o Railway con Postgres, configurando `PAYLOAD_SECRET`, `DATABASE_URL`, `CMS_URL` y `STORE_URL`.
-5. Desplegar la tienda en un hosting con Node (Railway, Render o un VPS), configurando `CMS_URL` y `CMS_API_KEY`. Las páginas informativas son estáticas; la home, el catálogo, las fichas y `/api/orders` corren en el servidor.
+5. Desplegar la tienda en **Vercel** (adaptador `@astrojs/vercel`, ya configurado): importar el repo con la raíz del proyecto como directorio y cargar estas variables de entorno:
+   - `CMS_URL` y `CMS_API_KEY`: URL pública del panel y la API key del usuario «Tienda (API)». Sin ellas la tienda funciona igual, pero con precios «A confirmar» y sin registrar pedidos ni reclamos en el panel.
+   - `SITE_URL`: dominio final (canonical, sitemap y Open Graph).
+   - Seguimiento (opcional): `PUBLIC_GTM_ID`, `PUBLIC_GA4_ID`, `PUBLIC_META_PIXEL_ID`, `PUBLIC_TIKTOK_PIXEL_ID`, `PUBLIC_CF_BEACON_TOKEN`.
+
+## Seguimiento y analítica
+
+- Google Tag Manager, Google Analytics 4, Meta (Facebook) Pixel y TikTok Pixel cargan **solo si tienen ID y el visitante acepta las cookies** en el aviso inferior (Ley N.º 29733). Cloudflare Web Analytics no usa cookies y carga siempre que tenga token.
+- Eventos de comercio enviados a las cuatro herramientas: `view_item`, `add_to_cart`, `begin_checkout`, `generate_lead` (pedido registrado, con su número) y `contact` (cualquier clic a WhatsApp). Las navegaciones con View Transitions se reportan como `page_view`.
+- Para que Cloudflare figure como CDN, el dominio debe pasar por Cloudflare (DNS con proxy activado) apuntando a Vercel.
+- Tipografía servida por Google Fonts API (Cormorant Garamond y Manrope).
 
 ## Créditos de imágenes
 

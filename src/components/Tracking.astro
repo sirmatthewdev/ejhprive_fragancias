@@ -1,0 +1,101 @@
+---
+import { PUBLIC_GTM_ID, PUBLIC_GA4_ID, PUBLIC_META_PIXEL_ID, PUBLIC_TIKTOK_PIXEL_ID, PUBLIC_CF_BEACON_TOKEN } from 'astro:env/client';
+
+// tools that set cookies need consent (Ley 29733); Cloudflare Web Analytics is cookie-less
+const needsConsent = !!(PUBLIC_GTM_ID || PUBLIC_GA4_ID || PUBLIC_META_PIXEL_ID || PUBLIC_TIKTOK_PIXEL_ID);
+---
+{PUBLIC_CF_BEACON_TOKEN && (
+  <script is:inline defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({ token: PUBLIC_CF_BEACON_TOKEN, spa: true })}></script>
+)}
+
+{needsConsent && (
+  <div data-consent hidden transition:persist="consent" role="dialog" aria-live="polite" aria-label="Preferencias de cookies"
+    class="fixed bottom-5 left-5 z-50 w-[min(420px,calc(100%-104px))] rounded-2xl border border-cream/12 bg-ink/85 p-5 text-sm text-sand shadow-[0_24px_60px_-20px_rgb(0_0_0/.8)] backdrop-blur-xl max-md:bottom-4 max-md:left-4">
+    <p class="leading-relaxed">Usamos cookies para medir visitas y mostrarte anuncios relevantes. Puedes aceptarlas o seguir solo con las necesarias. <a href="/politica-de-devolucion/#privacidad" class="link-u text-cream">Privacidad</a></p>
+    <div class="mt-4 flex flex-wrap gap-2">
+      <button type="button" data-consent-accept class="btn btn-cream h-10 px-5 text-[13px]">Aceptar</button>
+      <button type="button" data-consent-reject class="btn btn-ghost h-10 px-5 text-[13px]">Solo necesarias</button>
+    </div>
+  </div>
+)}
+
+<script>
+  import { PUBLIC_GTM_ID, PUBLIC_GA4_ID, PUBLIC_META_PIXEL_ID, PUBLIC_TIKTOK_PIXEL_ID } from 'astro:env/client';
+  import { setTrackers } from '../lib/track';
+
+  const KEY = 'ejh-consent-v1';
+  const w = window as any;
+  const load = (src: string) => { const s = document.createElement('script'); s.async = true; s.src = src; document.head.appendChild(s); };
+
+  function boot() {
+    if (w.__ejhTracking) return;
+    w.__ejhTracking = true;
+    w.dataLayer = w.dataLayer || [];
+    if (PUBLIC_GTM_ID) {
+      w.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
+      load(`https://www.googletagmanager.com/gtm.js?id=${PUBLIC_GTM_ID}`);
+    }
+    if (PUBLIC_GA4_ID) {
+      w.gtag = function () { w.dataLayer.push(arguments); };
+      w.gtag('js', new Date());
+      w.gtag('config', PUBLIC_GA4_ID, { send_page_view: false });
+      load(`https://www.googletagmanager.com/gtag/js?id=${PUBLIC_GA4_ID}`);
+    }
+    if (PUBLIC_META_PIXEL_ID) {
+      const f = (w.fbq = function () { f.callMethod ? f.callMethod.apply(f, arguments) : f.queue.push(arguments); }) as any;
+      if (!w._fbq) w._fbq = f;
+      f.push = f; f.loaded = true; f.version = '2.0'; f.queue = [];
+      load('https://connect.facebook.net/en_US/fbevents.js');
+      w.fbq('init', PUBLIC_META_PIXEL_ID);
+    }
+    if (PUBLIC_TIKTOK_PIXEL_ID) {
+      // official TikTok base code (queue + loader), written out for readability
+      w.TiktokAnalyticsObject = 'ttq';
+      const ttq: any = (w.ttq = w.ttq || []);
+      ttq.methods = ['page', 'track', 'identify', 'instances', 'debug', 'on', 'off', 'once', 'ready', 'alias', 'group', 'enableCookie', 'disableCookie', 'holdConsent', 'revokeConsent', 'grantConsent'];
+      ttq.setAndDefer = (t: any, e: string) => { t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))); }; };
+      ttq.methods.forEach((m: string) => ttq.setAndDefer(ttq, m));
+      ttq.instance = (t: string) => { const e = ttq._i[t] || []; ttq.methods.forEach((m: string) => ttq.setAndDefer(e, m)); return e; };
+      ttq.load = (id: string, opts?: object) => {
+        const u = 'https://analytics.tiktok.com/i18n/pixel/events.js';
+        ttq._i = ttq._i || {}; ttq._i[id] = []; ttq._i[id]._u = u;
+        ttq._t = ttq._t || {}; ttq._t[id] = +new Date();
+        ttq._o = ttq._o || {}; ttq._o[id] = opts || {};
+        load(`${u}?sdkid=${id}&lib=ttq`);
+      };
+      ttq.load(PUBLIC_TIKTOK_PIXEL_ID);
+    }
+    setTrackers(true);
+    pageView();
+    // view transitions don't reload the page: report each client-side navigation
+    document.addEventListener('astro:page-load', pageView);
+  }
+
+  let lastPath = '';
+  function pageView() {
+    if (location.pathname + location.search === lastPath) return;
+    lastPath = location.pathname + location.search;
+    w.dataLayer?.push({ event: 'page_view', page_path: lastPath, page_title: document.title });
+    w.gtag?.('event', 'page_view', { page_path: lastPath, page_title: document.title, page_location: location.href });
+    w.fbq?.('track', 'PageView');
+    w.ttq?.page?.();
+  }
+
+  function initConsent() {
+    const box = document.querySelector<HTMLElement>('[data-consent]');
+    let choice: string | null = null;
+    try { choice = localStorage.getItem(KEY); } catch {}
+    if (choice === 'all') return boot();
+    if (!box || choice) return;
+    box.hidden = false;
+    const close = (v: string) => { try { localStorage.setItem(KEY, v); } catch {} box.hidden = true; if (v === 'all') boot(); };
+    box.querySelector('[data-consent-accept]')!.addEventListener('click', () => close('all'), { once: true });
+    box.querySelector('[data-consent-reject]')!.addEventListener('click', () => close('essential'), { once: true });
+  }
+  initConsent();
+
+  // any WhatsApp link (floating button, bag, product, contact) counts as a contact
+  document.addEventListener('click', (e) => {
+    if ((e.target as Element).closest('a[href*="wa.me"]')) import('../lib/track').then((t) => t.trackContact('whatsapp'));
+  });
+</script>

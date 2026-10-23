@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import Icon from './ui/Icon.astro';
-import { type Product, productUrl, FAMILIES } from '../data/products';
+import { type Product, type FormatId, productUrl, FAMILIES } from '../data/products';
 import { discount, money } from '../lib/cart';
 import { liveOf, type Live } from '../lib/cms';
 
@@ -9,48 +9,58 @@ interface Props { p: Product; live?: Live; variant?: 'frasco' | 'decant'; priori
 const { p, live = liveOf(null, p.slug), variant = 'frasco', priority = false, headingLevel: H = 'h3' } = Astro.props;
 const decant = variant === 'decant';
 const soldOut = decant ? !live.available['3'] && !live.available['5'] : !live.available['100'];
-const from = live.prices[decant ? '3' : '100'];
+const formats = (decant ? ['3', '5'] : ['3', '5', '100']) as FormatId[];
+// format selected when the card loads; picking 3 ml / 5 ml switches the photo to the decant view
+const initial: FormatId = decant ? (live.available['3'] || !live.available['5'] ? '3' : '5') : '100';
+const from = live.prices[initial];
 const off = discount(from.regular, from.price);
 const tag = soldOut ? 'Agotado' : off ? `Oferta ${off}` : live.tag === undefined ? p.tag : live.tag;
-// the fragrance photo identifies the card in both variants; the real decant photo shows on hover
-const first = p.img;
-const second = p.decant;
 const tone = FAMILIES.find((f) => f.id === p.family)?.tone ?? '#5B3A8E';
-const href = productUrl(p) + (decant ? '?formato=5' : '');
+const base = productUrl(p);
+const hrefOf = (f: FormatId) => (f === '100' ? base : `${base}?formato=${f}`);
+// per-format data the click handler swaps in (price, link)
+const info = Object.fromEntries(formats.map((f) => {
+  const pr = live.prices[f];
+  return [f, { price: money(pr.price), regular: discount(pr.regular, pr.price) ? money(pr.regular) : '', href: hrefOf(f), from: f !== '100' }];
+}));
 ---
-<article class:list={['group/card relative flex flex-col gap-4', soldOut && '[&_img]:grayscale-[.6] [&_img]:opacity-70']} data-family={p.family} data-cursor="Ver">
+<article class:list={['group/card relative flex flex-col gap-4', soldOut && '[&_img]:grayscale-[.6] [&_img]:opacity-70']}
+  data-family={p.family} data-cursor="Ver" data-card data-view={initial === '100' ? 'frasco' : 'decant-off'} data-formats={JSON.stringify(info)}>
   <div class="relative aspect-[4/5] overflow-hidden rounded-2xl bg-graphite ring-1 ring-cream/8">
     <Image
-      src={first} alt={`${decant ? 'Decants de ' : ''}${p.brand} ${p.name}`} widths={[360, 560, 800]} sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
+      src={p.img} alt={`${decant ? 'Decants de ' : ''}${p.brand} ${p.name}`} widths={[360, 560, 800]} sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
       loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : undefined}
       class="absolute inset-0 size-full object-cover transition-transform duration-[1400ms] ease-[var(--ease-out-expo)] group-hover/card:scale-[1.06]"
       transition:name={decant ? undefined : `img-${p.slug}`}
     />
-    <!-- second shot fades in on hover: frasco ↔ decant -->
-    <div class="absolute inset-0 opacity-0 transition-opacity duration-[900ms] ease-[var(--ease-out-expo)] group-hover/card:opacity-100 bg-[radial-gradient(70%_60%_at_50%_45%,var(--tone),transparent_75%),linear-gradient(180deg,#1a141f,#0b0a0d)]" style={`--tone:${tone}66`} aria-hidden="true">
-      <Image src={second} alt="" widths={[360, 560]} sizes="(min-width: 1024px) 30vw, 90vw" loading="lazy"
-        class="size-full scale-95 object-contain p-[12%] drop-shadow-[0_24px_30px_rgb(0_0_0/.55)] transition-transform duration-[900ms] ease-[var(--ease-out-expo)] group-hover/card:scale-100" />
+    <!-- decant view: shown only after picking 3 ml or 5 ml -->
+    <div class="card-decant absolute inset-0 bg-[radial-gradient(70%_60%_at_50%_45%,var(--tone),transparent_75%),linear-gradient(180deg,#1a141f,#0b0a0d)]" style={`--tone:${tone}66`} aria-hidden="true">
+      <Image src={p.decant} alt="" widths={[360, 560]} sizes="(min-width: 1024px) 30vw, 90vw" loading="lazy"
+        class="size-full object-contain p-[12%] drop-shadow-[0_24px_30px_rgb(0_0_0/.55)]" />
     </div>
-    <div class="absolute inset-0 bg-[linear-gradient(180deg,transparent_60%,rgb(11_10_13/.7))]"></div>
+    <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_60%,rgb(11_10_13/.7))]"></div>
     {decant && !soldOut && <span class="chip absolute right-3.5 top-3.5 border border-cream/25 bg-onyx/70 text-cream backdrop-blur-md">Decant</span>}
     {tag && <span class:list={['chip absolute left-3.5 top-3.5 border backdrop-blur-md', soldOut ? 'border-cream/30 bg-onyx/85 text-sand' : off ? 'border-transparent bg-lilac text-plum' : 'border-lilac/35 bg-onyx/70 text-[#E5D9F5]']}>{tag}</span>}
-    <ul class="absolute inset-x-3.5 bottom-3.5 flex flex-wrap gap-1.5" aria-label="Formatos disponibles">
-      {((decant ? ['3', '5'] : ['3', '5', '100']) as const).map((f, i, a) => (
-        <li class:list={['chip h-7 px-2.5 text-[11px]', !live.available[f] ? 'border border-cream/10 bg-onyx/60 text-cream/40 line-through' : i === a.length - 1 ? 'bg-cream text-plum' : 'border border-cream/20 bg-onyx/60 text-cream backdrop-blur-md']}>{f} ml{!live.available[f] && <span class="sr-only"> (agotado)</span>}</li>
+    <div class="absolute inset-x-3.5 bottom-3.5 z-10 flex flex-wrap gap-1.5" role="group" aria-label={`Formato de ${p.name}`}>
+      {formats.map((f) => (
+        <button type="button" data-chip={f} aria-pressed={String(f === initial)} disabled={!live.available[f]}
+          class="chip h-7 cursor-pointer border border-cream/20 bg-onyx/60 px-2.5 text-[11px] text-cream backdrop-blur-md transition-colors duration-300 hover:border-cream/60 aria-pressed:border-cream aria-pressed:bg-cream aria-pressed:text-plum disabled:cursor-not-allowed disabled:border-cream/10 disabled:text-cream/40 disabled:line-through">
+          {f} ml{!live.available[f] && <span class="sr-only"> (agotado)</span>}
+        </button>
       ))}
-    </ul>
+    </div>
   </div>
   <div class="flex flex-col gap-1.5">
     <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-lilac">{p.brand}</p>
     <H class="text-[1.65rem] leading-[1.08]">
-      <a href={href} class="after:absolute after:inset-0 after:content-['']">{decant ? `Decant ${p.name}` : p.name}</a>
+      <a href={hrefOf(initial)} data-card-link class="after:absolute after:inset-0 after:content-['']">{decant ? `Decant ${p.name}` : p.name}</a>
     </H>
     <p class="text-[13px] text-mist">{p.accord}</p>
     <div class="mt-1.5 flex items-center justify-between border-t border-cream/10 pt-3">
       <p class="flex items-baseline gap-2 text-sm">
-        <span class="text-mist">{decant ? 'Desde' : ''}</span>
-        <span class:list={['font-semibold', off && 'text-lilac']}>{money(from.price)}</span>
-        {off && <s class="text-xs text-mist" aria-label={`Precio regular ${money(from.regular)}`}>{money(from.regular)}</s>}
+        <span class="text-mist" data-card-from>{initial !== '100' ? 'Desde' : ''}</span>
+        <span class:list={['font-semibold', off && 'text-lilac']} data-card-price>{money(from.price)}</span>
+        <s class="text-xs text-mist" data-card-regular>{off ? money(from.regular) : ''}</s>
       </p>
       <span class="flex items-center gap-1.5 text-[13px] text-sand opacity-0 transition-[opacity,transform] duration-500 group-hover/card:translate-x-0 group-hover/card:opacity-100 max-lg:opacity-100 lg:-translate-x-2">
         Ver <Icon name="arrow" size={14} />
@@ -58,3 +68,32 @@ const href = productUrl(p) + (decant ? '?formato=5' : '');
     </div>
   </div>
 </article>
+
+<style>
+  .card-decant { opacity: 0; transition: opacity .7s var(--ease-out-expo); }
+  .card-decant :global(img) { transform: scale(.94); transition: transform .9s var(--ease-out-expo); }
+  [data-view='decant'] .card-decant { opacity: 1; }
+  [data-view='decant'] .card-decant :global(img) { transform: none; }
+</style>
+
+<script>
+  // one delegated listener for every card on every page
+  if (!(window as any).__ejhCards) {
+    (window as any).__ejhCards = true;
+    document.addEventListener('click', (e) => {
+      const chip = (e.target as Element).closest<HTMLButtonElement>('[data-chip]');
+      const card = chip?.closest<HTMLElement>('[data-card]');
+      if (!chip || !card || chip.disabled) return;
+      e.preventDefault(); e.stopPropagation();
+      const f = chip.dataset.chip!;
+      const info = JSON.parse(card.dataset.formats || '{}')[f];
+      card.querySelectorAll('[data-chip]').forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+      card.dataset.view = f === '100' ? 'frasco' : 'decant';
+      if (!info) return;
+      card.querySelector<HTMLAnchorElement>('[data-card-link]')!.href = info.href;
+      card.querySelector('[data-card-price]')!.textContent = info.price;
+      card.querySelector('[data-card-regular]')!.textContent = info.regular;
+      card.querySelector('[data-card-from]')!.textContent = '';
+    });
+  }
+</script>

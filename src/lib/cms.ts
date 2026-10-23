@@ -36,6 +36,7 @@ const ML: Record<FormatId, number> = { '3': 3, '5': 5, '100': 100 };
 let inflight: Promise<Map<string, Live> | null> | null = null;
 
 async function fetchCatalog(): Promise<Map<string, Live> | null> {
+  if (!CMS_API_KEY) { inflight = null; return null; } // CMS not configured (e.g. first deploy): local data only
   try {
     const r = await fetch(`${CMS_URL}/api/products?limit=100&depth=0`, { headers: auth(), signal: AbortSignal.timeout(2500) });
     if (!r.ok) throw new Error(`CMS ${r.status}`);

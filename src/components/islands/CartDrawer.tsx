@@ -1,5 +1,6 @@
 import { useStore } from '@nanostores/react';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { trackBeginCheckout, trackOrder } from '../../lib/track';
 import { $cart, $cartOpen, $count, $subtotal, clearCart, fmtLabel, hydrateCart, money, roomFor, setQty, syncCartStock, type CartLine } from '../../lib/cart';
 
 interface Props { waBase: string }
@@ -67,6 +68,7 @@ export default function CartDrawer({ waBase }: Props) {
       });
       const body = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(body.error ?? 'No pudimos registrar el pedido.');
+      trackOrder(lines, body.number);
       setDone({ number: body.number, message: orderMessage(lines, body.number, { ...c, delivery }) });
       clearCart();
       setStep('done');
@@ -156,7 +158,7 @@ export default function CartDrawer({ waBase }: Props) {
                   <span className="text-xl font-semibold">{money(subtotal)}</span>
                 </div>
                 <p className="text-xs text-mist">Te confirmamos precio final y envío por WhatsApp antes de pagar.</p>
-                <button type="button" onClick={() => setStep('details')} className="btn btn-cream btn-fill w-full">Continuar</button>
+                <button type="button" onClick={() => { trackBeginCheckout(lines); setStep('details'); }} className="btn btn-cream btn-fill w-full">Continuar</button>
                 <button type="button" onClick={() => $cartOpen.set(false)} className="text-sm text-sand underline-offset-4 hover:underline">Seguir comprando</button>
               </div>
             )}
