@@ -9,7 +9,8 @@ export const SITE = {
   country: 'PE',
   description:
     'Perfumería árabe 100% original: Lattafa, Armaf, Rasasi y Afnan en frasco de 100 ml y decants de 3 y 5 ml fraccionados del frasco original.',
-  whatsapp: '', // [número de WhatsApp, formato 51 + 9 dígitos, ej. 51987654321]
+  whatsapp: '51944093055', // único número de atención y pedidos
+  whatsappDisplay: '+51 944 093 055',
   instagram: '', // [https://instagram.com/usuario]
   tiktok: '', // [https://tiktok.com/@usuario]
   email: '', // [correo de contacto]

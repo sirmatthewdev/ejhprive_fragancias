@@ -5,7 +5,7 @@ import Icon from '../components/ui/Icon.astro';
 import { SITE, waLink } from '../config/site';
 
 const channels = [
-  { brand: 'whatsapp', title: 'WhatsApp', text: SITE.whatsapp ? `+${SITE.whatsapp}` : '[número de WhatsApp]', href: waLink() },
+  { brand: 'whatsapp', title: 'WhatsApp', text: SITE.whatsappDisplay, href: waLink() },
   { brand: 'instagram', title: 'Instagram', text: SITE.instagram || '[@usuario]', href: SITE.instagram || '' },
   { brand: null, title: 'Correo', text: SITE.email || '[correo de contacto]', href: SITE.email ? `mailto:${SITE.email}` : '' },
 ] as const;

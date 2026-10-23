@@ -119,6 +119,7 @@ export interface ComplaintInput {
 
 /** Registers a Libro de Reclamaciones sheet; returns its correlative number and response deadline. */
 export async function createComplaint(input: ComplaintInput): Promise<{ number: string; dueAt: string; createdAt: string }> {
+  if (!CMS_URL || !CMS_API_KEY) throw new Error('CMS no disponible');
   const r = await fetch(`${CMS_URL}/api/complaints`, {
     method: 'POST',
     headers: { ...auth(), 'Content-Type': 'application/json' },

@@ -84,7 +84,7 @@ docs/ANALISIS.md          análisis de maquetación, semántica y SEO
 
 ## Para lanzar
 
-1. Cargar precios y stock reales desde el panel. Cambiar las contraseñas y los correos de los dos administradores.
+1. Cargar precios de decants y stock real desde el panel (los frascos ya tienen S/ 139 y Hawas Ice S/ 159).
 2. Cargar los datos de contacto, la razón social, el RUC y la dirección fiscal (se muestran en el Libro de Reclamaciones y el footer) y el dominio en `src/config/site.ts` y `astro.config.mjs` (`site`).
 3. Redactar los textos legales en `src/pages/politica-de-devolucion.astro`. Configurar un adaptador de correo en el panel (por ejemplo Resend) para enviar al consumidor la copia de su hoja de reclamación.
 4. Desplegar el panel (`cms/`) en Vercel o Railway con Postgres, configurando `PAYLOAD_SECRET`, `DATABASE_URL`, `CMS_URL` y `STORE_URL`.
@@ -92,6 +92,24 @@ docs/ANALISIS.md          análisis de maquetación, semántica y SEO
    - `CMS_URL` y `CMS_API_KEY`: URL pública del panel y la API key del usuario «Tienda (API)». Sin ellas la tienda funciona igual, pero con precios «A confirmar» y sin registrar pedidos ni reclamos en el panel.
    - `SITE_URL`: dominio final (canonical, sitemap y Open Graph).
    - Seguimiento (opcional): `PUBLIC_GTM_ID`, `PUBLIC_GA4_ID`, `PUBLIC_META_PIXEL_ID`, `PUBLIC_TIKTOK_PIXEL_ID`, `PUBLIC_CF_BEACON_TOKEN`.
+
+## Publicar el panel en Vercel (para que el equipo lo administre)
+
+El panel es un **segundo proyecto de Vercel** que usa la carpeta `cms/` del mismo repositorio.
+
+1. Vercel → **Add New → Project** → importar `ejhprive_fragancias` → **Root Directory: `cms`** (Framework: Next.js).
+2. En ese proyecto: **Storage → Create Database → Neon (Postgres)** y conectarla. Esto crea `DATABASE_URL`.
+3. **Settings → Environment Variables** del panel:
+   - `PAYLOAD_SECRET`: cadena aleatoria de 32+ caracteres.
+   - `CMS_URL`: `https://admin.ejhprive.com` (o la URL `.vercel.app` del panel mientras no haya dominio).
+   - `STORE_URL`: `https://ejhprive.com` (la tienda).
+   - `SEED_ADMIN1_EMAIL`, `SEED_ADMIN1_NAME`, `SEED_ADMIN1_PASSWORD`, `SEED_ADMIN2_EMAIL`, `SEED_ADMIN2_NAME`, `SEED_ADMIN2_PASSWORD`: las dos personas que administran.
+   - `SEED_API_KEY`: una clave aleatoria larga; la misma va en la tienda como `CMS_API_KEY`.
+4. **Deploy.** En el primer arranque se crean solas las tablas, las 6 fragancias (sin stock), los 2 administradores y el usuario de la tienda.
+5. **Settings → Domains** del panel: agregar `admin.ejhprive.com`.
+6. En el proyecto de la **tienda**: `CMS_URL=https://admin.ejhprive.com` y `CMS_API_KEY=<la misma SEED_API_KEY>` → **Redeploy**.
+
+Desde ese momento el ícono de cuenta de la tienda y `ejhprive.com/admin` llevan al panel. Mientras no esté configurado, muestran «Panel en configuración» (nunca `localhost`).
 
 ## Seguimiento y analítica
 

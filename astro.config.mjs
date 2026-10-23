@@ -24,7 +24,7 @@ export default defineConfig({
     schema: {
       // Payload CMS (cms/): prices, stock and orders. Optional so the shop builds and runs without it
       // (prices show «A confirmar» and orders fall back to WhatsApp only).
-      CMS_URL: envField.string({ context: 'server', access: 'public', default: 'http://localhost:3000' }),
+      CMS_URL: envField.string({ context: 'server', access: 'public', optional: true, default: '' }),
       CMS_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true, default: '' }),
       // Tracking (all optional; each tool loads only when its ID is set and the visitor accepts cookies)
       PUBLIC_GTM_ID: envField.string({ context: 'client', access: 'public', optional: true, default: '' }),
