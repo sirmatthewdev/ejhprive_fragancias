@@ -27,12 +27,19 @@ const info = Object.fromEntries(formats.map((f) => {
 <article class:list={['group/card relative flex flex-col gap-4', soldOut && '[&_img]:grayscale-[.6] [&_img]:opacity-70']}
   data-family={p.family} data-cursor="Ver" data-card data-view={initial === '100' ? 'frasco' : 'decant-off'} data-formats={JSON.stringify(info)}>
   <div class="relative aspect-[4/5] overflow-hidden rounded-2xl bg-graphite ring-1 ring-cream/8">
-    <Image
-      src={p.img} alt={`${decant ? 'Decants de ' : ''}${p.brand} ${p.name}`} widths={[360, 560, 800]} sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
-      loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : undefined}
-      class="absolute inset-0 size-full object-cover transition-transform duration-[1400ms] ease-[var(--ease-out-expo)] group-hover/card:scale-[1.06]"
-      transition:name={decant ? undefined : `img-${p.slug}`}
-    />
+    {live.photo ? (
+      <img src={live.photo} alt={`${decant ? 'Decants de ' : ''}${p.brand} ${p.name}`} width="900" height="1125" decoding="async"
+        loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : undefined}
+        class="absolute inset-0 size-full object-cover transition-transform duration-[1400ms] ease-[var(--ease-out-expo)] group-hover/card:scale-[1.06]"
+        transition:name={decant ? undefined : `img-${p.slug}`} />
+    ) : (
+      <Image
+        src={p.img} alt={`${decant ? 'Decants de ' : ''}${p.brand} ${p.name}`} widths={[360, 560, 800]} sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
+        loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : undefined}
+        class="absolute inset-0 size-full object-cover transition-transform duration-[1400ms] ease-[var(--ease-out-expo)] group-hover/card:scale-[1.06]"
+        transition:name={decant ? undefined : `img-${p.slug}`}
+      />
+    )}
     <!-- decant view: shown only after picking 3 ml or 5 ml -->
     <div class="card-decant absolute inset-0 bg-[radial-gradient(70%_60%_at_50%_45%,var(--tone),transparent_75%),linear-gradient(180deg,#1a141f,#0b0a0d)]" style={`--tone:${tone}66`} aria-hidden="true">
       <Image src={p.decant} alt="" widths={[360, 560]} sizes="(min-width: 1024px) 30vw, 90vw" loading="lazy"

@@ -93,23 +93,46 @@ docs/ANALISIS.md          análisis de maquetación, semántica y SEO
    - `SITE_URL`: dominio final (canonical, sitemap y Open Graph).
    - Seguimiento (opcional): `PUBLIC_GTM_ID`, `PUBLIC_GA4_ID`, `PUBLIC_META_PIXEL_ID`, `PUBLIC_TIKTOK_PIXEL_ID`, `PUBLIC_CF_BEACON_TOKEN`.
 
-## Publicar el panel en Vercel (para que el equipo lo administre)
+## Panel de administración en producción
 
-El panel es un **segundo proyecto de Vercel** que usa la carpeta `cms/` del mismo repositorio.
+**URL del equipo: https://ejhprive-fragancias.vercel.app/admin**
 
-1. Vercel → **Add New → Project** → importar `ejhprive_fragancias` → **Root Directory: `cms`** (Framework: Next.js).
-2. En ese proyecto: **Storage → Create Database → Neon (Postgres)** y conectarla. Esto crea `DATABASE_URL`.
-3. **Settings → Environment Variables** del panel:
-   - `PAYLOAD_SECRET`: cadena aleatoria de 32+ caracteres.
-   - `CMS_URL`: `https://admin.ejhprive.com` (o la URL `.vercel.app` del panel mientras no haya dominio).
-   - `STORE_URL`: `https://ejhprive-fragancias.vercel.app` (la tienda; luego el dominio propio).
-   - `SEED_ADMIN1_EMAIL`, `SEED_ADMIN1_NAME`, `SEED_ADMIN1_PASSWORD`, `SEED_ADMIN2_EMAIL`, `SEED_ADMIN2_NAME`, `SEED_ADMIN2_PASSWORD`: las dos personas que administran.
-   - `SEED_API_KEY`: una clave aleatoria larga; la misma va en la tienda como `CMS_API_KEY`.
-4. **Deploy.** En el primer arranque se crean solas las tablas, las 6 fragancias (sin stock), los 2 administradores y el usuario de la tienda.
-5. **Settings → Domains** del panel: agregar `admin.ejhprive.com`.
-6. En el proyecto de la **tienda**: `CMS_URL=https://admin.ejhprive.com` y `CMS_API_KEY=<la misma SEED_API_KEY>` → **Redeploy**.
+```
+navegador → ejhprive-fragancias.vercel.app (tienda, Astro)
+              ├─ /, /productos, … , /api/orders, /api/stock, /api/reclamos   → la tienda
+              └─ /admin, /cms-api, /cms-assets                               → proxy → ejhprive-cms (Payload)
+                                                                                       ├─ Postgres (Neon)
+                                                                                       └─ Vercel Blob (fotos)
+```
 
-Desde ese momento el ícono de cuenta de la tienda y `ejhprive.com/admin` llevan al panel. Mientras no esté configurado, muestran «Panel en configuración» (nunca `localhost`).
+- El panel es el proyecto de Vercel **`ejhprive-cms`** (carpeta `cms/`). La tienda reenvía solo esos tres prefijos (`src/lib/cmsProxy.ts`), así que sus páginas y su `/api` no se tocan. La API del panel vive en `/cms-api` y sus archivos en `/cms-assets` justamente para no chocar con la tienda.
+- La sesión es una cookie `payload-token` **HttpOnly**, **Secure** en producción y **SameSite=Lax**, del dominio de la tienda. Contraseñas con hash (PBKDF2 de Payload). Tras 5 intentos fallidos la cuenta se bloquea 15 minutos. Los permisos se validan en el servidor (`cms/src/access.ts`).
+- **Base de datos:** Postgres en Neon. Las migraciones (`cms/src/migrations`) se aplican solas al arrancar en producción (`prodMigrations`); son aditivas. En local, sin `DATABASE_URL` de Postgres, se usa SQLite (`cms/ejh.db`).
+- **Primer arranque:** se crean las 6 fragancias (S/ 139, Hawas Ice S/ 159, stock 0) y el usuario técnico «Tienda (API)» con `SEED_API_KEY`. **Los administradores no se crean solos.**
+
+### Crear las cuentas de administración (una vez por persona)
+
+```sh
+cd cms
+ADMIN_EMAIL=persona@dominio.com ADMIN_NAME="Nombre Apellido" npx vercel env run -e production -- npm run create-admin
+```
+
+Genera una contraseña temporal segura y la muestra **una sola vez** en esa terminal; la persona la cambia en «Mi cuenta» al entrar. Si el correo ya existe, no hace nada. No hay registro público de administradores.
+
+### Variables de entorno
+
+| Proyecto | Variable | Para qué | Tipo |
+|---|---|---|---|
+| ejhprive-cms | `DATABASE_URL` | Postgres (la crea la integración Neon) | secreta |
+| ejhprive-cms | `PAYLOAD_SECRET` | Firma de sesiones y tokens | secreta |
+| ejhprive-cms | `CMS_URL` | URL pública del panel: `https://ejhprive-fragancias.vercel.app` | pública |
+| ejhprive-cms | `STORE_URL` | Origen permitido (CORS/CSRF): `https://ejhprive-fragancias.vercel.app` | pública |
+| ejhprive-cms | `SEED_API_KEY` | Clave del usuario «Tienda (API)» | secreta |
+| ejhprive-cms | `BLOB_READ_WRITE_TOKEN` | Subida de fotos (la crea Vercel Blob) | secreta |
+| ejhprive-fragancias | `CMS_URL` | Dirección interna del panel: `https://ejhprive-cms.vercel.app` | servidor |
+| ejhprive-fragancias | `CMS_API_KEY` | Igual a `SEED_API_KEY` | secreta |
+
+Sin `CMS_URL`/`CMS_API_KEY` la tienda sigue funcionando (precios «A confirmar», `/admin` muestra «Panel en configuración»).
 
 ## Seguimiento y analítica
 

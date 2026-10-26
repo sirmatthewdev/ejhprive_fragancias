@@ -14,6 +14,8 @@ export const Users: CollectionConfig = {
     tokenExpiration: 60 * 60 * 8,
     maxLoginAttempts: 5,
     lockTime: 15 * 60 * 1000,
+    // HttpOnly session cookie; Secure in production; SameSite=Lax blocks cross-site form posts
+    cookies: { secure: process.env.NODE_ENV === 'production', sameSite: 'Lax' },
   },
   access: {
     admin: canUsePanel,

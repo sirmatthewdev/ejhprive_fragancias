@@ -44,8 +44,13 @@ const productLd = {
       <!-- gallery -->
       <div class="flex flex-col gap-3 lg:sticky lg:top-28">
         <div class="relative aspect-[4/5] overflow-hidden rounded-[22px] bg-graphite ring-1 ring-cream/8" data-cursor="Zoom" data-zoom>
-          <Image src={p.img} alt={`Frasco de ${title} 100 ml con sus ingredientes`} widths={[600, 900, 1200]} sizes="(min-width: 1024px) 52vw, 92vw" loading="eager" fetchpriority="high"
-            class="absolute inset-0 size-full object-cover transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)]" data-view="frasco" transition:name={`img-${p.slug}`} />
+          {live.photo ? (
+            <img src={live.photo} alt={`Frasco de ${title} 100 ml`} width="900" height="1125" fetchpriority="high"
+              class="absolute inset-0 size-full object-cover transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)]" data-view="frasco" transition:name={`img-${p.slug}`} />
+          ) : (
+            <Image src={p.img} alt={`Frasco de ${title} 100 ml con sus ingredientes`} widths={[600, 900, 1200]} sizes="(min-width: 1024px) 52vw, 92vw" loading="eager" fetchpriority="high"
+              class="absolute inset-0 size-full object-cover transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)]" data-view="frasco" transition:name={`img-${p.slug}`} />
+          )}
           <div class="absolute inset-0 opacity-0 transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)] bg-[radial-gradient(70%_60%_at_50%_45%,var(--tone),transparent_75%),linear-gradient(180deg,#1a141f,#0b0a0d)]" style={`--tone:${tone}77`} data-view="decant">
             <Image src={p.decant} alt="Decants en atomizador de vidrio dentro de un estuche de cuero" widths={[600, 900]} sizes="(min-width: 1024px) 52vw, 92vw"
               class="size-full object-contain p-[10%] drop-shadow-[0_30px_40px_rgb(0_0_0/.6)]" />
@@ -53,7 +58,7 @@ const productLd = {
         </div>
         <div class="grid grid-cols-5 gap-3" role="group" aria-label="Elegir imagen">
           <button type="button" data-thumb="frasco" aria-pressed="true" aria-label="Ver frasco" class="aspect-square overflow-hidden rounded-xl opacity-60 ring-1 ring-cream/12 transition-[opacity,box-shadow] aria-pressed:opacity-100 aria-pressed:ring-2 aria-pressed:ring-lilac">
-            <img src={thumbFrasco.src} alt="" width="100" height="100" class="size-full object-cover" />
+            <img src={live.photo ?? thumbFrasco.src} alt="" width="100" height="100" class="size-full object-cover" />
           </button>
           <button type="button" data-thumb="decant" aria-pressed="false" aria-label="Ver decant" class="aspect-square overflow-hidden rounded-xl opacity-60 ring-1 ring-cream/12 transition-[opacity,box-shadow] aria-pressed:opacity-100 aria-pressed:ring-2 aria-pressed:ring-lilac">
             <img src={thumbDecant.src} alt="" width="100" height="100" class="size-full object-cover" />
@@ -69,7 +74,7 @@ const productLd = {
           <p class="text-[15px] text-sand" data-reveal-self="0.2">{p.familyLabel}</p>
         </div>
         <div data-reveal-self="0.3">
-          <ProductBuy client:load slug={p.slug} name={p.name} brand={p.brand} href={productUrl(p)} images={{ frasco: thumbFrasco.src, decant: thumbDecant.src }} prices={prices} available={live.available} stock={live.stock} formats={FORMATS} waBase={waLink()} />
+          <ProductBuy client:load slug={p.slug} name={p.name} brand={p.brand} href={productUrl(p)} images={{ frasco: live.photo ?? thumbFrasco.src, decant: thumbDecant.src }} prices={prices} available={live.available} stock={live.stock} formats={FORMATS} waBase={waLink()} />
         </div>
         <ul class="grid grid-cols-3 gap-3 rounded-2xl bg-graphite p-4 text-center text-xs text-sand" data-reveal>
           <li class="flex flex-col items-center gap-2"><Icon name="shield" size={18} class="text-lilac" />100% original</li>

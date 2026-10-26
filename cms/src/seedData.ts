@@ -20,7 +20,7 @@ const pw = () => randomBytes(12).toString('base64url')
  * @param opts.demoStock  give each fragrance sample stock (local only; production starts at 0)
  * @param opts.requirePasswords  only create admins whose password comes from the environment
  */
-export async function seed(payload: Payload, opts: { demoStock?: boolean; requirePasswords?: boolean } = {}) {
+export async function seed(payload: Payload, opts: { demoStock?: boolean; requirePasswords?: boolean; skipAdmins?: boolean } = {}) {
   const out: string[] = []
   const env = process.env
 
@@ -38,7 +38,7 @@ export async function seed(payload: Payload, opts: { demoStock?: boolean; requir
     { email: env.SEED_ADMIN1_EMAIL || 'admin@ejhprive.com', name: env.SEED_ADMIN1_NAME || 'Administrador 1', password: env.SEED_ADMIN1_PASSWORD },
     { email: env.SEED_ADMIN2_EMAIL || 'admin2@ejhprive.com', name: env.SEED_ADMIN2_NAME || 'Administrador 2', password: env.SEED_ADMIN2_PASSWORD },
   ]
-  for (const u of users) {
+  for (const u of opts.skipAdmins ? [] : users) {
     if (opts.requirePasswords && !u.password) continue
     const exists = await payload.count({ collection: 'users', where: { email: { equals: u.email } } })
     if (exists.totalDocs) continue
@@ -49,7 +49,7 @@ export async function seed(payload: Payload, opts: { demoStock?: boolean; requir
 
   const storeEmail = 'tienda-api@ejhprive.com'
   const hasStore = (await payload.count({ collection: 'users', where: { email: { equals: storeEmail } } })).totalDocs
-  if (!hasStore && (!opts.requirePasswords || env.SEED_API_KEY)) {
+  if (!hasStore && (!(opts.requirePasswords || opts.skipAdmins) || env.SEED_API_KEY)) {
     const apiKey = env.SEED_API_KEY || randomBytes(24).toString('hex')
     await payload.create({ collection: 'users', data: { email: storeEmail, name: 'Tienda (API)', role: 'storefront', password: pw(), enableAPIKey: true, apiKey } })
     out.push(env.SEED_API_KEY ? 'Usuario Tienda (API) creado con SEED_API_KEY' : `CMS_API_KEY=${apiKey}   ← copiar al .env de la tienda`)

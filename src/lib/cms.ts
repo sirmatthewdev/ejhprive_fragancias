@@ -17,6 +17,8 @@ export interface Live {
   available: Record<FormatId, boolean>;
   /** null when the CMS is unreachable (stock unknown) */
   stock: Stock | null;
+  /** photo uploaded in the panel (absolute URL), replaces the built-in one */
+  photo?: string | null;
 }
 export interface Price { price: number | null; regular: number | null; onSale: boolean }
 
@@ -27,6 +29,12 @@ const priceOf = (d: any, f: FormatId): Price => {
   return { price: onSale ? sale : regular, regular, onSale };
 };
 const NO_PRICE: Price = { price: null, regular: null, onSale: false };
+// uploads live on Vercel Blob (absolute URL) or, locally, under the panel's /cms-api path
+const mediaUrl = (m: any): string | null => {
+  const u = m?.sizes?.card?.url || m?.url;
+  if (!u) return null;
+  return /^https?:/.test(u) ? u : `${CMS_URL}${u}`;
+};
 
 const TTL = 30_000;
 let cache: { at: number; data: Map<string, Live> } | null = null;
@@ -38,7 +46,7 @@ let inflight: Promise<Map<string, Live> | null> | null = null;
 async function fetchCatalog(): Promise<Map<string, Live> | null> {
   if (!CMS_API_KEY) { inflight = null; return null; } // CMS not configured (e.g. first deploy): local data only
   try {
-    const r = await fetch(`${CMS_URL}/api/products?limit=100&depth=0`, { headers: auth(), signal: AbortSignal.timeout(2500) });
+    const r = await fetch(`${CMS_URL}/cms-api/products?limit=100&depth=1`, { headers: auth(), signal: AbortSignal.timeout(2500) });
     if (!r.ok) throw new Error(`CMS ${r.status}`);
     const { docs } = (await r.json()) as { docs: any[] };
     const data = new Map<string, Live>();
@@ -50,6 +58,7 @@ async function fetchCatalog(): Promise<Map<string, Live> | null> {
         prices: { '3': priceOf(d, '3'), '5': priceOf(d, '5'), '100': priceOf(d, '100') },
         available: { '3': can('3'), '5': can('5'), '100': can('100') },
         stock: { sealed, decantMl: ml },
+        photo: mediaUrl(d.photo),
       });
     }
     cache = { at: Date.now(), data };
@@ -97,7 +106,7 @@ export async function createOrder(input: OrderInput): Promise<{ number: string }
     const lines = input.items.filter((i) => i.slug === slug).map((i) => ({ fmt: i.fmt, qty: i.qty }));
     if (p.stock && !fits(p.stock, lines)) throw new Error(`Sin stock: ${slug}`);
   }
-  const r = await fetch(`${CMS_URL}/api/orders`, {
+  const r = await fetch(`${CMS_URL}/cms-api/orders`, {
     method: 'POST',
     headers: { ...auth(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ customer: input.customer, items }),
@@ -120,7 +129,7 @@ export interface ComplaintInput {
 /** Registers a Libro de Reclamaciones sheet; returns its correlative number and response deadline. */
 export async function createComplaint(input: ComplaintInput): Promise<{ number: string; dueAt: string; createdAt: string }> {
   if (!CMS_URL || !CMS_API_KEY) throw new Error('CMS no disponible');
-  const r = await fetch(`${CMS_URL}/api/complaints`, {
+  const r = await fetch(`${CMS_URL}/cms-api/complaints`, {
     method: 'POST',
     headers: { ...auth(), 'Content-Type': 'application/json' },
     body: JSON.stringify(input),

@@ -69,6 +69,12 @@ export const Products: CollectionConfig = {
       ],
     },
     {
+      type: 'row',
+      fields: [
+        { name: 'photo', label: 'Foto del frasco (opcional)', type: 'upload', relationTo: 'media', admin: { description: 'Si la cargas, reemplaza la foto de la tienda. Ideal 4:5 (vertical), mínimo 1200 × 1500 px.' } },
+      ],
+    },
+    {
       name: 'prices',
       label: 'Precios (S/)',
       type: 'group',

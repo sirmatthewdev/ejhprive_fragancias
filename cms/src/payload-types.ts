@@ -211,6 +211,10 @@ export interface Product {
    */
   tag?: string | null;
   /**
+   * Si la cargas, reemplaza la foto de la tienda. Ideal 4:5 (vertical), mínimo 1200 × 1500 px.
+   */
+  photo?: (number | null) | Media;
+  /**
    * Precio regular vacío = la tienda muestra «A confirmar». Si cargas un precio de oferta menor, la tienda lo muestra con el regular tachado y el % de descuento.
    */
   prices?: {
@@ -239,6 +243,38 @@ export interface Product {
   };
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: number;
+  /**
+   * Describe la imagen (accesibilidad y Google). Ej.: «Frasco de Khamrah con dátiles y canela».
+   */
+  alt: string;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
 /**
  * Historial automático: ventas, devoluciones, frascos abiertos para decants y ajustes manuales.
@@ -326,25 +362,6 @@ export interface Complaint {
   respondedAt?: string | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
- */
-export interface Media {
-  id: number;
-  alt: string;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -512,6 +529,7 @@ export interface ProductsSelect<T extends boolean = true> {
   slug?: T;
   active?: T;
   tag?: T;
+  photo?: T;
   prices?:
     | T
     | {
@@ -630,6 +648,20 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

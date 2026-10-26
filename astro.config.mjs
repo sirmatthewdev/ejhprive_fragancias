@@ -10,7 +10,8 @@ import vercel from '@astrojs/vercel';
 export default defineConfig({
   // public URL for canonical, sitemap and Open Graph; set SITE_URL in Vercel once the own domain is live
   site: process.env.SITE_URL || 'https://ejhprive-fragancias.vercel.app',
-  trailingSlash: 'always',
+  // 'ignore': the proxied panel uses paths without a trailing slash; the shop's links keep theirs
+  trailingSlash: 'ignore',
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
   integrations: [react(), sitemap({ filter: (page) => !/\/(sistema|cuenta|admin)\//.test(page) })],
 

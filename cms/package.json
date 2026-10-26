@@ -13,7 +13,8 @@
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start -p 3000",
-    "seed": "cross-env NODE_OPTIONS=--no-deprecation payload run src/seed.ts"
+    "seed": "cross-env NODE_OPTIONS=--no-deprecation payload run src/seed.ts",
+    "create-admin": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/create-admin.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.91.0",

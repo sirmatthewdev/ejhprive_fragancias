@@ -22,8 +22,11 @@ const dirname = path.dirname(filename)
 const storeUrl = process.env.STORE_URL || 'http://localhost:4321'
 const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || ''
 const usePostgres = dbUrl.startsWith('postgres')
-// the panel's own public URL (custom domain, or the Vercel URL as fallback)
-const cmsUrl = process.env.CMS_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:3000')
+// public URL where the team opens the panel: the shop's domain (it proxies /admin), or this project's URL locally
+const cmsUrl = process.env.CMS_URL || 'http://localhost:3000'
+// this deployment's own address, so the panel also works when opened directly
+const selfUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:3000'
+const origins = [...new Set([storeUrl, cmsUrl, selfUrl])]
 
 export default buildConfig({
   serverURL: cmsUrl,
@@ -40,8 +43,9 @@ export default buildConfig({
   },
   i18n: { supportedLanguages: { es }, fallbackLanguage: 'es' },
   collections: [Orders, Products, InventoryMovements, Complaints, Users, Media],
-  cors: [storeUrl],
-  csrf: [storeUrl],
+  routes: { api: '/cms-api' },
+  cors: origins,
+  csrf: origins,
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
@@ -51,11 +55,12 @@ export default buildConfig({
     : sqliteAdapter({ client: { url: dbUrl || 'file:./ejh.db' } }),
   sharp,
   // uploads go to Vercel Blob when its token exists (the serverless filesystem is read-only)
-  plugins: [vercelBlobStorage({ enabled: !!process.env.BLOB_READ_WRITE_TOKEN, collections: { media: true }, token: process.env.BLOB_READ_WRITE_TOKEN || '' })],
+  plugins: [vercelBlobStorage({ enabled: !!process.env.BLOB_READ_WRITE_TOKEN, collections: { media: { disablePayloadAccessControl: true } }, token: process.env.BLOB_READ_WRITE_TOKEN || '' })],
   // a fresh production database gets the catalogue, the two admins and the shop's API user on first start
   onInit: async (payload) => {
     if (!usePostgres) return
-    const out = await seed(payload, { requirePasswords: true })
+    // catalogue + the shop's API user only; admins are created explicitly with `npm run create-admin`
+    const out = await seed(payload, { skipAdmins: true })
     if (out.length) payload.logger.info(`Datos iniciales: ${out.join(' · ')}`)
   },
 })
