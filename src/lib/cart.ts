@@ -73,8 +73,8 @@ export function setQty(slug: string, fmt: FormatId, qty: number) {
 
 export const clearCart = () => $cart.set([]);
 
-/** Asks the shop for current stock of the given fragrances. */
-export async function fetchStock(slugs: string[]): Promise<Record<string, { active: boolean; stock: Stock | null }> | null> {
+/** Asks the shop for current stock (and price) of the given fragrances. */
+export async function fetchStock(slugs: string[]): Promise<Record<string, { active: boolean; stock: Stock | null; prices?: Record<FormatId, number | null> }> | null> {
   if (!slugs.length) return {};
   try {
     const r = await fetch(`/api/stock/?slugs=${encodeURIComponent([...new Set(slugs)].join(','))}`, { cache: 'no-store' });
@@ -83,8 +83,9 @@ export async function fetchStock(slugs: string[]): Promise<Record<string, { acti
 }
 
 /**
- * Re-checks the whole bag against current stock: refreshes snapshots and lowers (or removes) lines
- * that no longer fit. Returns a human message when something had to change.
+ * Re-checks the whole bag against current stock and prices: refreshes snapshots, lowers (or removes)
+ * lines that no longer fit and updates prices that changed (e.g. an offer ended), so the subtotal is
+ * what the order will be charged. Returns a human message when something had to change.
  */
 export async function syncCartStock(): Promise<string | null> {
   const lines = $cart.get();
@@ -104,14 +105,17 @@ export async function syncCartStock(): Promise<string | null> {
       const room = remaining(stock, kept.map((k) => ({ fmt: k.fmt, qty: k.qty })), l.fmt);
       const qty = Math.min(l.qty, room);
       if (qty < l.qty) changed.push(qty ? `${l.name} (${fmtLabel(l.fmt)}): quedan ${qty}` : `${l.name} (${fmtLabel(l.fmt)}) se agotó`);
-      if (qty > 0) kept.push({ ...l, qty, stock });
+      // price unknown (CMS down) keeps the one the bag already had
+      const price = info?.prices ? info.prices[l.fmt] : l.price;
+      if (qty > 0 && price !== l.price) changed.push(`${l.name} (${fmtLabel(l.fmt)}): precio actualizado a ${money(price)}`);
+      if (qty > 0) kept.push({ ...l, qty, stock, price });
     }
     next.push(...kept);
   }
   // keep the original order of the lines in the bag
   const pos = (l: CartLine) => lines.findIndex((x) => same(x, l.slug, l.fmt));
   $cart.set(next.sort((a, b) => pos(a) - pos(b)));
-  return changed.length ? `Ajustamos tu bolsa al stock disponible: ${changed.join(' · ')}.` : null;
+  return changed.length ? `Actualizamos tu bolsa: ${changed.join(' · ')}.` : null;
 }
 
 export const fmtLabel = (fmt: FormatId) => (fmt === '100' ? 'Frasco 100 ml' : `Decant ${fmt} ml`);

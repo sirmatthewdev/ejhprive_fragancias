@@ -26,7 +26,9 @@ const usePostgres = dbUrl.startsWith('postgres')
 const cmsUrl = process.env.CMS_URL || 'http://localhost:3000'
 // this deployment's own address, so the panel also works when opened directly
 const selfUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:3000'
-const origins = [...new Set([storeUrl, cmsUrl, selfUrl])]
+// a Preview deployment is opened at its own *.vercel.app address
+const deployUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : selfUrl
+const origins = [...new Set([storeUrl, cmsUrl, selfUrl, deployUrl])]
 
 export default buildConfig({
   serverURL: cmsUrl,

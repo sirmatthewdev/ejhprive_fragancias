@@ -72,15 +72,15 @@ async function fetchCatalog(): Promise<Map<string, Live> | null> {
 }
 
 /**
- * Stale-while-revalidate: a fresh cache is returned as is; a stale one is returned immediately
- * while a single background request refreshes it, so page renders never wait on the CMS.
+ * Prices shown are never older than TTL: a recent cache is returned as is, an older one waits for a
+ * single shared refresh (falling back to the old data if the CMS is down). Serving stale data while
+ * revalidating would let the first visitor after a price edit — often the admin checking it — see the old price.
  */
 export async function getCatalog(opts: { fresh?: boolean } = {}): Promise<Map<string, Live> | null> {
   // fresh: pages and endpoints that decide what can be bought always ask the CMS (falls back to cache if it's down)
-  if (opts.fresh) { inflight ??= fetchCatalog(); return inflight; }
-  if (cache && Date.now() - cache.at < TTL) return cache.data;
+  if (!opts.fresh && cache && Date.now() - cache.at < TTL) return cache.data;
   inflight ??= fetchCatalog();
-  return cache ? cache.data : inflight;
+  return inflight;
 }
 
 /** Live info for one product, with safe defaults when the CMS is down. */

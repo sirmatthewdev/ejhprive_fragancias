@@ -12,8 +12,8 @@ const sections = [
   <div class="wrap grid gap-12 py-[clamp(48px,7vw,104px)] lg:grid-cols-[260px_1fr]">
     <nav aria-label="En esta página" class="lg:sticky lg:top-32 lg:self-start">
       <p class="kicker mb-4">Legales</p>
-      <ul class="flex flex-col gap-2 text-sm text-sand">
-        {sections.map((s) => <li><a href={`#${s.id}`} class="link-u hover:text-cream">{s.title}</a></li>)}
+      <ul class="flex flex-col text-sm text-sand">
+        {sections.map((s) => <li><a href={`#${s.id}`} class="link-u inline-block py-1.5 hover:text-cream">{s.title}</a></li>)}
       </ul>
     </nav>
     <article class="max-w-[68ch]">
