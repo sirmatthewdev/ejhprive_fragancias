@@ -53,7 +53,7 @@ export default buildConfig({
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   // Postgres (Neon via Vercel) in production, SQLite file for local work
   db: usePostgres
-    ? postgresAdapter({ pool: { connectionString: dbUrl }, prodMigrations: migrations })
+    ? postgresAdapter({ pool: { connectionString: dbUrl }, prodMigrations: migrations, push: false }) // schema changes only through migrations, even from local scripts
     : sqliteAdapter({ client: { url: dbUrl || 'file:./ejh.db' } }),
   sharp,
   // uploads go to Vercel Blob when its token exists (the serverless filesystem is read-only)

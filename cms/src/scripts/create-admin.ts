@@ -9,6 +9,7 @@
  * (`payload run` does not forward CLI arguments, hence the environment variables.)
  */
 import { randomBytes } from 'node:crypto'
+import { appendFileSync } from 'node:fs'
 import { getPayload } from 'payload'
 
 // PAYLOAD_SECRET is a sensitive Vercel variable and can't be pulled; creating a user doesn't depend on it
@@ -33,5 +34,12 @@ if (exists.totalDocs) {
 // 18 random bytes → 24 url-safe characters
 const password = randomBytes(18).toString('base64url')
 await payload.create({ collection: 'users', data: { email, name, role: 'admin', password }, overrideAccess: true })
-console.log(`\nAdministrador creado: ${name} <${email}>\nContraseña temporal (se muestra solo esta vez): ${password}\n`)
+// ADMIN_PASSWORD_FILE keeps the password out of the terminal (and any log of it): it is appended to that file instead
+const file = process.env.ADMIN_PASSWORD_FILE
+if (file) {
+  appendFileSync(file, `${email}\t${password}\n`, { mode: 0o600 })
+  console.log(`Administrador creado: ${name} <${email}>. Contraseña temporal guardada en el archivo indicado.`)
+} else {
+  console.log(`\nAdministrador creado: ${name} <${email}>\nContraseña temporal (se muestra solo esta vez): ${password}\n`)
+}
 process.exit(0)
