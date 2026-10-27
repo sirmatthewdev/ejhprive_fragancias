@@ -16,10 +16,10 @@ const label = 'flex flex-col gap-2 text-[13px] font-semibold';
     </div>
 
     <dl class="mb-10 grid gap-4 rounded-2xl border border-cream/10 bg-graphite p-6 text-sm sm:grid-cols-3">
-      <div><dt class="text-xs uppercase tracking-[0.14em] text-mist">Proveedor</dt><dd class="mt-1">{SITE.legal.businessName}</dd></div>
-      <div><dt class="text-xs uppercase tracking-[0.14em] text-mist">RUC</dt><dd class="mt-1">{SITE.legal.ruc}</dd></div>
+      <div><dt class="text-xs uppercase tracking-[0.14em] text-mist">Proveedor</dt><dd class="mt-1">{SITE.legal.businessName || 'EJH PRIVÉ'}</dd></div>
+      {SITE.legal.ruc && <div><dt class="text-xs uppercase tracking-[0.14em] text-mist">RUC</dt><dd class="mt-1">{SITE.legal.ruc}</dd></div>}
       <div><dt class="text-xs uppercase tracking-[0.14em] text-mist">Fecha</dt><dd class="mt-1">{today}</dd></div>
-      <div class="sm:col-span-3"><dt class="text-xs uppercase tracking-[0.14em] text-mist">Domicilio</dt><dd class="mt-1">{SITE.legal.address}</dd></div>
+      {SITE.legal.address && <div class="sm:col-span-3"><dt class="text-xs uppercase tracking-[0.14em] text-mist">Domicilio</dt><dd class="mt-1">{SITE.legal.address}</dd></div>}
     </dl>
 
     <form class="flex flex-col gap-10" data-lr novalidate>

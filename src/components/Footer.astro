@@ -65,7 +65,7 @@ const year = new Date().getFullYear();
           <Icon name="book" size={16} /> Libro de Reclamaciones
         </a>
       </nav>
-      <p class="lg:text-right">© {year} EJH PRIVÉ · {SITE.legal.businessName} · RUC {SITE.legal.ruc}</p>
+      <p class="lg:text-right">© {year} EJH PRIVÉ{SITE.legal.businessName && ` · ${SITE.legal.businessName}`}{SITE.legal.ruc && ` · RUC ${SITE.legal.ruc}`}</p>
     </div>
   </div>
 

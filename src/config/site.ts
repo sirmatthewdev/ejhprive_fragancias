@@ -15,11 +15,11 @@ export const SITE = {
   tiktok: '', // [https://tiktok.com/@usuario]
   email: '', // [correo de contacto]
   dispatch: '24 a 48 horas hábiles',
-  /** Required on the Libro de Reclamaciones (Código de Protección y Defensa del Consumidor). */
+  /** Required on the Libro de Reclamaciones (Código de Protección y Defensa del Consumidor). Empty = not shown yet. */
   legal: {
-    businessName: '[Razón social]',
-    ruc: '[RUC]',
-    address: '[Dirección fiscal]',
+    businessName: '', // [Razón social]
+    ruc: '', // [RUC]
+    address: '', // [Dirección fiscal]
   },
 };
 
