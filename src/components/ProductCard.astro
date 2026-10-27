@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import Icon from './ui/Icon.astro';
 import { type Product, type FormatId, productUrl, FAMILIES } from '../data/products';
 import { discount, money } from '../lib/cart';
@@ -21,11 +21,14 @@ const hrefOf = (f: FormatId) => (f === '100' ? base : `${base}?formato=${f}`);
 // per-format data the click handler swaps in (price, link)
 const info = Object.fromEntries(formats.map((f) => {
   const pr = live.prices[f];
-  return [f, { price: money(pr.price), regular: discount(pr.regular, pr.price) ? money(pr.regular) : '', href: hrefOf(f), from: f !== '100' }];
+  return [f, { price: money(pr.price), regular: discount(pr.regular, pr.price) ? money(pr.regular) : '', href: hrefOf(f), from: f !== '100', p: pr.price, ok: live.available[f] }];
 }));
+// what «Agregar» puts in the bag (same thumbnail the product page uses)
+const thumb = live.photo ?? (await getImage({ src: p.img, width: 200, format: 'webp' })).src;
+const bagItem = { slug: p.slug, name: p.name, brand: p.brand, img: thumb, stock: live.stock };
 ---
 <article class:list={['group/card relative flex flex-col gap-4', soldOut && '[&_img]:grayscale-[.6] [&_img]:opacity-70']}
-  data-family={p.family} data-cursor="Ver" data-card data-view={initial === '100' ? 'frasco' : 'decant-off'} data-formats={JSON.stringify(info)}>
+  data-family={p.family} data-cursor="Ver" data-card data-view={initial === '100' ? 'frasco' : 'decant-off'} data-formats={JSON.stringify(info)} data-fmt={initial} data-bag={JSON.stringify(bagItem)}>
   <div class="relative aspect-[4/5] overflow-hidden rounded-2xl bg-graphite ring-1 ring-cream/8">
     {live.photo ? (
       <img src={live.photo} alt={`${decant ? 'Decants de ' : ''}${p.brand} ${p.name}`} width="900" height="1125" decoding="async"
@@ -50,7 +53,7 @@ const info = Object.fromEntries(formats.map((f) => {
     {tag && <span class:list={['chip absolute left-3.5 top-3.5 border backdrop-blur-md', soldOut ? 'border-cream/30 bg-onyx/85 text-sand' : off ? 'border-transparent bg-lilac text-plum' : 'border-lilac/35 bg-onyx/70 text-[#E5D9F5]']}>{tag}</span>}
     <div class="absolute inset-x-3.5 bottom-3.5 z-10 flex flex-wrap gap-1.5" role="group" aria-label={`Formato de ${p.name}`}>
       {formats.map((f) => (
-        <button type="button" data-chip={f} aria-pressed={String(f === initial)} disabled={!live.available[f]}
+        <button type="button" data-chip={f} aria-pressed={String(f === initial && live.available[f])} disabled={!live.available[f]}
           class="chip h-7 cursor-pointer border border-cream/20 bg-onyx/60 px-2.5 text-[11px] text-cream backdrop-blur-md transition-colors duration-300 hover:border-cream/60 aria-pressed:border-cream aria-pressed:bg-cream aria-pressed:text-plum disabled:cursor-not-allowed disabled:border-cream/10 disabled:text-cream/40 disabled:line-through">
           {f} ml{!live.available[f] && <span class="sr-only"> (agotado)</span>}
         </button>
@@ -69,9 +72,10 @@ const info = Object.fromEntries(formats.map((f) => {
         <span class:list={['font-semibold', off && 'text-lilac']} data-card-price>{money(from.price)}</span>
         <s class="text-xs text-mist" data-card-regular>{off ? money(from.regular) : ''}</s>
       </p>
-      <span class="flex items-center gap-1.5 text-[13px] text-sand opacity-0 transition-[opacity,transform] duration-500 group-hover/card:translate-x-0 group-hover/card:opacity-100 max-lg:opacity-100 lg:-translate-x-2">
-        Ver <Icon name="arrow" size={14} />
-      </span>
+      <button type="button" data-card-add disabled={!live.available[initial]} aria-label={`Agregar ${p.name} a la bolsa`}
+        class="relative z-10 flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-cream/25 px-3.5 text-[13px] text-cream transition-colors duration-300 hover:border-cream hover:bg-cream hover:text-plum disabled:cursor-not-allowed disabled:border-cream/10 disabled:bg-transparent disabled:text-cream/40">
+        <Icon name="bag" size={14} /><span data-card-add-label>{live.available[initial] ? 'Agregar' : 'Agotado'}</span>
+      </button>
     </div>
   </div>
 </article>
@@ -84,10 +88,40 @@ const info = Object.fromEntries(formats.map((f) => {
 </style>
 
 <script>
+  import { addToCart, fetchStock, hydrateCart } from '../lib/cart';
+  import { trackAddToCart } from '../lib/track';
+  import type { FormatId } from '../data/products';
+
+  const label = (btn: HTMLButtonElement, text: string, ms = 0) => {
+    const el = btn.querySelector('[data-card-add-label]')!;
+    el.textContent = text;
+    if (ms) setTimeout(() => { el.textContent = btn.disabled ? 'Agotado' : 'Agregar'; }, ms);
+  };
+
   // one delegated listener for every card on every page
   if (!(window as any).__ejhCards) {
     (window as any).__ejhCards = true;
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', async (e) => {
+      const add = (e.target as Element).closest<HTMLButtonElement>('[data-card-add]');
+      if (add) {
+        e.preventDefault(); e.stopPropagation();
+        const card = add.closest<HTMLElement>('[data-card]')!;
+        if (add.disabled || add.dataset.busy) return;
+        const f = card.dataset.fmt as FormatId;
+        const info = JSON.parse(card.dataset.formats || '{}')[f];
+        const item = JSON.parse(card.dataset.bag || '{}');
+        add.dataset.busy = '1';
+        hydrateCart();
+        // stock and price at the moment of adding: they may have changed since the page loaded
+        const live = (await fetchStock([item.slug]))?.[item.slug];
+        delete add.dataset.busy;
+        const price = live?.prices ? live.prices[f] : info.p;
+        const n = addToCart({ slug: item.slug, name: item.name, brand: item.brand, fmt: f, price, img: item.img, href: info.href, stock: live?.stock ?? item.stock }, 1);
+        if (!n) { label(add, 'Sin stock', 1800); return; }
+        trackAddToCart({ slug: item.slug, name: item.name, brand: item.brand, fmt: f, qty: n, price });
+        label(add, 'Agregado ✓', 1800);
+        return;
+      }
       const chip = (e.target as Element).closest<HTMLButtonElement>('[data-chip]');
       const card = chip?.closest<HTMLElement>('[data-card]');
       if (!chip || !card || chip.disabled) return;
@@ -96,6 +130,9 @@ const info = Object.fromEntries(formats.map((f) => {
       const info = JSON.parse(card.dataset.formats || '{}')[f];
       card.querySelectorAll('[data-chip]').forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
       card.dataset.view = f === '100' ? 'frasco' : 'decant';
+      card.dataset.fmt = f;
+      const btn = card.querySelector<HTMLButtonElement>('[data-card-add]');
+      if (btn) { btn.disabled = !info?.ok; label(btn, info?.ok ? 'Agregar' : 'Agotado'); }
       if (!info) return;
       card.querySelector<HTMLAnchorElement>('[data-card-link]')!.href = info.href;
       card.querySelector('[data-card-price]')!.textContent = info.price;

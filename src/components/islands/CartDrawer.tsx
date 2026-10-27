@@ -1,7 +1,7 @@
 import { useStore } from '@nanostores/react';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { trackBeginCheckout, trackOrder } from '../../lib/track';
-import { $cart, $cartOpen, $count, $subtotal, clearCart, fmtLabel, hydrateCart, money, roomFor, setQty, syncCartStock, type CartLine } from '../../lib/cart';
+import { $cart, $cartExpired, $cartOpen, $count, $subtotal, clearCart, fmtLabel, hydrateCart, money, roomFor, setQty, syncCartStock, type CartLine } from '../../lib/cart';
 
 interface Props { waBase: string }
 type Step = 'bag' | 'details' | 'done';
@@ -30,6 +30,7 @@ export default function CartDrawer({ waBase }: Props) {
   const lines = useStore($cart);
   const count = useStore($count);
   const subtotal = useStore($subtotal);
+  const expired = useStore($cartExpired);
   const panel = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState<Step>('bag');
   const [delivery, setDelivery] = useState<'envio' | 'retiro'>('envio');
@@ -126,7 +127,7 @@ export default function CartDrawer({ waBase }: Props) {
               {lines.length === 0 && (
                 <li className="flex h-full flex-col items-center justify-center gap-4 py-16 text-center">
                   <p className="font-serif text-3xl">Tu bolsa está vacía</p>
-                  <p className="max-w-[260px] text-sm text-mist">Empieza con un decant de 3 ml: es la mejor forma de encontrar tu firma.</p>
+                  <p className="max-w-[260px] text-sm text-mist">{expired ? 'Pasaron 15 minutos sin cambios y tu bolsa se vació. Vuelve a agregar lo que quieras.' : 'Empieza con un decant de 3 ml: es la mejor forma de encontrar tu firma.'}</p>
                   <a href="/productos/?formato=decant" onClick={() => $cartOpen.set(false)} className="btn btn-cream mt-2">Ver decants</a>
                 </li>
               )}

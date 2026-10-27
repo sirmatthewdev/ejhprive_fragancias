@@ -16,6 +16,9 @@ export interface CartLine {
 }
 
 const KEY = 'ejh-cart-v1';
+const KEY_AT = 'ejh-cart-at';
+/** the bag empties itself after 15 minutes without changes (nothing is reserved meanwhile) */
+export const CART_TTL = 15 * 60_000;
 
 const VALID: FormatId[] = ['3', '5', '100'];
 
@@ -30,6 +33,8 @@ function load(): CartLine[] {
 
 export const $cart = atom<CartLine[]>([]);
 export const $cartOpen = atom(false);
+/** true once the bag was emptied for being idle longer than CART_TTL */
+export const $cartExpired = atom(false);
 export const $count = computed($cart, (l) => l.reduce((n, x) => n + x.qty, 0));
 export const $subtotal = computed($cart, (l) =>
   l.some((x) => x.price == null) ? null : l.reduce((n, x) => n + (x.price ?? 0) * x.qty, 0),
@@ -39,10 +44,26 @@ let hydrated = false;
 export function hydrateCart() {
   if (hydrated || typeof window === 'undefined') return;
   hydrated = true;
-  $cart.set(load());
-  $cart.listen((l) => { try { localStorage.setItem(KEY, JSON.stringify(l)); } catch { /* private mode */ } });
+  $cart.set(stale() ? expire() : load());
+  $cart.listen((l) => {
+    try { localStorage.setItem(KEY, JSON.stringify(l)); localStorage.setItem(KEY_AT, String(Date.now())); } catch { /* private mode */ }
+    if (l.length) $cartExpired.set(false);
+  });
   window.addEventListener('storage', (e) => { if (e.key === KEY) $cart.set(load()); });
+  setInterval(() => { if ($cart.get().length && stale()) $cart.set(expire()); }, 15_000);
 }
+
+const stale = () => {
+  try {
+    const at = Number(localStorage.getItem(KEY_AT));
+    return !!at && Date.now() - at > CART_TTL && load().length > 0;
+  } catch { return false; }
+};
+const expire = (): CartLine[] => {
+  try { localStorage.removeItem(KEY); localStorage.removeItem(KEY_AT); } catch { /* private mode */ }
+  $cartExpired.set(true);
+  return [];
+};
 
 const same = (a: CartLine, slug: string, fmt: FormatId) => a.slug === slug && a.fmt === fmt;
 
