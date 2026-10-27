@@ -15,7 +15,8 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start -p 3000",
     "seed": "cross-env NODE_OPTIONS=--no-deprecation payload run src/seed.ts",
     "create-admin": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/create-admin.ts",
-    "set-store-key": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/set-store-key.ts"
+    "set-store-key": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/set-store-key.ts",
+    "set-catalog": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/set-catalog.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.91.0",
