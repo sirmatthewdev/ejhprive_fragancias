@@ -6,6 +6,10 @@ import mandarin from '../assets/img/product-mandarin.jpg';
 import spectra from '../assets/img/product-spectra.jpg';
 import hawas from '../assets/img/product-hawas.jpg';
 import ninepm from '../assets/img/product-ninepm.jpg';
+import asad from '../assets/img/product-asad.jpg';
+import asadBourbon from '../assets/img/product-asad-bourbon.jpg';
+import cdnIntense from '../assets/img/product-cdn-intense.jpg';
+import yaraPink from '../assets/img/product-yara-pink.jpg';
 // transparent cut-out of real spray decants (from Pexels 7000326, free licence), shown on each product's own tone
 import decantPhoto from '../assets/img/decants-cutout.png';
 
@@ -20,7 +24,7 @@ export interface Product {
   name: string;
   family: Family;
   familyLabel: string;
-  gender: 'Unisex' | 'Masculina';
+  gender: 'Unisex' | 'Masculina' | 'Femenina';
   tag?: string;
   /** Short line used in cards, hero and meta descriptions. */
   accord: string;
@@ -90,11 +94,44 @@ export const products: Product[] = [
     meters: [{ label: 'Duración', value: 'Media-alta', pct: 70 }, { label: 'Proyección', value: 'Alta', pct: 78 }, { label: 'Dulzor', value: 'Bajo', pct: 30 }, { label: 'Ideal para', value: 'Día · calor', pct: 80 }],
     img: hawas, decant: decantPhoto, related: ['mandarin', 'spectra', 'ninepm'],
   },
+  {
+    slug: 'asad-clasico', brand: 'Lattafa', name: 'Asad', family: 'Ámbar especiada', familyLabel: 'Ámbar especiada · Amaderada', gender: 'Masculina', tag: 'Nuevo',
+    accord: 'Pimienta negra · Café · Vainilla',
+    desc: 'Intenso y seguro: pimienta negra, piña y tabaco en la salida, un corazón de café, pachulí e iris, y un fondo cálido de vainilla, ámbar, maderas secas, benjuí y láudano. Hecho para dejar huella.',
+    notes: { top: ['Pimienta negra', 'Piña', 'Tabaco'], heart: ['Café', 'Pachulí', 'Iris'], base: ['Vainilla', 'Ámbar', 'Maderas secas', 'Benjuí', 'Láudano'] },
+    meters: [{ label: 'Duración', value: 'Alta', pct: 80 }, { label: 'Proyección', value: 'Alta', pct: 78 }, { label: 'Dulzor', value: 'Medio', pct: 55 }, { label: 'Ideal para', value: 'Noche · frío', pct: 75 }],
+    img: asad, decant: decantPhoto, related: ['bourbon', 'cdni', 'khamrah'],
+  },
+  {
+    slug: 'asad-bourbon', brand: 'Lattafa', name: 'Asad Bourbon', family: 'Gourmand', familyLabel: 'Gourmand · Especiada', gender: 'Masculina', tag: 'Nuevo',
+    accord: 'Pimienta rosa · Cacao · Vainilla bourbon',
+    desc: 'La versión más golosa del Asad: pimienta rosa, lavanda y ciruela mirabel abren paso a un corazón de cacao, davana y nuez moscada, sobre un fondo de vainilla bourbon, ámbar y vetiver. Cálido, especiado y elegante.',
+    notes: { top: ['Pimienta rosa', 'Lavanda', 'Ciruela mirabel'], heart: ['Cacao', 'Davana', 'Nuez moscada'], base: ['Vainilla bourbon', 'Ámbar', 'Vetiver'] },
+    meters: [{ label: 'Duración', value: 'Alta', pct: 80 }, { label: 'Proyección', value: 'Media-alta', pct: 70 }, { label: 'Dulzor', value: 'Marcado', pct: 72 }, { label: 'Ideal para', value: 'Tarde · noche', pct: 70 }],
+    img: asadBourbon, decant: decantPhoto, related: ['asad', 'khamrah', 'qahwa'],
+  },
+  {
+    slug: 'club-de-nuit-intense-man', brand: 'Armaf', name: 'Club de Nuit Intense Man', family: 'Nocturna', familyLabel: 'Chipre afrutada · Ahumada', gender: 'Masculina', tag: 'Nuevo',
+    accord: 'Piña · Abedul · Almizcle',
+    desc: 'Un clásico moderno: limón, piña, grosella negra, manzana y bergamota en la salida, un corazón ahumado de abedul con jazmín y rosa, y un fondo de almizcle, ámbar gris, pachulí y vainilla. Gran rendimiento y presencia.',
+    notes: { top: ['Limón', 'Piña', 'Grosella negra', 'Manzana', 'Bergamota'], heart: ['Abedul', 'Jazmín', 'Rosa'], base: ['Almizcle', 'Ámbar gris', 'Pachulí', 'Vainilla'] },
+    meters: [{ label: 'Duración', value: 'Muy alta', pct: 90 }, { label: 'Proyección', value: 'Alta', pct: 85 }, { label: 'Dulzor', value: 'Bajo', pct: 35 }, { label: 'Ideal para', value: 'Noche · salidas', pct: 78 }],
+    img: cdnIntense, decant: decantPhoto, related: ['asad', 'ninepm', 'mandarin'],
+  },
+  {
+    slug: 'yara-pink', brand: 'Lattafa', name: 'Yara Pink', family: 'Gourmand', familyLabel: 'Gourmand · Floral', gender: 'Femenina', tag: 'Nuevo',
+    accord: 'Orquídea · Frutas tropicales · Vainilla',
+    desc: 'Dulce y cremoso: heliotropo, orquídea y mandarina en la salida, un corazón goloso con frutas tropicales, y un fondo suave de vainilla, almizcle y sándalo. Femenino, alegre y fácil de llevar.',
+    notes: { top: ['Heliotropo', 'Orquídea', 'Mandarina'], heart: ['Acorde gourmand', 'Frutas tropicales'], base: ['Vainilla', 'Almizcle', 'Sándalo'] },
+    meters: [{ label: 'Duración', value: 'Media-alta', pct: 70 }, { label: 'Proyección', value: 'Media', pct: 62 }, { label: 'Dulzor', value: 'Marcado', pct: 80 }, { label: 'Ideal para', value: 'Día · todo el año', pct: 72 }],
+    img: yaraPink, decant: decantPhoto, related: ['qahwa', 'spectra', 'bourbon'],
+  },
 ];
 
 // related ids above use short keys; map them to slugs
 const SHORT: Record<string, string> = {
   khamrah: 'khamrah', qahwa: 'khamrah-qahwa', ninepm: '9-pm', mandarin: 'odyssey-mandarin-sky', spectra: 'odyssey-spectra', hawas: 'hawas-ice',
+  asad: 'asad-clasico', bourbon: 'asad-bourbon', cdni: 'club-de-nuit-intense-man', yara: 'yara-pink',
 };
 
 export const bySlug = (slug: string) => products.find((p) => p.slug === slug);
