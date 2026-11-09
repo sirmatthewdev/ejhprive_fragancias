@@ -241,6 +241,17 @@ export interface Product {
      * Separadas por comas
      */
     notesBase?: string | null;
+    duration?: ('Baja' | 'Media' | 'Media-alta' | 'Alta' | 'Muy alta') | null;
+    projection?: ('Baja' | 'Media' | 'Media-alta' | 'Alta' | 'Muy alta') | null;
+    sweetness?: ('Bajo' | 'Medio' | 'Marcado' | 'Muy marcado') | null;
+    /**
+     * Ej.: Noche · frío
+     */
+    idealFor?: string | null;
+    /**
+     * Hasta 3. Vacío = la tienda elige por familia y género.
+     */
+    related?: (number | Product)[] | null;
   };
   /**
    * Precio regular vacío = la tienda muestra «A confirmar». Si cargas un precio de oferta menor, la tienda lo muestra con el regular tachado y el % de descuento.
@@ -569,6 +580,11 @@ export interface ProductsSelect<T extends boolean = true> {
         notesTop?: T;
         notesHeart?: T;
         notesBase?: T;
+        duration?: T;
+        projection?: T;
+        sweetness?: T;
+        idealFor?: T;
+        related?: T;
       };
   prices?:
     | T

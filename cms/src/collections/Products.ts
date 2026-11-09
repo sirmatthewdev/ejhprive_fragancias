@@ -2,6 +2,10 @@ import { APIError, type CollectionConfig } from 'payload'
 import { isAdmin, isTeam, isTeamOrStore } from '../access'
 import { BOTTLE_ML } from '../inventory'
 
+// level scales for the product page meters; the shop draws the bar from the chosen level
+const LEVELS = ['Baja', 'Media', 'Media-alta', 'Alta', 'Muy alta']
+const SWEETNESS = ['Bajo', 'Medio', 'Marcado', 'Muy marcado']
+
 const saleBelow = (regularField: 'p3' | 'p5' | 'p100') =>
   (value: number | null | undefined, { siblingData }: { siblingData: Record<string, unknown> }) => {
     const regular = siblingData?.[regularField] as number | null | undefined
@@ -99,6 +103,20 @@ export const Products: CollectionConfig = {
             { name: 'notesHeart', label: 'Notas de corazón', type: 'text', admin: { description: 'Separadas por comas' } },
             { name: 'notesBase', label: 'Notas de fondo', type: 'text', admin: { description: 'Separadas por comas' } },
           ],
+        },
+        {
+          type: 'row',
+          fields: [
+            { name: 'duration', label: 'Duración', type: 'select', options: LEVELS },
+            { name: 'projection', label: 'Proyección', type: 'select', options: LEVELS },
+            { name: 'sweetness', label: 'Dulzor', type: 'select', options: SWEETNESS },
+            { name: 'idealFor', label: 'Ideal para', type: 'text', admin: { description: 'Ej.: Noche · frío' } },
+          ],
+        },
+        {
+          name: 'related', label: 'También te puede gustar', type: 'relationship', relationTo: 'products', hasMany: true, maxRows: 3,
+          filterOptions: ({ id }) => (id ? { id: { not_equals: id } } : true),
+          admin: { description: 'Hasta 3. Vacío = la tienda elige por familia y género.' },
         },
       ],
     },

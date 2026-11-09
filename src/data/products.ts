@@ -37,6 +37,8 @@ export interface Product {
   img: ImageMetadata;
   decant: ImageMetadata;
   related: string[];
+  /** slugs picked in the panel; they replace `related` */
+  panelRelated?: string[];
 }
 
 // Prices and stock live in the CMS (cms/ → Productos); see src/lib/cms.ts.

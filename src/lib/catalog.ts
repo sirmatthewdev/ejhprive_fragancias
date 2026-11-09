@@ -5,28 +5,37 @@
  */
 import { products as builtIn, relatedOf as builtInRelated, decantPhoto, type Product } from '../data/products';
 import placeholder from '../assets/img/product-placeholder.jpg';
-import { getCatalog, liveOf, type Details, type Live } from './cms';
+import { getCatalog, liveOf, type Details, type Live, type MeterLabel } from './cms';
 
 const withDetails = (p: Product, d?: Details): Product => {
   if (!d) return p;
   const familyChanged = d.family && d.family !== p.family;
   return {
     ...p,
+    name: d.name || p.name,
+    brand: d.brand || p.brand,
     gender: d.gender ?? p.gender,
     family: d.family ?? p.family,
     familyLabel: d.familyLabel ?? (familyChanged ? d.family! : p.familyLabel),
     accord: d.accord ?? p.accord,
     desc: d.desc ?? p.desc,
     notes: { top: d.notes.top ?? p.notes.top, heart: d.notes.heart ?? p.notes.heart, base: d.notes.base ?? p.notes.base },
+    meters: mergeMeters(p.meters, d),
+    panelRelated: d.related,
   };
 };
+
+const ORDER: MeterLabel[] = ['Duración', 'Proyección', 'Dulzor', 'Ideal para'];
+// panel values win; a meter left empty keeps the built-in one (if any)
+const mergeMeters = (base: Product['meters'], d: Details) =>
+  ORDER.map((l) => d.meters[l] ?? base.find((m) => m.label === l)).filter((m): m is Product['meters'][number] => !!m);
 
 const fromPanel = (slug: string, d: Details): Product => ({
   slug, brand: d.brand, name: d.name, gender: d.gender ?? 'Unisex',
   family: d.family, familyLabel: d.familyLabel ?? d.family ?? 'Eau de Parfum',
   accord: d.accord ?? '', desc: d.desc ?? '',
   notes: { top: d.notes.top ?? [], heart: d.notes.heart ?? [], base: d.notes.base ?? [] },
-  meters: [], img: placeholder, decant: decantPhoto, related: [],
+  meters: mergeMeters([], d), img: placeholder, decant: decantPhoto, related: [], panelRelated: d.related,
 });
 
 /** Every product, active or not, in display order (code products first, then panel-only ones). */
@@ -48,6 +57,10 @@ export async function getProducts() {
 /** Up to three suggestions: the hand-picked ones, else same family, then same audience. */
 export function relatedTo(p: Product, list: Product[]): Product[] {
   const others = list.filter((o) => o.slug !== p.slug);
+  if (p.panelRelated?.length) {
+    const chosen = p.panelRelated.map((s) => others.find((o) => o.slug === s)).filter((o): o is Product => !!o);
+    if (chosen.length) return chosen.slice(0, 3);
+  }
   const picked = builtInRelated(p).filter((r) => others.some((o) => o.slug === r.slug)).map((r) => others.find((o) => o.slug === r.slug)!);
   const rest = [
     ...others.filter((o) => p.family && o.family === p.family),

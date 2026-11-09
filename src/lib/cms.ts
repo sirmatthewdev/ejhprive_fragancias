@@ -4,7 +4,7 @@
  * If the CMS is unreachable the shop keeps working with local data and "A confirmar" prices.
  */
 import { CMS_API_KEY, CMS_URL } from 'astro:env/server';
-import type { Family, FormatId, Gender } from '../data/products';
+import type { Family, FormatId, Gender, Meter } from '../data/products';
 import { fits, type Stock } from './stock';
 
 export interface Live {
@@ -31,7 +31,18 @@ export interface Details {
   accord?: string;
   desc?: string;
   notes: { top?: string[]; heart?: string[]; base?: string[] };
+  /** only the meters filled in the panel, keyed by their label */
+  meters: Partial<Record<MeterLabel, Meter>>;
+  /** slugs picked under «También te puede gustar» */
+  related?: string[];
 }
+export type MeterLabel = 'Duración' | 'Proyección' | 'Dulzor' | 'Ideal para';
+// bar length for each level the panel offers
+const LEVEL_PCT: Record<string, number> = { Baja: 30, Media: 55, 'Media-alta': 70, Alta: 82, 'Muy alta': 92, Bajo: 30, Medio: 58, Marcado: 75, 'Muy marcado': 90 };
+const meter = (label: MeterLabel, value: unknown, pct?: number): Meter | undefined => {
+  const v = text(value);
+  return v ? { label, value: v, pct: pct ?? LEVEL_PCT[v] ?? 70 } : undefined;
+};
 export interface Price { price: number | null; regular: number | null; onSale: boolean }
 
 const priceOf = (d: any, f: FormatId): Price => {
@@ -49,6 +60,10 @@ const detailsOf = (d: any): Details => {
     gender: x.gender || undefined, family: x.family || undefined, familyLabel: text(x.familyLabel),
     accord: text(x.accord), desc: text(x.description),
     notes: { top: list(x.notesTop), heart: list(x.notesHeart), base: list(x.notesBase) },
+    meters: Object.fromEntries(([
+      meter('Duración', x.duration), meter('Proyección', x.projection), meter('Dulzor', x.sweetness), meter('Ideal para', x.idealFor, 75),
+    ].filter(Boolean) as Meter[]).map((m) => [m.label, m])),
+    related: Array.isArray(x.related) ? x.related.map((r: any) => r?.slug).filter(Boolean) : undefined,
   };
 };
 const NO_PRICE: Price = { price: null, regular: null, onSale: false };
