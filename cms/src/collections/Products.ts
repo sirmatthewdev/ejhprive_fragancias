@@ -157,13 +157,17 @@ export const Products: CollectionConfig = {
       name: 'stock',
       label: 'Stock',
       type: 'group',
-      admin: { description: `Frascos sellados: lo que se vende como frasco de 100 ml. ml para decants: lo único con lo que se venden decants de 3 y 5 ml; si llega a 0, la tienda los muestra agotados. Para sumar ml, marca «Abrir un frasco sellado» (resta 1 frasco y suma ${BOTTLE_ML} ml). Cada cambio queda en «Movimientos de stock».` },
+      // The stock is owned by the management system (ejh-prive-gestion): it pushes sealed bottles
+      // (Lima + Cajamarca + investors) and opened ml through the API with the «Gestión (API)» user.
+      // Read-only here so a manual edit is not silently overwritten on the next sync. Orders still
+      // move stock through their hooks (inventory.ts), which do not go through the admin form.
+      admin: { description: 'Lo actualiza solo el sistema de gestión de EJH PRIVÉ (ventas, compras, aperturas de frasco y traslados). Para cambiarlo, regístralo en la gestión: un cambio hecho aquí se perdería en la siguiente sincronización.' },
       fields: [
         {
           type: 'row',
           fields: [
-            { name: 'sealed', label: 'Frascos sellados', type: 'number', min: 0, defaultValue: 0, required: true },
-            { name: 'decantMl', label: 'ml disponibles para decants', type: 'number', min: 0, defaultValue: 0, required: true },
+            { name: 'sealed', label: 'Frascos sellados', type: 'number', min: 0, defaultValue: 0, required: true, admin: { readOnly: true } },
+            { name: 'decantMl', label: 'ml disponibles para decants', type: 'number', min: 0, defaultValue: 0, required: true, admin: { readOnly: true } },
             { name: 'lowSealed', label: 'Alerta si quedan ≤ frascos', type: 'number', min: 0, defaultValue: 1 },
           ],
         },
@@ -172,7 +176,8 @@ export const Products: CollectionConfig = {
           label: `Abrir un frasco sellado para decants (−1 frasco, +${BOTTLE_ML} ml) al guardar`,
           type: 'checkbox',
           virtual: true,
-          admin: { description: 'Se aplica una vez al guardar y queda registrado como «Apertura de frasco».' },
+          // bottles are opened in the management system now (it pushes the resulting ml)
+          admin: { hidden: true, description: 'Se aplica una vez al guardar y queda registrado como «Apertura de frasco».' },
         },
       ],
     },
