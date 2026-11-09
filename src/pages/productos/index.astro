@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
 import Icon from '../../components/ui/Icon.astro';
-import { products as allProducts, FAMILIES } from '../../data/products';
+import { products as allProducts, FAMILIES, GENDERS } from '../../data/products';
 import { getCatalog, liveOf } from '../../lib/cms';
 
 export const prerender = false; // live prices and stock from the CMS
@@ -14,15 +14,16 @@ const searchText = (p: (typeof products)[number]) =>
   [p.brand, p.name, p.family, p.familyLabel, p.accord, ...p.notes.top, ...p.notes.heart, ...p.notes.base]
     .join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
+const COUNT = ['Cero', 'Una', 'Dos', 'Tres', 'Cuatro', 'Cinco', 'Seis', 'Siete', 'Ocho', 'Nueve', 'Diez', 'Once', 'Doce'][products.length] ?? String(products.length);
 const chip = 'h-10 rounded-full border px-4 text-[13px] font-medium transition-[background-color,color,border-color] duration-400 border-cream/16 text-sand hover:border-cream/40 aria-pressed:border-lilac aria-pressed:bg-lilac/18 aria-pressed:text-cream';
 const seg = 'h-10 rounded-full px-5 text-[13px] font-semibold tracking-[0.02em] text-sand transition-colors duration-400 aria-pressed:bg-cream aria-pressed:text-plum';
 ---
-<Base title="Productos" description="Seis fragancias árabes originales en frasco de 100 ml o decants de 3 y 5 ml: Khamrah, Khamrah Qahwa, 9 PM, Odyssey Mandarin Sky, Odyssey Spectra y Hawas Ice.">
+<Base title="Productos" description={`${COUNT} fragancias árabes originales en frasco de 100 ml o decants de 3 y 5 ml: ${products.map((p) => p.name).join(', ')}.`}>
   <section aria-labelledby="h-cat" class="bg-[linear-gradient(180deg,#170E1D,#0B0A0D)]">
     <div class="wrap flex flex-col gap-4 pb-8 pt-10">
       <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Productos' }]} />
       <h1 id="h-cat" class="text-[clamp(2.6rem,5.4vw,4.6rem)] leading-none" data-split="load">Productos</h1>
-      <p class="max-w-[36rem] leading-relaxed text-sand" data-reveal-self="0.2">Seis fragancias originales. Elige el formato: frasco de 100 ml o decants de 3 y 5 ml preparados del frasco original.</p>
+      <p class="max-w-[36rem] leading-relaxed text-sand" data-reveal-self="0.2">{COUNT} fragancias originales. Elige el formato: frasco de 100 ml o decants de 3 y 5 ml preparados del frasco original.</p>
     </div>
   </section>
 
@@ -37,6 +38,13 @@ const seg = 'h-10 rounded-full px-5 text-[13px] font-semibold tracking-[0.02em] 
         {FAMILIES.map((f) => <button type="button" class={chip} data-fam={f.id} aria-pressed="false">{f.id}</button>)}
       </div>
       <div class="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:ml-auto">
+      <label class="flex items-center gap-3 text-[13px] text-mist">
+        <span class="sr-only">Para quién</span>
+        <select data-gender class="h-10 rounded-full border border-cream/16 bg-graphite px-4 text-cream">
+          <option value="">Hombre y mujer</option>
+          {GENDERS.map((g) => <option value={g.id}>{g.label}</option>)}
+        </select>
+      </label>
       <form role="search" class="relative w-full sm:w-auto" action="/productos/">
         <label for="cat-q" class="sr-only">Buscar fragancia</label>
         <input id="cat-q" name="q" type="search" data-search maxlength="60" autocomplete="off" placeholder="Buscar: vainilla, Lattafa…"
@@ -55,7 +63,7 @@ const seg = 'h-10 rounded-full px-5 text-[13px] font-semibold tracking-[0.02em] 
     </div>
 
     <div class="mb-6 flex flex-wrap items-center gap-3">
-      <p class="text-[13px] text-mist" aria-live="polite" data-count>6 fragancias en frasco</p>
+      <p class="text-[13px] text-mist" aria-live="polite" data-count>{products.length} fragancias en frasco</p>
       <button type="button" hidden data-brand-clear class="chip gap-2 border border-lilac/40 bg-lilac/12 text-cream hover:bg-lilac/20">
         Marca: <span data-brand-label></span> <Icon name="close" size={12} stroke={2} /><span class="sr-only">Quitar filtro de marca</span>
       </button>
@@ -63,7 +71,7 @@ const seg = 'h-10 rounded-full px-5 text-[13px] font-semibold tracking-[0.02em] 
 
     <ul class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3" data-grid>
       {products.map((p, i) => ['frasco', 'decant'].map((v) => (
-        <li data-item data-variant={v} data-family={p.family} data-name={p.name} data-brand={p.brand} data-order={i} data-search={searchText(p)} hidden={v === 'decant'}>
+        <li data-item data-variant={v} data-family={p.family} data-name={p.name} data-brand={p.brand} data-gender={p.gender} data-order={i} data-search={searchText(p)} hidden={v === 'decant'}>
           <ProductCard p={p} live={liveOf(catalog, p.slug)} variant={v as 'frasco' | 'decant'} priority={i < 3 && v === 'frasco'} headingLevel="h2" />
         </li>
       )))}
@@ -106,6 +114,8 @@ const seg = 'h-10 rounded-full px-5 text-[13px] font-semibold tracking-[0.02em] 
     const FAMS = [...root.querySelectorAll<HTMLElement>('[data-fam]')].map((b) => b.dataset.fam!);
     const BRANDS = [...new Set(items.map((i) => i.dataset.brand!))];
     const SORTS = [...sortSel.options].map((o) => o.value);
+    const genderSel = root.querySelector<HTMLSelectElement>('[data-gender]')!;
+    const GENDER_IDS = [...genderSel.options].map((o) => o.value).filter(Boolean);
     const pick = <T extends string>(v: string | null, allowed: T[], fallback: T) => (v && allowed.includes(v as T) ? (v as T) : fallback);
     const params = new URL(location.href).searchParams;
     const state = {
@@ -113,10 +123,12 @@ const seg = 'h-10 rounded-full px-5 text-[13px] font-semibold tracking-[0.02em] 
       fam: pick(params.get('familia'), FAMS, 'Todas'),
       brand: pick<string>(params.get('marca'), BRANDS, ''),
       sort: pick(params.get('orden'), SORTS, 'featured'),
+      gender: pick<string>(params.get('para'), GENDER_IDS, ''),
       q: (params.get('q') ?? '').slice(0, 60),
     };
     search.value = state.q;
     sortSel.value = state.sort;
+    genderSel.value = state.gender;
 
     // every change gets a version; only the latest one is allowed to render
     let version = 0;
@@ -158,6 +170,8 @@ const seg = 'h-10 rounded-full px-5 text-[13px] font-semibold tracking-[0.02em] 
         const show = el.dataset.variant === state.format
           && (state.fam === 'Todas' || el.dataset.family === state.fam)
           && (!state.brand || el.dataset.brand === state.brand)
+          // unisex scents show up for both «Hombre» and «Mujer»
+          && (!state.gender || el.dataset.gender === 'Unisex' || el.dataset.gender === state.gender)
           && (!q || q.split(/\s+/).every((w) => el.dataset.search!.includes(w)));
         el.hidden = !show;
         if (show) n++;
@@ -173,7 +187,7 @@ const seg = 'h-10 rounded-full px-5 text-[13px] font-semibold tracking-[0.02em] 
 
       const url = new URL(location.href);
       const set = (k: string, v: string, def: string) => (v && v !== def ? url.searchParams.set(k, v) : url.searchParams.delete(k));
-      set('formato', state.format, 'frasco'); set('familia', state.fam, 'Todas'); set('marca', state.brand, '');
+      set('formato', state.format, 'frasco'); set('familia', state.fam, 'Todas'); set('marca', state.brand, ''); set('para', state.gender, '');
       set('orden', state.sort, 'featured'); set('q', state.q, '');
       history.replaceState(history.state, '', url);
     };
@@ -185,12 +199,13 @@ const seg = 'h-10 rounded-full px-5 text-[13px] font-semibold tracking-[0.02em] 
     };
     on('[data-format]', (b) => { if (state.format !== b.dataset.format) { state.format = b.dataset.format as 'frasco' | 'decant'; press(); apply(); } });
     on('[data-fam]', (b) => { if (state.fam !== b.dataset.fam) { state.fam = b.dataset.fam!; press(); apply(); } });
-    on('[data-reset]', () => { Object.assign(state, { fam: 'Todas', brand: '', q: '' }); search.value = ''; apply(); });
+    on('[data-reset]', () => { Object.assign(state, { fam: 'Todas', brand: '', gender: '', q: '' }); search.value = ''; genderSel.value = ''; apply(); });
     brandBtn.addEventListener('click', () => { state.brand = ''; apply(); });
     root.querySelector<HTMLElement>('[data-format-jump]')?.addEventListener('click', () => {
-      Object.assign(state, { format: 'decant', fam: 'Todas', brand: '', q: '' }); search.value = ''; apply();
+      Object.assign(state, { format: 'decant', fam: 'Todas', brand: '', gender: '', q: '' }); search.value = ''; genderSel.value = ''; apply();
       grid.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
     });
+    genderSel.addEventListener('change', () => { state.gender = pick<string>(genderSel.value, GENDER_IDS, ''); apply(); });
     sortSel.addEventListener('change', () => { state.sort = pick(sortSel.value, SORTS, 'featured'); apply(); });
     let t: number | undefined;
     search.addEventListener('input', () => { clearTimeout(t); t = window.setTimeout(() => { state.q = search.value.slice(0, 60); apply(); }, 180); });

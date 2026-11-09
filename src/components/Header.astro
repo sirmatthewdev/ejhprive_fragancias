@@ -4,7 +4,7 @@ import Icon from './ui/Icon.astro';
 import Logo from './ui/Logo.astro';
 import CartButton from './islands/CartButton';
 import { NAV } from '../config/site';
-import { products, productUrl, FAMILIES } from '../data/products';
+import { products, productUrl, FAMILIES, GENDERS } from '../data/products';
 
 interface Props { overlay?: boolean }
 const { overlay = false } = Astro.props;
@@ -51,7 +51,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
                 </a>
                 {n.label === 'Productos' && (
                   <div class="mega invisible absolute inset-x-0 top-full -translate-y-2 border-y border-cream/10 bg-graphite/95 opacity-0 shadow-[0_40px_80px_rgb(0_0_0/.55)] backdrop-blur-xl transition-[opacity,transform,visibility] duration-500 ease-[var(--ease-out-expo)] group-hover/mega:visible group-hover/mega:translate-y-0 group-hover/mega:opacity-100 group-focus-within/mega:visible group-focus-within/mega:translate-y-0 group-focus-within/mega:opacity-100">
-                    <div class="wrap grid grid-cols-[1fr_1fr_2.2fr] gap-10 py-10">
+                    <div class="wrap grid grid-cols-[1fr_1fr_0.8fr_2.2fr] gap-10 py-10">
                       <div class="flex flex-col gap-3">
                         <p class="kicker">Formato</p>
                         <a class="link-u self-start text-[15px] text-sand hover:text-cream" href="/productos/?formato=frasco">Frascos 100 ml</a>
@@ -61,6 +61,10 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
                       <div class="flex flex-col gap-3">
                         <p class="kicker">Familia</p>
                         {FAMILIES.map((f) => <a class="link-u self-start text-[15px] text-sand hover:text-cream" href={`/productos/?familia=${encodeURIComponent(f.id)}`}>{f.id}</a>)}
+                      </div>
+                      <div class="flex flex-col gap-3">
+                        <p class="kicker">Para</p>
+                        {GENDERS.map((g) => <a class="link-u self-start text-[15px] text-sand hover:text-cream" href={`/productos/?para=${encodeURIComponent(g.id)}`}>{g.label}</a>)}
                       </div>
                       <ul class="grid grid-cols-2 gap-x-3 gap-y-1">
                         {products.map((p) => (

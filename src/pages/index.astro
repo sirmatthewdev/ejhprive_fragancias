@@ -30,7 +30,7 @@ const products = allProducts.filter((p) => liveOf(catalog, p.slug).active);
 const homeFaq = FAQ.filter((f) => f.home);
 const cats = [
   { href: '/productos/?formato=frasco', kicker: 'Colección completa', title: 'Frascos 100 ml', text: 'Originales, sellados, listos para regalar.', img: catFrascos, alt: 'Frascos de Khamrah, 9 PM y Khamrah Qahwa' },
-  { href: '/productos/?formato=decant', kicker: 'Prueba antes de elegir', title: 'Decants 3 · 5 ml', text: 'Las seis fragancias, del frasco original.', img: decantsPlate, alt: 'Tres decants en atomizador sobre un estuche de cuero y un plato de cerámica', tone: 'brightness-[.78] saturate-[.85]' },
+  { href: '/productos/?formato=decant', kicker: 'Prueba antes de elegir', title: 'Decants 3 · 5 ml', text: 'Todas las fragancias, del frasco original.', img: decantsPlate, alt: 'Tres decants en atomizador sobre un estuche de cuero y un plato de cerámica', tone: 'brightness-[.78] saturate-[.85]' },
 ];
 const steps = [
   { n: '01', title: 'Elige fragancia y tamaño', text: 'Decant de 3 ml (≈ 40 atomizaciones) o 5 ml (≈ 70).' },
@@ -96,7 +96,7 @@ const itemList = {
   <!-- 2 · collection -->
   <section aria-labelledby="h-col" class="surface-graphite py-[clamp(72px,10vw,140px)]">
     <div class="wrap">
-      <SectionHead id="h-col" kicker="Seis fragancias, una selección" title="La colección">
+      <SectionHead id="h-col" kicker="Una selección corta y deliberada" title="La colección">
         <a href="/productos/" class="btn btn-ghost h-11 px-5" data-magnetic>Ver catálogo <Icon name="arrow" size={14} /></a>
       </SectionHead>
       <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3" data-reveal>
