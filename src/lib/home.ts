@@ -3,7 +3,7 @@
  * shop's built-in content: every empty field keeps what the page had before. 30 s freshness.
  */
 import type { ImageMetadata } from 'astro';
-import { CMS_URL } from 'astro:env/server';
+import { CMS_API_KEY, CMS_URL } from 'astro:env/server';
 import { FAQ } from '../data/faq';
 import catFrascos from '../assets/img/cat-frascos.jpg';
 import decantsPlate from '../assets/img/decants-plate.jpg';
@@ -141,7 +141,9 @@ let inflight: Promise<HomeContent> | null = null;
 async function load(): Promise<HomeContent> {
   try {
     if (!CMS_URL) throw new Error('sin CMS_URL');
-    const get = (path: string) => fetch(`${CMS_URL}/cms-api/${path}`, { signal: AbortSignal.timeout(2500) }).then((r) => { if (!r.ok) throw new Error(`CMS ${r.status}`); return r.json(); });
+    // the shop's API key: products linked from the home page are only readable by the team and the shop
+    const headers: Record<string, string> = CMS_API_KEY ? { Authorization: `users API-Key ${CMS_API_KEY}` } : {};
+    const get = (path: string) => fetch(`${CMS_URL}/cms-api/${path}`, { headers, signal: AbortSignal.timeout(2500) }).then((r) => { if (!r.ok) throw new Error(`CMS ${r.status}`); return r.json(); });
     const [home, brands, faqs] = await Promise.all([get('globals/home?depth=1'), get('brands?limit=100&sort=order&depth=1'), get('faqs?limit=100&sort=order&depth=0')]);
     const data = merge(home, brands.docs, faqs.docs);
     cache = { at: Date.now(), data };
