@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     orders: Order;
     products: Product;
+    families: Family;
     'inventory-movements': InventoryMovement;
     complaints: Complaint;
     users: User;
@@ -82,6 +83,7 @@ export interface Config {
   collectionsSelect: {
     orders: OrdersSelect<false> | OrdersSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    families: FamiliesSelect<false> | FamiliesSelect<true>;
     'inventory-movements': InventoryMovementsSelect<false> | InventoryMovementsSelect<true>;
     complaints: ComplaintsSelect<false> | ComplaintsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -95,8 +97,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'product-page': ProductPage;
+  };
+  globalsSelect: {
+    'product-page': ProductPageSelect<false> | ProductPageSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -200,7 +206,14 @@ export interface Order {
 export interface Product {
   id: number;
   name: string;
-  brand: 'Lattafa' | 'Armaf' | 'Rasasi' | 'Afnan';
+  /**
+   * Ej.: Lattafa, Armaf, Rasasi, Afnan
+   */
+  brand: string;
+  /**
+   * Menor primero. Vacío = al final.
+   */
+  order?: number | null;
   /**
    * Debe coincidir con la URL de la tienda (/productos/<identificador>/).
    */
@@ -219,7 +232,7 @@ export interface Product {
    */
   details?: {
     gender?: ('Masculina' | 'Femenina' | 'Unisex') | null;
-    family?: ('Gourmand' | 'Ámbar especiada' | 'Nocturna' | 'Fresca') | null;
+    family?: (number | null) | Family;
     /**
      * Ej.: Gourmand · Café
      */
@@ -314,6 +327,31 @@ export interface Media {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "families".
+ */
+export interface Family {
+  id: number;
+  /**
+   * Aparece en los filtros y el menú. Ej.: Gourmand
+   */
+  name: string;
+  /**
+   * Ej.: Dulces, cálidas, adictivas
+   */
+  blurb?: string | null;
+  /**
+   * Tono del brillo detrás de los decants. Hexadecimal, ej.: #8A4A2A
+   */
+  color?: string | null;
+  /**
+   * Menor primero.
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Historial automático: ventas, devoluciones, frascos abiertos para decants y ajustes manuales.
@@ -433,6 +471,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'products';
         value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'families';
+        value: number | Family;
       } | null)
     | ({
         relationTo: 'inventory-movements';
@@ -565,6 +607,7 @@ export interface OrdersSelect<T extends boolean = true> {
 export interface ProductsSelect<T extends boolean = true> {
   name?: T;
   brand?: T;
+  order?: T;
   slug?: T;
   active?: T;
   tag?: T;
@@ -605,6 +648,18 @@ export interface ProductsSelect<T extends boolean = true> {
         lowSealed?: T;
         openBottle?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "families_select".
+ */
+export interface FamiliesSelect<T extends boolean = true> {
+  name?: T;
+  blurb?: T;
+  color?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -758,6 +813,61 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Textos e imágenes comunes a todos los productos. Un campo vacío usa el texto que trae la tienda.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-page".
+ */
+export interface ProductPage {
+  id: number;
+  format3?: string | null;
+  format5?: string | null;
+  format100?: string | null;
+  badge1?: string | null;
+  badge2?: string | null;
+  badge3?: string | null;
+  decantKicker?: string | null;
+  decantTitle?: string | null;
+  decantTitleAccent?: string | null;
+  decantText?: string | null;
+  decantButton?: string | null;
+  aboutTitle?: string | null;
+  fallbackDescription?: string | null;
+  relatedTitle?: string | null;
+  /**
+   * La misma para todos los productos. Ideal PNG con fondo transparente.
+   */
+  decantPhoto?: (number | null) | Media;
+  placeholderPhoto?: (number | null) | Media;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-page_select".
+ */
+export interface ProductPageSelect<T extends boolean = true> {
+  format3?: T;
+  format5?: T;
+  format100?: T;
+  badge1?: T;
+  badge2?: T;
+  badge3?: T;
+  decantKicker?: T;
+  decantTitle?: T;
+  decantTitleAccent?: T;
+  decantText?: T;
+  decantButton?: T;
+  aboutTitle?: T;
+  fallbackDescription?: T;
+  relatedTitle?: T;
+  decantPhoto?: T;
+  placeholderPhoto?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

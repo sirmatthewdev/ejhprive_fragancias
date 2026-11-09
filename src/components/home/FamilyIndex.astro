@@ -2,12 +2,13 @@
 import { Image } from 'astro:assets';
 import SectionHead from '../ui/SectionHead.astro';
 import Icon from '../ui/Icon.astro';
-import { FAMILIES, type Product } from '../../data/products';
+import { type Product } from '../../data/products';
+import { getFamilies } from '../../lib/catalog';
 
 interface Props { products: Product[] }
 const { products } = Astro.props;
 
-const rows = FAMILIES.map((f) => ({ ...f, items: products.filter((p) => p.family === f.id) })).filter((f) => f.items.length);
+const rows = (await getFamilies()).map((f) => ({ ...f, items: products.filter((p) => p.family === f.id) })).filter((f) => f.items.length);
 ---
 <section aria-labelledby="h-fam" class="surface-onyx py-[clamp(72px,10vw,140px)]" data-family-index data-active="0">
   <div class="wrap">

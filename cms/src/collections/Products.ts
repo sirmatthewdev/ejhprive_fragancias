@@ -61,7 +61,8 @@ export const Products: CollectionConfig = {
       type: 'row',
       fields: [
         { name: 'name', label: 'Nombre', type: 'text', required: true },
-        { name: 'brand', label: 'Marca', type: 'select', required: true, options: ['Lattafa', 'Armaf', 'Rasasi', 'Afnan'] },
+        { name: 'brand', label: 'Marca', type: 'text', required: true, admin: { description: 'Ej.: Lattafa, Armaf, Rasasi, Afnan' } },
+        { name: 'order', label: 'Orden en el catálogo', type: 'number', admin: { description: 'Menor primero. Vacío = al final.' } },
       ],
     },
     {
@@ -90,7 +91,7 @@ export const Products: CollectionConfig = {
           type: 'row',
           fields: [
             { name: 'gender', label: 'Para', type: 'select', options: [{ label: 'Hombre', value: 'Masculina' }, { label: 'Mujer', value: 'Femenina' }, { label: 'Unisex', value: 'Unisex' }] },
-            { name: 'family', label: 'Familia olfativa', type: 'select', options: ['Gourmand', 'Ámbar especiada', 'Nocturna', 'Fresca'] },
+            { name: 'family', label: 'Familia olfativa', type: 'relationship', relationTo: 'families' },
             { name: 'familyLabel', label: 'Subtítulo', type: 'text', admin: { description: 'Ej.: Gourmand · Café' } },
           ],
         },

@@ -13,7 +13,8 @@ import yaraPink from '../assets/img/product-yara-pink.jpg';
 // transparent cut-out of real spray decants (from Pexels 7000326, free licence), shown on each product's own tone
 import decantPhoto from '../assets/img/decants-cutout.png';
 
-export type Family = 'Gourmand' | 'Ámbar especiada' | 'Nocturna' | 'Fresca';
+/** Families are managed in the panel; these four are the built-in ones (used when the panel is unreachable). */
+export type Family = string;
 export type Gender = 'Unisex' | 'Masculina' | 'Femenina';
 export type FormatId = '3' | '5' | '100';
 

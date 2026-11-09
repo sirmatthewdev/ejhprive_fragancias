@@ -2,16 +2,17 @@
 import { getImage } from 'astro:assets';
 import Icon from './ui/Icon.astro';
 import { productUrl } from '../data/products';
-import { getProducts } from '../lib/catalog';
+import { getProducts, getSettings, photoOf } from '../lib/catalog';
 import { liveOf } from '../lib/cms';
 
 const { catalog, products } = await getProducts();
+const { page } = await getSettings();
 
 // small index shipped with the page: ~1 KB, no extra requests
 const index = await Promise.all(
   products.map(async (p) => ({
     name: p.name, brand: p.brand, accord: p.accord, href: productUrl(p),
-    img: liveOf(catalog, p.slug).photo ?? (await getImage({ src: p.img, width: 96, height: 120, format: 'webp' })).src,
+    img: photoOf(p, liveOf(catalog, p.slug), page) ?? (await getImage({ src: p.img, width: 96, height: 120, format: 'webp' })).src,
     text: [p.brand, p.name, p.family, p.familyLabel, p.accord, ...p.notes.top, ...p.notes.heart, ...p.notes.base]
       .join(' ').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(),
   })),

@@ -3,13 +3,14 @@ import Base from '../../layouts/Base.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
 import Icon from '../../components/ui/Icon.astro';
-import { FAMILIES, GENDERS } from '../../data/products';
-import { visibleProducts } from '../../lib/catalog';
+import { GENDERS } from '../../data/products';
+import { visibleProducts, getFamilies } from '../../lib/catalog';
 import { getCatalog, liveOf } from '../../lib/cms';
 
 export const prerender = false; // live prices and stock from the CMS
 const catalog = await getCatalog();
 const products = visibleProducts(catalog);
+const families = (await getFamilies()).filter((f) => products.some((p) => p.family === f.id));
 // accent-free, lowercase text the client-side search matches against
 const searchText = (p: (typeof products)[number]) =>
   [p.brand, p.name, p.family, p.familyLabel, p.accord, ...p.notes.top, ...p.notes.heart, ...p.notes.base]
@@ -36,7 +37,7 @@ const seg = 'h-10 rounded-full px-5 text-[13px] font-semibold tracking-[0.02em] 
       </div>
       <div role="group" aria-label="Familia olfativa" class="flex flex-wrap gap-2">
         <button type="button" class={chip} data-fam="Todas" aria-pressed="true">Todas</button>
-        {FAMILIES.map((f) => <button type="button" class={chip} data-fam={f.id} aria-pressed="false">{f.id}</button>)}
+        {families.map((f) => <button type="button" class={chip} data-fam={f.id} aria-pressed="false">{f.id}</button>)}
       </div>
       <div class="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:ml-auto">
       <label class="flex items-center gap-3 text-[13px] text-mist">

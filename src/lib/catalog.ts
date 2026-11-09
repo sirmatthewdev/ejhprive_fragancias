@@ -3,9 +3,10 @@
  * product created in the panel, which appears on its own with the sheet and photo filled in there.
  * For a code product, every field filled in the panel's «Ficha en la tienda» replaces the built-in one.
  */
-import { products as builtIn, relatedOf as builtInRelated, decantPhoto, type Product } from '../data/products';
+import { products as builtIn, relatedOf as builtInRelated, decantPhoto, FAMILIES, type Product } from '../data/products';
 import placeholder from '../assets/img/product-placeholder.jpg';
-import { getCatalog, liveOf, type Details, type Live, type MeterLabel } from './cms';
+import { getCatalog, getSettings, liveOf, type Details, type FamilyInfo, type Live, type MeterLabel, type PageTexts } from './cms';
+export { getSettings };
 
 const withDetails = (p: Product, d?: Details): Product => {
   if (!d) return p;
@@ -38,12 +39,33 @@ const fromPanel = (slug: string, d: Details): Product => ({
   meters: mergeMeters([], d), img: placeholder, decant: decantPhoto, related: [], panelRelated: d.related,
 });
 
-/** Every product, active or not, in display order (code products first, then panel-only ones). */
+/**
+ * Every product, active or not, in display order: «Orden en el catálogo» from the panel first
+ * (lowest first), then the rest as they come (code products, then panel-only ones).
+ */
 export function allProducts(cat: Map<string, Live> | null): Product[] {
   const known = new Set(builtIn.map((p) => p.slug));
   const extra = cat ? [...cat].filter(([slug, l]) => !known.has(slug) && l.details?.name).map(([slug, l]) => fromPanel(slug, l.details!)) : [];
-  return [...builtIn.map((p) => withDetails(p, cat?.get(p.slug)?.details)), ...extra];
+  const list = [...builtIn.map((p) => withDetails(p, cat?.get(p.slug)?.details)), ...extra];
+  const rank = (p: Product) => cat?.get(p.slug)?.order ?? Infinity;
+  return list.map((p, i) => ({ p, i })).sort((a, b) => rank(a.p) - rank(b.p) || a.i - b.i).map(({ p }) => p);
 }
+
+/** Families from the panel (or the built-in four if it is unreachable). */
+export async function getFamilies(): Promise<FamilyInfo[]> {
+  return (await getSettings()).families ?? FAMILIES;
+}
+export const toneOf = (families: FamilyInfo[], family?: string) => families.find((f) => f.id === family)?.tone ?? '#5B3A8E';
+
+/**
+ * Photo URL to show instead of the built-in image: the product's own upload, else (for a panel
+ * product with no built-in image) the placeholder uploaded under «Página de producto».
+ */
+export const photoOf = (p: Product, live: Live, page: PageTexts): string | null =>
+  live.photo ?? (p.img === placeholder ? page.placeholderPhoto ?? null : null);
+
+/** Fills {nombre} in the panel's shared texts. */
+export const withName = (t: string, name: string) => t.replaceAll('{nombre}', name);
 
 /** Products visible in the shop. */
 export const visibleProducts = (cat: Map<string, Live> | null) => allProducts(cat).filter((p) => liveOf(cat, p.slug).active);

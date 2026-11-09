@@ -19,6 +19,8 @@ export interface Live {
   stock: Stock | null;
   /** photo uploaded in the panel (absolute URL), replaces the built-in one */
   photo?: string | null;
+  /** «Orden en el catálogo»; undefined = after the ordered ones */
+  order?: number;
   /** product sheet from the panel; empty fields are left out */
   details?: Details;
 }
@@ -57,7 +59,7 @@ const detailsOf = (d: any): Details => {
   const x = d.details ?? {};
   return {
     name: d.name, brand: d.brand,
-    gender: x.gender || undefined, family: x.family || undefined, familyLabel: text(x.familyLabel),
+    gender: x.gender || undefined, family: text(x.family?.name), familyLabel: text(x.familyLabel),
     accord: text(x.accord), desc: text(x.description),
     notes: { top: list(x.notesTop), heart: list(x.notesHeart), base: list(x.notesBase) },
     meters: Object.fromEntries(([
@@ -92,7 +94,7 @@ async function fetchCatalog(): Promise<Map<string, Live> | null> {
       const sealed = d.stock?.sealed ?? 0, ml = d.stock?.decantMl ?? 0;
       const can = (f: FormatId) => (f === '100' ? sealed > 0 : ml >= ML[f]);
       data.set(d.slug, {
-        id: d.id, active: d.active !== false, tag: d.tag || null,
+        id: d.id, active: d.active !== false, tag: d.tag || null, order: typeof d.order === 'number' ? d.order : undefined,
         prices: { '3': priceOf(d, '3'), '5': priceOf(d, '5'), '100': priceOf(d, '100') },
         available: { '3': can('3'), '5': can('5'), '100': can('100') },
         stock: { sealed, decantMl: ml },
@@ -129,6 +131,45 @@ export const liveOf = (cat: Map<string, Live> | null, slug: string): Live =>
 export interface OrderInput {
   customer: { name: string; phone: string; email?: string; delivery: 'envio' | 'retiro'; department?: string; province?: string; district?: string; address?: string; reference?: string; message?: string };
   items: { slug: string; fmt: FormatId; qty: number }[];
+}
+
+export interface FamilyInfo { id: string; blurb: string; tone: string }
+export interface PageTexts {
+  format3?: string; format5?: string; format100?: string;
+  badge1?: string; badge2?: string; badge3?: string;
+  decantKicker?: string; decantTitle?: string; decantTitleAccent?: string; decantText?: string; decantButton?: string;
+  aboutTitle?: string; fallbackDescription?: string; relatedTitle?: string;
+  decantPhoto?: string | null; placeholderPhoto?: string | null;
+}
+export interface Settings { families: FamilyInfo[] | null; page: PageTexts }
+
+// families and the «Página de producto» texts: public, same 30 s freshness as prices
+let settingsCache: { at: number; data: Settings } | null = null;
+let settingsInflight: Promise<Settings> | null = null;
+async function fetchSettings(): Promise<Settings> {
+  try {
+    if (!CMS_URL) throw new Error('sin CMS_URL');
+    const get = (path: string) => fetch(`${CMS_URL}/cms-api/${path}`, { signal: AbortSignal.timeout(2500) }).then((r) => { if (!r.ok) throw new Error(`CMS ${r.status}`); return r.json(); });
+    const [fams, page] = await Promise.all([get('families?limit=100&sort=order&depth=0'), get('globals/product-page?depth=1')]);
+    const families = (fams.docs as any[]).map((f) => ({ id: f.name, blurb: f.blurb ?? '', tone: /^#[0-9a-f]{6}$/i.test(f.color ?? '') ? f.color : '#5B3A8E' }));
+    const texts: PageTexts = {};
+    for (const k of ['format3', 'format5', 'format100', 'badge1', 'badge2', 'badge3', 'decantKicker', 'decantTitle', 'decantTitleAccent', 'decantText', 'decantButton', 'aboutTitle', 'fallbackDescription', 'relatedTitle'] as const) texts[k] = text(page?.[k]);
+    texts.decantPhoto = mediaUrl(page?.decantPhoto);
+    texts.placeholderPhoto = mediaUrl(page?.placeholderPhoto);
+    const data = { families: families.length ? families : null, page: texts };
+    settingsCache = { at: Date.now(), data };
+    return data;
+  } catch (e) {
+    console.warn('[cms] ajustes no disponibles, uso los de la tienda:', (e as Error).message);
+    return settingsCache?.data ?? { families: null, page: {} };
+  } finally {
+    settingsInflight = null;
+  }
+}
+export async function getSettings(): Promise<Settings> {
+  if (settingsCache && Date.now() - settingsCache.at < TTL) return settingsCache.data;
+  settingsInflight ??= fetchSettings();
+  return settingsInflight;
 }
 
 export async function createOrder(input: OrderInput): Promise<{ number: string }> {
