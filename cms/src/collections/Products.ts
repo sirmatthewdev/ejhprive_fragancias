@@ -10,8 +10,8 @@ const saleBelow = (regularField: 'p3' | 'p5' | 'p100') =>
   }
 
 /**
- * Commercial data per fragrance (prices, stock, visibility). Editorial content and imagery
- * stay in the storefront code; `slug` is the link between both and must not change.
+ * Everything the shop sells: prices, stock, visibility, photo and the product sheet. The original
+ * fragrances also have editorial content in the storefront code; `slug` links both and must not change.
  */
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -72,6 +72,34 @@ export const Products: CollectionConfig = {
       type: 'row',
       fields: [
         { name: 'photo', label: 'Foto del frasco (opcional)', type: 'upload', relationTo: 'media', admin: { description: 'Si la cargas, reemplaza la foto de la tienda. Ideal 4:5 (vertical), mínimo 1200 × 1500 px.' } },
+      ],
+    },
+    {
+      // a product created here appears in the shop on its own with this sheet; for the original
+      // fragrances (written in the shop's code) any field filled in here replaces the built-in text
+      name: 'details',
+      label: 'Ficha en la tienda',
+      type: 'group',
+      admin: { description: 'Lo que la tienda muestra del perfume. Un producto nuevo aparece en la web con estos datos y la foto de arriba. Campo vacío = se usa el texto que ya trae la tienda (si lo tiene).' },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            { name: 'gender', label: 'Para', type: 'select', options: [{ label: 'Hombre', value: 'Masculina' }, { label: 'Mujer', value: 'Femenina' }, { label: 'Unisex', value: 'Unisex' }] },
+            { name: 'family', label: 'Familia olfativa', type: 'select', options: ['Gourmand', 'Ámbar especiada', 'Nocturna', 'Fresca'] },
+            { name: 'familyLabel', label: 'Subtítulo', type: 'text', admin: { description: 'Ej.: Gourmand · Café' } },
+          ],
+        },
+        { name: 'accord', label: 'Acorde corto', type: 'text', admin: { description: 'Tres notas que lo resumen. Ej.: Canela · Dátiles · Vainilla' } },
+        { name: 'description', label: 'Descripción', type: 'textarea' },
+        {
+          type: 'row',
+          fields: [
+            { name: 'notesTop', label: 'Notas de salida', type: 'text', admin: { description: 'Separadas por comas' } },
+            { name: 'notesHeart', label: 'Notas de corazón', type: 'text', admin: { description: 'Separadas por comas' } },
+            { name: 'notesBase', label: 'Notas de fondo', type: 'text', admin: { description: 'Separadas por comas' } },
+          ],
+        },
       ],
     },
     {

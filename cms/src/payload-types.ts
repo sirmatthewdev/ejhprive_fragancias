@@ -215,6 +215,34 @@ export interface Product {
    */
   photo?: (number | null) | Media;
   /**
+   * Lo que la tienda muestra del perfume. Un producto nuevo aparece en la web con estos datos y la foto de arriba. Campo vacío = se usa el texto que ya trae la tienda (si lo tiene).
+   */
+  details?: {
+    gender?: ('Masculina' | 'Femenina' | 'Unisex') | null;
+    family?: ('Gourmand' | 'Ámbar especiada' | 'Nocturna' | 'Fresca') | null;
+    /**
+     * Ej.: Gourmand · Café
+     */
+    familyLabel?: string | null;
+    /**
+     * Tres notas que lo resumen. Ej.: Canela · Dátiles · Vainilla
+     */
+    accord?: string | null;
+    description?: string | null;
+    /**
+     * Separadas por comas
+     */
+    notesTop?: string | null;
+    /**
+     * Separadas por comas
+     */
+    notesHeart?: string | null;
+    /**
+     * Separadas por comas
+     */
+    notesBase?: string | null;
+  };
+  /**
    * Precio regular vacío = la tienda muestra «A confirmar». Si cargas un precio de oferta menor, la tienda lo muestra con el regular tachado y el % de descuento.
    */
   prices?: {
@@ -530,6 +558,18 @@ export interface ProductsSelect<T extends boolean = true> {
   active?: T;
   tag?: T;
   photo?: T;
+  details?:
+    | T
+    | {
+        gender?: T;
+        family?: T;
+        familyLabel?: T;
+        accord?: T;
+        description?: T;
+        notesTop?: T;
+        notesHeart?: T;
+        notesBase?: T;
+      };
   prices?:
     | T
     | {

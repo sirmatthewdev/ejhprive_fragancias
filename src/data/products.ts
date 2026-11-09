@@ -14,17 +14,19 @@ import yaraPink from '../assets/img/product-yara-pink.jpg';
 import decantPhoto from '../assets/img/decants-cutout.png';
 
 export type Family = 'Gourmand' | 'Ámbar especiada' | 'Nocturna' | 'Fresca';
+export type Gender = 'Unisex' | 'Masculina' | 'Femenina';
 export type FormatId = '3' | '5' | '100';
 
 export interface Meter { label: string; value: string; pct: number }
 
 export interface Product {
   slug: string;
-  brand: 'Lattafa' | 'Armaf' | 'Rasasi' | 'Afnan';
+  brand: string;
   name: string;
-  family: Family;
+  /** undefined for a panel product whose family was left empty */
+  family?: Family;
   familyLabel: string;
-  gender: 'Unisex' | 'Masculina' | 'Femenina';
+  gender: Gender;
   tag?: string;
   /** Short line used in cards, hero and meta descriptions. */
   accord: string;
@@ -129,6 +131,7 @@ const catalog: (Omit<Product, 'decant'> & { decant?: ImageMetadata })[] = [
   },
 ];
 
+export { decantPhoto };
 export const products: Product[] = catalog.map((p) => ({ ...p, decant: p.decant ?? decantPhoto }));
 
 // related ids above use short keys; map them to slugs

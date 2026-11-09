@@ -2,7 +2,10 @@
 import { Image } from 'astro:assets';
 import SectionHead from '../ui/SectionHead.astro';
 import Icon from '../ui/Icon.astro';
-import { FAMILIES, products } from '../../data/products';
+import { FAMILIES, type Product } from '../../data/products';
+
+interface Props { products: Product[] }
+const { products } = Astro.props;
 
 const rows = FAMILIES.map((f) => ({ ...f, items: products.filter((p) => p.family === f.id) })).filter((f) => f.items.length);
 ---

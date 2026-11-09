@@ -7,7 +7,8 @@ import ProductCard from '../components/ProductCard.astro';
 import SectionHead from '../components/ui/SectionHead.astro';
 import Faq from '../components/ui/Faq.astro';
 import Icon from '../components/ui/Icon.astro';
-import { products as allProducts, bySlug, productUrl } from '../data/products';
+import { bySlug, productUrl } from '../data/products';
+import { visibleProducts } from '../lib/catalog';
 import { getCatalog, liveOf } from '../lib/cms';
 import { FAQ, faqJsonLd } from '../data/faq';
 import { waLink } from '../config/site';
@@ -26,7 +27,7 @@ import logoAfnan from '../assets/brands/afnan.png';
 export const prerender = false; // live prices and stock from the CMS
 
 const catalog = await getCatalog();
-const products = allProducts.filter((p) => liveOf(catalog, p.slug).active);
+const products = visibleProducts(catalog);
 const homeFaq = FAQ.filter((f) => f.home);
 const cats = [
   { href: '/productos/?formato=frasco', kicker: 'Colección completa', title: 'Frascos 100 ml', text: 'Originales, sellados, listos para regalar.', img: catFrascos, alt: 'Frascos de Khamrah, 9 PM y Khamrah Qahwa' },
@@ -137,7 +138,7 @@ const itemList = {
   </section>
 
   <!-- 4 · olfactive families: editorial index with floating preview -->
-  <FamilyIndex />
+  <FamilyIndex products={products} />
 
   <!-- 5 · houses -->
   <section aria-labelledby="h-brands" class="overflow-hidden bg-[linear-gradient(180deg,#170E1D,#1F1229)] pt-[clamp(72px,10vw,140px)]">

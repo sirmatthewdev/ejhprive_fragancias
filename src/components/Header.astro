@@ -4,11 +4,14 @@ import Icon from './ui/Icon.astro';
 import Logo from './ui/Logo.astro';
 import CartButton from './islands/CartButton';
 import { NAV } from '../config/site';
-import { products, productUrl, FAMILIES, GENDERS } from '../data/products';
+import { productUrl, FAMILIES, GENDERS } from '../data/products';
+import { getProducts } from '../lib/catalog';
+import { liveOf } from '../lib/cms';
 
 interface Props { overlay?: boolean }
 const { overlay = false } = Astro.props;
 const path = Astro.url.pathname;
+const { catalog, products } = await getProducts();
 const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href.replace(/#.*/, '')) && !href.includes('#'));
 ---
 <header
@@ -70,7 +73,9 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
                         {products.map((p) => (
                           <li>
                             <a href={productUrl(p)} class="group/t flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-cream/5">
-                              <Image src={p.img} alt="" width={96} height={120} class="h-15 w-12 rounded-lg object-cover" />
+                              {liveOf(catalog, p.slug).photo
+                                ? <img src={liveOf(catalog, p.slug).photo!} alt="" width="96" height="120" loading="lazy" class="h-15 w-12 rounded-lg object-cover" />
+                                : <Image src={p.img} alt="" width={96} height={120} class="h-15 w-12 rounded-lg object-cover" />}
                               <span class="flex min-w-0 flex-col">
                                 <span class="text-[10px] font-bold uppercase tracking-[0.16em] text-lilac">{p.brand}</span>
                                 <span class="font-serif text-lg leading-tight">{p.name}</span>

@@ -5,18 +5,20 @@ import ProductCard from '../../components/ProductCard.astro';
 import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
 import Icon from '../../components/ui/Icon.astro';
 import ProductBuy from '../../components/islands/ProductBuy';
-import { bySlug, relatedOf, productUrl, FORMATS, FAMILIES } from '../../data/products';
+import { productUrl, FORMATS, FAMILIES } from '../../data/products';
+import { allProducts, relatedTo } from '../../lib/catalog';
 import { SITE, waLink } from '../../config/site';
 import { getCatalog, liveOf } from '../../lib/cms';
 
 export const prerender = false; // live prices and stock from the CMS
 
-const p = bySlug(Astro.params.slug ?? '');
 const catalog = await getCatalog({ fresh: true }); // stock must be current where people add to the bag
+const everything = allProducts(catalog);
+const p = everything.find((x) => x.slug === Astro.params.slug);
 if (!p || !liveOf(catalog, p.slug).active) return new Response(null, { status: 404 }); // the server answers with the 404 page
 const live = liveOf(catalog, p.slug);
 const tone = FAMILIES.find((f) => f.id === p.family)?.tone ?? '#5B3A8E';
-const related = relatedOf(p).filter((r) => liveOf(catalog, r.slug).active);
+const related = relatedTo(p, everything.filter((r) => liveOf(catalog, r.slug).active));
 const [thumbFrasco, thumbDecant] = await Promise.all([
   getImage({ src: p.img, width: 200, format: 'webp' }),
   getImage({ src: p.decant, width: 200, format: 'webp' }),
@@ -28,8 +30,9 @@ const pyramid = [
   { title: 'Fondo', when: '4 h en adelante', notes: p.notes.base, cls: 'bg-plum text-cream', chip: 'bg-cream/12 text-cream ring-1 ring-cream/20' },
 ];
 const title = `${p.brand} ${p.name}`;
-const desc = `${title}: ${p.accord}. Original en frasco de 100 ml o decants de 3 y 5 ml fraccionados del frasco original.`;
-const ogImg = await getImage({ src: p.img, width: 1200, format: 'jpg' });
+const desc = `${title}${p.accord ? `: ${p.accord}` : ''}. Original en frasco de 100 ml o decants de 3 y 5 ml fraccionados del frasco original.`;
+const ogImg = live.photo ? { src: live.photo } : await getImage({ src: p.img, width: 1200, format: 'jpg' });
+const hasPyramid = pyramid.some((t) => t.notes.length);
 const productLd = {
   '@context': 'https://schema.org', '@type': 'Product', name: title, brand: { '@type': 'Brand', name: p.brand },
   description: p.desc, image: new URL(ogImg.src, Astro.site ?? SITE.url).href, category: 'Perfume', url: new URL(productUrl(p), Astro.site ?? SITE.url).href,
@@ -83,36 +86,36 @@ const productLd = {
         </ul>
         <div class="flex flex-col gap-3 border-t border-cream/10 pt-6">
           <h2 class="font-sans text-[13px] font-semibold uppercase tracking-[0.16em] text-cream">Sobre la fragancia</h2>
-          <p class="leading-[1.8] text-[#D8CCB8]">{p.desc}</p>
+          <p class="leading-[1.8] text-[#D8CCB8]">{p.desc || 'Perfume árabe original en frasco sellado de 100 ml, o en decants de 3 y 5 ml fraccionados del mismo frasco para probarlo antes. Escríbenos y te contamos cómo se comporta en piel.'}</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section aria-labelledby="h-pyr" class="on-cream surface-cream py-[clamp(64px,9vw,120px)] text-plum">
+  {(hasPyramid || p.meters.length > 0) && <section aria-labelledby="h-pyr" class="on-cream surface-cream py-[clamp(64px,9vw,120px)] text-plum">
     <div class="wrap flex flex-col gap-10">
       <div class="flex flex-wrap items-end justify-between gap-6">
         <h2 id="h-pyr" class="h-section" data-split>Pirámide olfativa</h2>
         <p class="max-w-[26rem] leading-relaxed text-dust" data-reveal-self>Cómo evoluciona {p.name} en tu piel, desde la primera atomización hasta el fondo que permanece.</p>
       </div>
-      <ol class="grid gap-4 md:grid-cols-3" data-reveal>
-        {pyramid.map((t) => (
+      {hasPyramid && <ol class="grid gap-4 md:grid-cols-3" data-reveal>
+        {pyramid.filter((t) => t.notes.length).map((t) => (
           <li class:list={['flex min-h-[220px] flex-col gap-5 rounded-[22px] p-7 transition-transform duration-700 ease-[var(--ease-out-expo)] hover:-translate-y-1', t.cls]}>
             <p class="flex justify-between text-xs font-bold uppercase tracking-[0.16em]"><span>{t.title}</span><span class="opacity-70">{t.when}</span></p>
             <ul class="mt-auto flex flex-wrap gap-2">{t.notes.map((n) => <li class:list={['rounded-full px-3.5 py-2 text-sm', t.chip]}>{n}</li>)}</ul>
           </li>
         ))}
-      </ol>
-      <dl class="grid gap-6 border-t border-plum/15 pt-8 sm:grid-cols-2 lg:grid-cols-4" data-meters>
+      </ol>}
+      {p.meters.length > 0 && <dl class="grid gap-6 border-t border-plum/15 pt-8 sm:grid-cols-2 lg:grid-cols-4" data-meters>
         {p.meters.map((m) => (
           <div class="flex flex-col gap-2.5">
             <div class="flex justify-between text-[13px]"><dt class="font-semibold">{m.label}</dt><dd class="text-dust">{m.value}</dd></div>
             <div class="h-1.5 overflow-hidden rounded-full bg-plum/12" role="presentation"><div class="h-full origin-left rounded-full bg-violet" style={`width:${m.pct}%`} data-meter></div></div>
           </div>
         ))}
-      </dl>
+      </dl>}
     </div>
-  </section>
+  </section>}
 
   <section aria-labelledby="h-dec" class="surface-onyx py-[clamp(64px,9vw,112px)]">
     <div class="wrap grid items-center gap-[clamp(28px,5vw,72px)] md:grid-cols-2">

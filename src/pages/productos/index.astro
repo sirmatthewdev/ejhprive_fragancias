@@ -3,12 +3,13 @@ import Base from '../../layouts/Base.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
 import Icon from '../../components/ui/Icon.astro';
-import { products as allProducts, FAMILIES, GENDERS } from '../../data/products';
+import { FAMILIES, GENDERS } from '../../data/products';
+import { visibleProducts } from '../../lib/catalog';
 import { getCatalog, liveOf } from '../../lib/cms';
 
 export const prerender = false; // live prices and stock from the CMS
 const catalog = await getCatalog();
-const products = allProducts.filter((p) => liveOf(catalog, p.slug).active);
+const products = visibleProducts(catalog);
 // accent-free, lowercase text the client-side search matches against
 const searchText = (p: (typeof products)[number]) =>
   [p.brand, p.name, p.family, p.familyLabel, p.accord, ...p.notes.top, ...p.notes.heart, ...p.notes.base]

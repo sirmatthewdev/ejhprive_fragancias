@@ -4,7 +4,7 @@
  * If the CMS is unreachable the shop keeps working with local data and "A confirmar" prices.
  */
 import { CMS_API_KEY, CMS_URL } from 'astro:env/server';
-import type { FormatId } from '../data/products';
+import type { Family, FormatId, Gender } from '../data/products';
 import { fits, type Stock } from './stock';
 
 export interface Live {
@@ -19,6 +19,18 @@ export interface Live {
   stock: Stock | null;
   /** photo uploaded in the panel (absolute URL), replaces the built-in one */
   photo?: string | null;
+  /** product sheet from the panel; empty fields are left out */
+  details?: Details;
+}
+export interface Details {
+  name: string;
+  brand: string;
+  gender?: Gender;
+  family?: Family;
+  familyLabel?: string;
+  accord?: string;
+  desc?: string;
+  notes: { top?: string[]; heart?: string[]; base?: string[] };
 }
 export interface Price { price: number | null; regular: number | null; onSale: boolean }
 
@@ -27,6 +39,17 @@ const priceOf = (d: any, f: FormatId): Price => {
   const running = !d.prices?.saleEndsAt || new Date(d.prices.saleEndsAt) > new Date();
   const onSale = sale != null && running && (regular == null || sale < regular);
   return { price: onSale ? sale : regular, regular, onSale };
+};
+const text = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
+const list = (v: unknown) => text(v)?.split(',').map((x) => x.trim()).filter(Boolean);
+const detailsOf = (d: any): Details => {
+  const x = d.details ?? {};
+  return {
+    name: d.name, brand: d.brand,
+    gender: x.gender || undefined, family: x.family || undefined, familyLabel: text(x.familyLabel),
+    accord: text(x.accord), desc: text(x.description),
+    notes: { top: list(x.notesTop), heart: list(x.notesHeart), base: list(x.notesBase) },
+  };
 };
 const NO_PRICE: Price = { price: null, regular: null, onSale: false };
 // uploads live on Vercel Blob (absolute URL) or, locally, under the panel's /cms-api path
@@ -59,6 +82,7 @@ async function fetchCatalog(): Promise<Map<string, Live> | null> {
         available: { '3': can('3'), '5': can('5'), '100': can('100') },
         stock: { sealed, decantMl: ml },
         photo: mediaUrl(d.photo),
+        details: detailsOf(d),
       });
     }
     cache = { at: Date.now(), data };
