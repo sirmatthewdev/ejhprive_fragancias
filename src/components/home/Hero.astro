@@ -1,9 +1,12 @@
 ---
 import Icon from '../ui/Icon.astro';
-import { bySlug, productUrl } from '../../data/products';
+import { productUrl, type Product } from '../../data/products';
+import type { HomeContent } from '../../lib/home';
 
-// The 12 s loop shows three bottles, 4 s each. Order must match the video.
-const SCENES = ['khamrah', '9-pm', 'odyssey-mandarin-sky'].map((s) => bySlug(s)!);
+// The 12 s loop shows three bottles, 4 s each; «Perfumes del video» in the panel must follow the video's order.
+interface Props { content: HomeContent['hero']; scenes: Product[] }
+const { content: C, scenes: SCENES } = Astro.props;
+const total = String(SCENES.length).padStart(2, '0');
 ---
 <section class="hero relative isolate flex h-svh min-h-[640px] items-end overflow-hidden bg-[#09080B]" aria-labelledby="hero-title" data-hero>
   <!-- media layer: drifts against the pointer -->
@@ -23,22 +26,22 @@ const SCENES = ['khamrah', '9-pm', 'odyssey-mandarin-sky'].map((s) => bySlug(s)!
 
   <div class="wrap pb-[clamp(40px,9vh,96px)]">
     <div class="flex max-w-[640px] flex-col gap-6" data-hero-copy>
-      <p class="kicker hero-in" style="--d:.05s">Perfumería árabe · 100% original</p>
+      <p class="kicker hero-in" style="--d:.05s">{C.kicker}</p>
       <h1 id="hero-title" class="display">
-        <span class="hero-line"><span style="--d:.1s">El arte de llevar</span></span>
-        <span class="hero-line"><em class="text-gold" style="--d:.22s">una firma.</em></span>
+        <span class="hero-line"><span style="--d:.1s">{C.title}</span></span>
+        <span class="hero-line"><em class="text-gold" style="--d:.22s">{C.titleAccent}</em></span>
       </h1>
       <p class="hero-in max-w-[30rem] text-[clamp(15px,1.25vw,18px)] leading-relaxed text-[#D8CCB8]" style="--d:.45s">
-        Khamrah, 9 PM, Hawas Ice y más, en frasco de 100 ml o en decants de 3 y 5 ml para descubrirlos en tu piel.
+        {C.lead}
       </p>
       <div class="hero-in mt-1 flex flex-wrap gap-3" style="--d:.6s">
-        <a href="/productos/" class="btn btn-cream btn-fill" data-magnetic>Explorar colección <Icon name="arrow" size={16} stroke={1.8} /></a>
-        <a href="#decants" class="btn btn-ghost" data-magnetic>Descubrir decants</a>
+        <a href="/productos/" class="btn btn-cream btn-fill" data-magnetic>{C.primary} <Icon name="arrow" size={16} stroke={1.8} /></a>
+        <a href="#decants" class="btn btn-ghost" data-magnetic>{C.secondary}</a>
       </div>
       <!-- scene index: typography only, synced with the video -->
-      <nav aria-label="Fragancias del video" class="hero-in mt-6 hidden max-w-[600px] md:block" style="--d:.8s">
-        <p class="sr-only">En escena: <span data-scene-no>01</span> de 03</p>
-        <ol class="grid grid-cols-3 gap-6">
+      {SCENES.length > 0 && <nav aria-label="Fragancias del video" class="hero-in mt-6 hidden max-w-[600px] md:block" style="--d:.8s">
+        <p class="sr-only">En escena: <span data-scene-no>01</span> de {total}</p>
+        <ol class="grid gap-6" style={`grid-template-columns:repeat(${SCENES.length},minmax(0,1fr))`}>
           {SCENES.map((p, i) => (
             <li class="scene group/s" data-scene={i} aria-current={i === 0 ? 'true' : undefined}>
               <a href={productUrl(p)} class="flex flex-col gap-2.5 text-cream/45 transition-colors duration-700 hover:text-cream group-aria-[current=true]/s:text-cream">
@@ -52,7 +55,7 @@ const SCENES = ['khamrah', '9-pm', 'odyssey-mandarin-sky'].map((s) => bySlug(s)!
             </li>
           ))}
         </ol>
-      </nav>
+      </nav>}
     </div>
   </div>
 

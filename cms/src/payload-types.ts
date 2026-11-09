@@ -70,6 +70,8 @@ export interface Config {
     orders: Order;
     products: Product;
     families: Family;
+    brands: Brand;
+    faqs: Faq;
     'inventory-movements': InventoryMovement;
     complaints: Complaint;
     users: User;
@@ -84,6 +86,8 @@ export interface Config {
     orders: OrdersSelect<false> | OrdersSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     families: FamiliesSelect<false> | FamiliesSelect<true>;
+    brands: BrandsSelect<false> | BrandsSelect<true>;
+    faqs: FaqsSelect<false> | FaqsSelect<true>;
     'inventory-movements': InventoryMovementsSelect<false> | InventoryMovementsSelect<true>;
     complaints: ComplaintsSelect<false> | ComplaintsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -98,9 +102,11 @@ export interface Config {
   };
   fallbackLocale: null;
   globals: {
+    home: Home;
     'product-page': ProductPage;
   };
   globalsSelect: {
+    home: HomeSelect<false> | HomeSelect<true>;
     'product-page': ProductPageSelect<false> | ProductPageSelect<true>;
   };
   locale: null;
@@ -354,6 +360,55 @@ export interface Family {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brands".
+ */
+export interface Brand {
+  id: number;
+  /**
+   * Igual que el campo «Marca» de sus productos.
+   */
+  name: string;
+  order?: number | null;
+  /**
+   * PNG claro (crema o blanco) con fondo transparente. Vacío = el logo que trae la tienda, si existe.
+   */
+  logo?: (number | null) | Media;
+  logoSize?: ('small' | 'normal' | 'large') | null;
+  /**
+   * Solo aparece si tiene productos visibles.
+   */
+  inRow?: boolean | null;
+  featured?: boolean | null;
+  house?: {
+    text?: string | null;
+    /**
+     * Ideal 16:10. Vacío = la foto que trae la tienda, si existe.
+     */
+    image?: (number | null) | Media;
+    imageAlt?: string | null;
+    /**
+     * La foto lleva al primero.
+     */
+    products?: (number | Product)[] | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs".
+ */
+export interface Faq {
+  id: number;
+  question: string;
+  answer: string;
+  onHome?: boolean | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Historial automático: ventas, devoluciones, frascos abiertos para decants y ajustes manuales.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -475,6 +530,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'families';
         value: number | Family;
+      } | null)
+    | ({
+        relationTo: 'brands';
+        value: number | Brand;
+      } | null)
+    | ({
+        relationTo: 'faqs';
+        value: number | Faq;
       } | null)
     | ({
         relationTo: 'inventory-movements';
@@ -665,6 +728,40 @@ export interface FamiliesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brands_select".
+ */
+export interface BrandsSelect<T extends boolean = true> {
+  name?: T;
+  order?: T;
+  logo?: T;
+  logoSize?: T;
+  inRow?: T;
+  featured?: T;
+  house?:
+    | T
+    | {
+        text?: T;
+        image?: T;
+        imageAlt?: T;
+        products?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs_select".
+ */
+export interface FaqsSelect<T extends boolean = true> {
+  question?: T;
+  answer?: T;
+  onHome?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inventory-movements_select".
  */
 export interface InventoryMovementsSelect<T extends boolean = true> {
@@ -815,6 +912,137 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Textos, fotos y productos de la página de inicio. Un campo vacío usa lo que trae la tienda.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home".
+ */
+export interface Home {
+  id: number;
+  hero?: {
+    kicker?: string | null;
+    title?: string | null;
+    titleAccent?: string | null;
+    lead?: string | null;
+    primary?: string | null;
+    secondary?: string | null;
+    /**
+     * Los 3 frascos que aparecen en el video, en el mismo orden (cada uno se ve 4 segundos). Si cambias el video, cambia estos.
+     */
+    scenes?: (number | Product)[] | null;
+  };
+  formats?: {
+    title?: string | null;
+    titleAccent?: string | null;
+    lead?: string | null;
+    bottleKicker?: string | null;
+    bottleTitle?: string | null;
+    bottleText?: string | null;
+    /**
+     * Vacío = la foto que trae la tienda.
+     */
+    bottleImage?: (number | null) | Media;
+    decantKicker?: string | null;
+    decantTitle?: string | null;
+    decantText?: string | null;
+    /**
+     * Vacío = la foto que trae la tienda.
+     */
+    decantImage?: (number | null) | Media;
+  };
+  collection?: {
+    kicker?: string | null;
+    title?: string | null;
+    button?: string | null;
+    /**
+     * En este orden. Vacío = todos los productos visibles, en el orden del catálogo.
+     */
+    products?: (number | Product)[] | null;
+  };
+  decants?: {
+    kicker?: string | null;
+    title?: string | null;
+    titleAccent?: string | null;
+    text?: string | null;
+    /**
+     * Vacío = los 3 pasos que trae la tienda.
+     */
+    steps?:
+      | {
+          title?: string | null;
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Hasta 3. El último va resaltado. Vacío = 3 ml, 5 ml y Set ×3.
+     */
+    chips?:
+      | {
+          value?: string | null;
+          label?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    button?: string | null;
+    /**
+     * Vacío = la foto que trae la tienda.
+     */
+    image?: (number | null) | Media;
+    caption?: string | null;
+    captionDetail?: string | null;
+  };
+  families?: {
+    kicker?: string | null;
+    title?: string | null;
+    lead?: string | null;
+  };
+  /**
+   * Las marcas, sus logos y sus bloques destacados se editan en Inicio → Marcas.
+   */
+  brands?: {
+    title?: string | null;
+    titleAccent?: string | null;
+  };
+  trust?: {
+    quote?: string | null;
+    /**
+     * Vacío = las 4 que trae la tienda.
+     */
+    items?:
+      | {
+          icon?: ('shield' | 'drop' | 'truck' | 'chat' | 'bag' | 'mail' | 'book' | 'cash') | null;
+          title?: string | null;
+          text?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    link?: string | null;
+  };
+  /**
+   * Las preguntas se editan en Inicio → Preguntas frecuentes (marca «Mostrar en el inicio»).
+   */
+  faq?: {
+    kicker?: string | null;
+    title?: string | null;
+    link?: string | null;
+  };
+  cta?: {
+    kicker?: string | null;
+    title?: string | null;
+    text?: string | null;
+    whatsappMessage?: string | null;
+    primary?: string | null;
+    secondary?: string | null;
+    /**
+     * Vacío = la foto que trae la tienda.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * Textos e imágenes comunes a todos los productos. Un campo vacío usa el texto que trae la tienda.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -843,6 +1071,120 @@ export interface ProductPage {
   placeholderPhoto?: (number | null) | Media;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home_select".
+ */
+export interface HomeSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        kicker?: T;
+        title?: T;
+        titleAccent?: T;
+        lead?: T;
+        primary?: T;
+        secondary?: T;
+        scenes?: T;
+      };
+  formats?:
+    | T
+    | {
+        title?: T;
+        titleAccent?: T;
+        lead?: T;
+        bottleKicker?: T;
+        bottleTitle?: T;
+        bottleText?: T;
+        bottleImage?: T;
+        decantKicker?: T;
+        decantTitle?: T;
+        decantText?: T;
+        decantImage?: T;
+      };
+  collection?:
+    | T
+    | {
+        kicker?: T;
+        title?: T;
+        button?: T;
+        products?: T;
+      };
+  decants?:
+    | T
+    | {
+        kicker?: T;
+        title?: T;
+        titleAccent?: T;
+        text?: T;
+        steps?:
+          | T
+          | {
+              title?: T;
+              text?: T;
+              id?: T;
+            };
+        chips?:
+          | T
+          | {
+              value?: T;
+              label?: T;
+              id?: T;
+            };
+        button?: T;
+        image?: T;
+        caption?: T;
+        captionDetail?: T;
+      };
+  families?:
+    | T
+    | {
+        kicker?: T;
+        title?: T;
+        lead?: T;
+      };
+  brands?:
+    | T
+    | {
+        title?: T;
+        titleAccent?: T;
+      };
+  trust?:
+    | T
+    | {
+        quote?: T;
+        items?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              text?: T;
+              id?: T;
+            };
+        link?: T;
+      };
+  faq?:
+    | T
+    | {
+        kicker?: T;
+        title?: T;
+        link?: T;
+      };
+  cta?:
+    | T
+    | {
+        kicker?: T;
+        title?: T;
+        text?: T;
+        whatsappMessage?: T;
+        primary?: T;
+        secondary?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

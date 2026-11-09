@@ -5,14 +5,14 @@ import Icon from '../ui/Icon.astro';
 import { type Product } from '../../data/products';
 import { getFamilies } from '../../lib/catalog';
 
-interface Props { products: Product[] }
-const { products } = Astro.props;
+interface Props { products: Product[]; content: { kicker: string; title: string; lead: string } }
+const { products, content } = Astro.props;
 
 const rows = (await getFamilies()).map((f) => ({ ...f, items: products.filter((p) => p.family === f.id) })).filter((f) => f.items.length);
 ---
 <section aria-labelledby="h-fam" class="surface-onyx py-[clamp(72px,10vw,140px)]" data-family-index data-active="0">
   <div class="wrap">
-    <SectionHead id="h-fam" kicker="Encuentra tu firma" title="Por familia olfativa" lead="Si ya sabes qué te gusta, empieza por aquí." />
+    <SectionHead id="h-fam" kicker={content.kicker} title={content.title} lead={content.lead} />
     <div class="grid items-start gap-12 lg:grid-cols-[1.45fr_1fr] lg:gap-16">
       <ul class="border-t border-cream/12" data-reveal>
         {rows.map((f, i) => (

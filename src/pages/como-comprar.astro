@@ -3,7 +3,11 @@ import Base from '../layouts/Base.astro';
 import Faq from '../components/ui/Faq.astro';
 import Icon from '../components/ui/Icon.astro';
 import PaymentBadges from '../components/ui/PaymentBadges.astro';
-import { FAQ, faqJsonLd } from '../data/faq';
+import { faqJsonLd } from '../data/faq';
+import { getHome } from '../lib/home';
+
+export const prerender = false; // questions come from the panel
+const FAQ = (await getHome()).faqs;
 
 const steps = [
   { n: '01', title: 'Elige tu perfume', text: 'Explora la colección y elige formato: decant de 3 ml, 5 ml o frasco de 100 ml.' },
@@ -18,7 +22,7 @@ const pay = [
   { icon: 'shield', title: 'Embalaje', text: 'Protegido, con los decants sellados e identificados.' },
 ] as const;
 ---
-<Base title="Cómo comprar" description="Comprar en EJH PRIVÉ: elige tu perfume, confirma por WhatsApp y recíbelo en 24 a 48 horas hábiles. Pagos con Yape, Plin, tarjeta o cuotas con Powerpay." jsonLd={[faqJsonLd()]}>
+<Base title="Cómo comprar" description="Comprar en EJH PRIVÉ: elige tu perfume, confirma por WhatsApp y recíbelo en 24 a 48 horas hábiles. Pagos con Yape, Plin, tarjeta o cuotas con Powerpay." jsonLd={[faqJsonLd(FAQ)]}>
   <section aria-labelledby="h-how" class="wrap flex flex-col gap-4 pb-10 pt-12">
     <p class="kicker" data-reveal-self>Cómo comprar</p>
     <h1 id="h-how" class="display" data-split="load">Tres pasos, <em class="text-gold">sin vueltas.</em></h1>

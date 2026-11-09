@@ -4,6 +4,7 @@ import * as migration_20261109_162057_media_object_key from './20261109_162057_m
 import * as migration_20261109_170112_product_details from './20261109_170112_product_details';
 import * as migration_20261109_173744_product_meters_related from './20261109_173744_product_meters_related';
 import * as migration_20261109_174428_families_brand_page from './20261109_174428_families_brand_page';
+import * as migration_20261109_175229_home_brands_faqs from './20261109_175229_home_brands_faqs';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20261109_174428_families_brand_page.up,
     down: migration_20261109_174428_families_brand_page.down,
-    name: '20261109_174428_families_brand_page'
+    name: '20261109_174428_families_brand_page',
+  },
+  {
+    up: migration_20261109_175229_home_brands_faqs.up,
+    down: migration_20261109_175229_home_brands_faqs.down,
+    name: '20261109_175229_home_brands_faqs'
   },
 ];

@@ -16,6 +16,9 @@ import { InventoryMovements } from './collections/InventoryMovements'
 import { Complaints } from './collections/Complaints'
 import { Families } from './collections/Families'
 import { ProductPage } from './globals/ProductPage'
+import { Home } from './globals/Home'
+import { Brands } from './collections/Brands'
+import { Faqs } from './collections/Faqs'
 import { seed } from './seedData'
 import { migrations } from './migrations'
 
@@ -46,8 +49,8 @@ export default buildConfig({
     dateFormat: 'dd/MM/yyyy HH:mm',
   },
   i18n: { supportedLanguages: { es }, fallbackLanguage: 'es' },
-  collections: [Orders, Products, Families, InventoryMovements, Complaints, Users, Media],
-  globals: [ProductPage],
+  collections: [Orders, Products, Families, Brands, Faqs, InventoryMovements, Complaints, Users, Media],
+  globals: [Home, ProductPage],
   routes: { api: '/cms-api' },
   cors: origins,
   csrf: origins,
