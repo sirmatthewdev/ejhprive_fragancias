@@ -19,6 +19,8 @@ const tag = soldOut ? 'Agotado' : off ? `Oferta ${off}` : live.tag === undefined
 const tone = toneOf(await getFamilies(), p.family);
 const { page } = await getSettings();
 const photo = photoOf(p, live, page);
+// decant view: this product's own decant photo, else the shared one from the panel, else the built-in
+const decantImg = live.decantPhoto ?? page.decantPhoto;
 const base = productUrl(p);
 const hrefOf = (f: FormatId) => (f === '100' ? base : `${base}?formato=${f}`);
 // per-format data the click handler swaps in (price, link)
@@ -48,7 +50,7 @@ const bagItem = { slug: p.slug, name: p.name, brand: p.brand, img: thumb, stock:
     )}
     <!-- decant view: shown only after picking 3 ml or 5 ml -->
     <div class="card-decant absolute inset-0 bg-[radial-gradient(70%_60%_at_50%_45%,var(--tone),transparent_75%),linear-gradient(180deg,#1a141f,#0b0a0d)]" style={`--tone:${tone}66`} aria-hidden="true">
-      {page.decantPhoto ? <img src={page.decantPhoto} alt="" loading="lazy" decoding="async" class="size-full object-contain p-[12%] drop-shadow-[0_24px_30px_rgb(0_0_0/.55)]" /> : <Image src={p.decant} alt="" widths={[360, 560]} sizes="(min-width: 1024px) 30vw, 90vw" loading="lazy"
+      {live.decantPhoto ? <img src={live.decantPhoto} alt="" loading="lazy" decoding="async" class="size-full object-cover" /> : decantImg ? <img src={decantImg} alt="" loading="lazy" decoding="async" class="size-full object-contain p-[12%] drop-shadow-[0_24px_30px_rgb(0_0_0/.55)]" /> : <Image src={p.decant} alt="" widths={[360, 560]} sizes="(min-width: 1024px) 30vw, 90vw" loading="lazy"
         class="size-full object-contain p-[12%] drop-shadow-[0_24px_30px_rgb(0_0_0/.55)]" />}
     </div>
     <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_60%,rgb(11_10_13/.7))]"></div>

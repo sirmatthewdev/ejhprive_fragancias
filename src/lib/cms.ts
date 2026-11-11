@@ -19,6 +19,10 @@ export interface Live {
   stock: Stock | null;
   /** photo uploaded in the panel (absolute URL), replaces the built-in one */
   photo?: string | null;
+  /** second view on the product page («Foto 2»), optional */
+  photo2?: string | null;
+  /** this product's decant photo; null = the shared one from «Página de producto» */
+  decantPhoto?: string | null;
   /** «Orden en el catálogo»; undefined = after the ordered ones */
   order?: number;
   /** product sheet from the panel; empty fields are left out */
@@ -99,6 +103,8 @@ async function fetchCatalog(): Promise<Map<string, Live> | null> {
         available: { '3': can('3'), '5': can('5'), '100': can('100') },
         stock: { sealed, decantMl: ml },
         photo: mediaUrl(d.photo),
+        photo2: mediaUrl(d.photo2),
+        decantPhoto: mediaUrl(d.decantPhoto),
         details: detailsOf(d),
       });
     }

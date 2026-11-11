@@ -230,9 +230,17 @@ export interface Product {
    */
   tag?: string | null;
   /**
-   * Si la cargas, reemplaza la foto de la tienda. Ideal 4:5 (vertical), mínimo 1200 × 1500 px.
+   * La del catálogo y la primera de la ficha (p. ej. el frasco con su caja). Reemplaza la foto de la tienda. Ideal 4:5 (vertical), mínimo 1200 × 1500 px.
    */
   photo?: (number | null) | Media;
+  /**
+   * Otra vista en la ficha del producto (otro ángulo, la caja abierta…). Ideal 4:5.
+   */
+  photo2?: (number | null) | Media;
+  /**
+   * Los decants de este perfume: se ve al elegir 3 ml o 5 ml. Vacía = la foto de decants general («Página de producto»).
+   */
+  decantPhoto?: (number | null) | Media;
   /**
    * Lo que la tienda muestra del perfume. Un producto nuevo aparece en la web con estos datos y la foto de arriba. Campo vacío = se usa el texto que ya trae la tienda (si lo tiene).
    */
@@ -312,6 +320,7 @@ export interface Media {
    * Describe la imagen (accesibilidad y Google). Ej.: «Frasco de Khamrah con dátiles y canela».
    */
   alt: string;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -675,6 +684,8 @@ export interface ProductsSelect<T extends boolean = true> {
   active?: T;
   tag?: T;
   photo?: T;
+  photo2?: T;
+  decantPhoto?: T;
   details?:
     | T
     | {
@@ -845,6 +856,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;

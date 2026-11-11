@@ -76,7 +76,9 @@ export const Products: CollectionConfig = {
     {
       type: 'row',
       fields: [
-        { name: 'photo', label: 'Foto del frasco (opcional)', type: 'upload', relationTo: 'media', admin: { description: 'Si la cargas, reemplaza la foto de la tienda. Ideal 4:5 (vertical), mínimo 1200 × 1500 px.' } },
+        { name: 'photo', label: 'Foto principal (opcional)', type: 'upload', relationTo: 'media', admin: { description: 'La del catálogo y la primera de la ficha (p. ej. el frasco con su caja). Reemplaza la foto de la tienda. Ideal 4:5 (vertical), mínimo 1200 × 1500 px.' } },
+        { name: 'photo2', label: 'Foto 2 (opcional)', type: 'upload', relationTo: 'media', admin: { description: 'Otra vista en la ficha del producto (otro ángulo, la caja abierta…). Ideal 4:5.' } },
+        { name: 'decantPhoto', label: 'Foto de decants (opcional)', type: 'upload', relationTo: 'media', admin: { description: 'Los decants de este perfume: se ve al elegir 3 ml o 5 ml. Vacía = la foto de decants general («Página de producto»).' } },
       ],
     },
     {
