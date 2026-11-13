@@ -6,10 +6,14 @@ import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
 
+// public URL for canonical, sitemap and Open Graph: SITE_URL (set it in Vercel once the own domain is live) or,
+// without it, the production address Vercel provides. No address is written in the code.
+const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+const site = process.env.SITE_URL || (vercelUrl ? `https://${vercelUrl}` : undefined);
+
 // https://astro.build/config
 export default defineConfig({
-  // public URL for canonical, sitemap and Open Graph; set SITE_URL in Vercel once the own domain is live
-  site: process.env.SITE_URL || 'https://ejhprive-fragancias.vercel.app',
+  site,
   // 'ignore': the proxied panel uses paths without a trailing slash; the shop's links keep theirs
   trailingSlash: 'ignore',
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },

@@ -24,13 +24,20 @@ import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-const storeUrl = process.env.STORE_URL || 'http://localhost:4321'
-const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || ''
+// Every setting comes from the environment (see .env.example); nothing falls back to a value written in the code.
+const need = (name: string): string => {
+  const v = process.env[name]
+  if (!v) throw new Error(`Falta la variable de entorno ${name} (ver cms/.env.example).`)
+  return v
+}
+// origin of the shop (CORS/CSRF)
+const storeUrl = need('STORE_URL')
+const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || need('DATABASE_URL')
 const usePostgres = dbUrl.startsWith('postgres')
 // public URL where the team opens the panel: the shop's domain (it proxies /admin), or this project's URL locally
-const cmsUrl = process.env.CMS_URL || 'http://localhost:3000'
+const cmsUrl = need('CMS_URL')
 // this deployment's own address, so the panel also works when opened directly
-const selfUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:3000'
+const selfUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : cmsUrl
 // a Preview deployment is opened at its own *.vercel.app address
 const deployUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : selfUrl
 const origins = [...new Set([storeUrl, cmsUrl, selfUrl, deployUrl])]
@@ -55,12 +62,14 @@ export default buildConfig({
   cors: origins,
   csrf: origins,
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret: need('PAYLOAD_SECRET'),
+  // the shop and the panel only use the REST API: no GraphQL endpoint to probe
+  graphQL: { disable: true },
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   // Postgres (Neon via Vercel) in production, SQLite file for local work
   db: usePostgres
     ? postgresAdapter({ pool: { connectionString: dbUrl }, prodMigrations: migrations, push: false }) // schema changes only through migrations, even from local scripts
-    : sqliteAdapter({ client: { url: dbUrl || 'file:./ejh.db' } }),
+    : sqliteAdapter({ client: { url: dbUrl } }),
   sharp,
   // uploads go to Vercel Blob when its token exists (the serverless filesystem is read-only)
   plugins: [vercelBlobStorage({ enabled: !!process.env.BLOB_READ_WRITE_TOKEN, collections: { media: { disablePayloadAccessControl: true } }, token: process.env.BLOB_READ_WRITE_TOKEN || '' })],

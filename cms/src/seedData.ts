@@ -34,10 +34,10 @@ export async function seed(payload: Payload, opts: { demoStock?: boolean; requir
     out.push(`Producto creado: ${p.name}`)
   }
 
-  const users = [
-    { email: env.SEED_ADMIN1_EMAIL || 'admin@ejhprive.com', name: env.SEED_ADMIN1_NAME || 'Administrador 1', password: env.SEED_ADMIN1_PASSWORD },
-    { email: env.SEED_ADMIN2_EMAIL || 'admin2@ejhprive.com', name: env.SEED_ADMIN2_NAME || 'Administrador 2', password: env.SEED_ADMIN2_PASSWORD },
-  ]
+  // admins come only from SEED_ADMIN{1,2}_EMAIL / _NAME (no default accounts written in the code)
+  const users = [1, 2]
+    .map((n) => ({ email: env[`SEED_ADMIN${n}_EMAIL`], name: env[`SEED_ADMIN${n}_NAME`], password: env[`SEED_ADMIN${n}_PASSWORD`] }))
+    .filter((u): u is { email: string; name: string; password: string | undefined } => !!u.email && !!u.name)
   for (const u of opts.skipAdmins ? [] : users) {
     if (opts.requirePasswords && !u.password) continue
     const exists = await payload.count({ collection: 'users', where: { email: { equals: u.email } } })

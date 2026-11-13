@@ -1,4 +1,5 @@
 ---
+import { safeJson } from '../lib/safeJson';
 import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import Header from '../components/Header.astro';
@@ -63,7 +64,7 @@ const org = {
         if (!window.__ejhFlag) { window.__ejhFlag = 1; document.addEventListener('astro:after-swap', flag); }
       })();
     </script>
-    <script type="application/ld+json" set:html={JSON.stringify([org, ...jsonLd])} />
+    <script type="application/ld+json" set:html={safeJson([org, ...jsonLd])} />
     <ClientRouter />
     <slot name="head" />
   </head>

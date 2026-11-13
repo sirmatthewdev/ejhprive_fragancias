@@ -22,8 +22,9 @@ export const Users: CollectionConfig = {
     create: isAdmin,
     delete: isAdmin,
     // everyone can read/update themselves; admins manage everybody
-    read: ({ req }) => (req.user?.role === 'admin' ? true : { id: { equals: req.user?.id } }),
-    update: ({ req }) => (req.user?.role === 'admin' ? true : { id: { equals: req.user?.id } }),
+    // (no session = no access at all, instead of a query on an undefined id)
+    read: ({ req }) => (!req.user ? false : req.user.role === 'admin' ? true : { id: { equals: req.user.id } }),
+    update: ({ req }) => (!req.user ? false : req.user.role === 'admin' ? true : { id: { equals: req.user.id } }),
   },
   fields: [
     { name: 'name', label: 'Nombre', type: 'text', required: true },
