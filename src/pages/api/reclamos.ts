@@ -35,6 +35,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     return json(await createComplaint(data));
   } catch (e) {
     console.error('[reclamos]', (e as Error).message);
+    if ((e as Error).message.startsWith('Demasiados')) return json({ error: (e as Error).message }, 429);
     return json({ error: 'No pudimos registrar tu reclamo. Inténtalo de nuevo o escríbenos.' }, 502);
   }
 };

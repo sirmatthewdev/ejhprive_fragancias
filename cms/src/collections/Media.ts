@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { isAdmin, isTeam } from '../access'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -6,9 +7,9 @@ export const Media: CollectionConfig = {
   admin: { group: 'Configuración' },
   access: {
     read: () => true,
-    create: ({ req }) => ['admin', 'staff'].includes(String(req.user?.role)),
-    update: ({ req }) => ['admin', 'staff'].includes(String(req.user?.role)),
-    delete: ({ req }) => req.user?.role === 'admin',
+    create: isTeam,
+    update: isTeam,
+    delete: isAdmin,
   },
   fields: [
     {

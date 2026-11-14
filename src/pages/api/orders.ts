@@ -42,6 +42,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   } catch (e) {
     const msg = (e as Error).message;
     console.error('[orders]', msg);
+    if (msg.startsWith('Demasiados')) return json({ error: msg }, 429);
     if (msg.startsWith('Sin stock')) return json({ error: 'No hay stock suficiente para alguno de los productos de tu bolsa. Ajusta las cantidades y vuelve a intentarlo.' }, 409);
     return json({ error: 'No pudimos registrar el pedido.' }, 502);
   }

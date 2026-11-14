@@ -1,5 +1,5 @@
 import { APIError, type CollectionConfig } from 'payload'
-import { isAdmin, isTeam, isTeamOrStore } from '../access'
+import { isAdmin, isTeamOrIntegration, isTeamOrStore } from '../access'
 import { BOTTLE_ML } from '../inventory'
 
 // level scales for the product page meters; the shop draws the bar from the chosen level
@@ -26,7 +26,7 @@ export const Products: CollectionConfig = {
     group: 'Tienda',
     listSearchableFields: ['name', 'brand', 'slug'],
   },
-  access: { read: isTeamOrStore, create: isAdmin, update: isTeam, delete: isAdmin },
+  access: { read: isTeamOrStore, create: isAdmin, update: isTeamOrIntegration, delete: isAdmin },
   hooks: {
     beforeChange: [
       ({ data, originalDoc, context }) => {

@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { adminField, canUsePanel, isAdmin } from '../access'
+import { adminField, canUsePanel, isAdmin, viaKey } from '../access'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -23,8 +23,9 @@ export const Users: CollectionConfig = {
     delete: isAdmin,
     // everyone can read/update themselves; admins manage everybody
     // (no session = no access at all, instead of a query on an undefined id)
-    read: ({ req }) => (!req.user ? false : req.user.role === 'admin' ? true : { id: { equals: req.user.id } }),
-    update: ({ req }) => (!req.user ? false : req.user.role === 'admin' ? true : { id: { equals: req.user.id } }),
+    // an API key only ever sees its own user, and can't change it
+    read: ({ req }) => (!req.user ? false : req.user.role === 'admin' && !viaKey(req.user) ? true : { id: { equals: req.user.id } }),
+    update: ({ req }) => (!req.user || viaKey(req.user) ? false : req.user.role === 'admin' ? true : { id: { equals: req.user.id } }),
   },
   fields: [
     { name: 'name', label: 'Nombre', type: 'text', required: true },

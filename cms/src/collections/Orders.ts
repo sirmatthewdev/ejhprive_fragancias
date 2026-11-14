@@ -1,7 +1,8 @@
 import { APIError, type CollectionConfig, type CollectionBeforeChangeHook } from 'payload'
-import { isAdmin, isTeam, isTeamOrStore, teamField } from '../access'
+import { isAdmin, isTeam, isTeamOrIntegration, isTeamOrStore, teamField } from '../access'
 import { isCommitted, moveStock, type FormatId } from '../inventory'
 import { priceFor } from '../pricing'
+import { limitWebOrder } from '../limits'
 
 export const STATUS = [
   { label: 'Pendiente (por confirmar)', value: 'pendiente' },
@@ -26,6 +27,7 @@ const beforeChange: CollectionBeforeChangeHook = async ({ data, originalDoc, ope
   if (operation === 'create') {
     // the web can only open a pending order with customer data and items
     if (fromStore) {
+      await limitWebOrder(req, data.customer?.phone)
       data.payment = undefined
       data.shipment = undefined
       data.internalNotes = undefined
@@ -93,7 +95,8 @@ export const Orders: CollectionConfig = {
     description: 'Los pedidos de la web llegan como «Pendiente». Al confirmar se descuenta el stock; al cancelar, se repone.',
   },
   defaultSort: '-createdAt',
-  access: { create: isTeamOrStore, read: isTeam, update: isTeam, delete: isAdmin },
+  // an integration (the management system) reads orders to register them as sales; contact details beyond name and phone stay with the team
+  access: { create: isTeamOrStore, read: isTeamOrIntegration, update: isTeam, delete: isAdmin },
   hooks: { beforeChange: [beforeChange] },
   fields: [
     {
@@ -120,7 +123,7 @@ export const Orders: CollectionConfig = {
                 { type: 'row', fields: [
                   { name: 'name', label: 'Nombre', type: 'text', required: true },
                   { name: 'phone', label: 'WhatsApp / teléfono', type: 'text', required: true },
-                  { name: 'email', label: 'Correo', type: 'email' },
+                  { name: 'email', label: 'Correo', type: 'email', access: { read: teamField } },
                 ] },
                 { name: 'delivery', label: 'Entrega', type: 'radio', required: true, defaultValue: 'envio', options: [{ label: 'Envío', value: 'envio' }, { label: 'Retiro', value: 'retiro' }], admin: { layout: 'horizontal' } },
                 { type: 'row', fields: [
@@ -129,10 +132,10 @@ export const Orders: CollectionConfig = {
                   { name: 'district', label: 'Distrito', type: 'text' },
                 ] },
                 { type: 'row', fields: [
-                  { name: 'address', label: 'Dirección', type: 'text' },
-                  { name: 'reference', label: 'Referencia', type: 'text' },
+                  { name: 'address', label: 'Dirección', type: 'text', access: { read: teamField } },
+                  { name: 'reference', label: 'Referencia', type: 'text', access: { read: teamField } },
                 ] },
-                { name: 'message', label: 'Comentario del cliente', type: 'textarea' },
+                { name: 'message', label: 'Comentario del cliente', type: 'textarea', access: { read: teamField } },
               ],
             },
           ],

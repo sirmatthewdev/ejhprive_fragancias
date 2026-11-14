@@ -1,5 +1,6 @@
 import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
 import { isAdmin, isTeam, isTeamOrStore } from '../access'
+import { limitWebComplaint } from '../limits'
 
 /** Response deadline: 15 business days (Mon–Fri; public holidays are not discounted). */
 function addBusinessDays(from: Date, days: number) {
@@ -13,6 +14,7 @@ function addBusinessDays(from: Date, days: number) {
 
 const beforeChange: CollectionBeforeChangeHook = async ({ data, operation, originalDoc, req }) => {
   if (operation === 'create') {
+    if (req.user?.role === 'storefront') await limitWebComplaint(req, data.consumer?.docNumber)
     const now = new Date()
     const year = now.getFullYear()
     const last = await req.payload.find({ collection: 'complaints', where: { number: { like: `-${year}` } }, sort: '-createdAt', limit: 1, depth: 0, req, overrideAccess: true })
