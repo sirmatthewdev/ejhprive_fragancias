@@ -82,6 +82,17 @@ const mediaUrl = (m: any): string | null => {
 
 const TTL = 30_000;
 let cache: { at: number; data: Map<string, Live> } | null = null;
+
+/**
+ * CDN caching for the pages rendered on demand. Vercel's edge keeps the HTML for a minute; after that it still
+ * answers at once with the last copy while a fresh one is rendered in the background, so a visitor never waits
+ * for a cold function (the shop's, the panel's and the database's). What can be bought is not decided by this
+ * HTML: stock and prices are re-read from /api/stock when adding to the bag and the panel prices every order.
+ * `live` = the panel answered; a page built from the built-in fallback must never be kept.
+ */
+export function cachePage(response: { headers: Headers }, live: unknown) {
+  if (live) response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400');
+}
 const auth = () => ({ Authorization: `users API-Key ${CMS_API_KEY}` });
 const ML: Record<FormatId, number> = { '3': 3, '5': 5, '100': 100 };
 

@@ -29,14 +29,14 @@ const info = Object.fromEntries(formats.map((f) => {
   return [f, { price: money(pr.price), regular: discount(pr.regular, pr.price) ? money(pr.regular) : '', href: hrefOf(f), from: f !== '100', p: pr.price, ok: live.available[f] }];
 }));
 // what «Agregar» puts in the bag (same thumbnail the product page uses)
-const thumb = photo ?? (await getImage({ src: p.img, width: 200, format: 'webp' })).src;
+const thumb = (await getImage(photo ? { src: photo, width: 200, height: 250, format: 'webp' } : { src: p.img, width: 200, format: 'webp' })).src;
 const bagItem = { slug: p.slug, name: p.name, brand: p.brand, img: thumb, stock: live.stock };
 ---
 <article class:list={['group/card relative flex flex-col gap-4', soldOut && '[&_img]:grayscale-[.6] [&_img]:opacity-70']}
   data-family={p.family} data-cursor="Ver" data-card data-view={initial === '100' ? 'frasco' : 'decant-off'} data-formats={JSON.stringify(info)} data-fmt={initial} data-bag={JSON.stringify(bagItem)}>
   <div class="relative aspect-[4/5] overflow-hidden rounded-2xl bg-graphite ring-1 ring-cream/8">
     {photo ? (
-      <img src={photo} alt={`${decant ? 'Decants de ' : ''}${p.brand} ${p.name}`} width="900" height="1125" decoding="async"
+      <Image src={photo} alt={`${decant ? 'Decants de ' : ''}${p.brand} ${p.name}`} width={900} height={1125} widths={[360, 560, 800]} sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw" decoding="async"
         loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : undefined}
         class="absolute inset-0 size-full object-cover transition-transform duration-[1400ms] ease-[var(--ease-out-expo)] group-hover/card:scale-[1.06]"
         transition:name={decant ? undefined : `img-${p.slug}`} />
@@ -50,7 +50,7 @@ const bagItem = { slug: p.slug, name: p.name, brand: p.brand, img: thumb, stock:
     )}
     <!-- decant view: shown only after picking 3 ml or 5 ml -->
     <div class="card-decant absolute inset-0 bg-[radial-gradient(70%_60%_at_50%_45%,var(--tone),transparent_75%),linear-gradient(180deg,#1a141f,#0b0a0d)]" style={`--tone:${tone}66`} aria-hidden="true">
-      {live.decantPhoto ? <img src={live.decantPhoto} alt="" loading="lazy" decoding="async" class="size-full object-cover" /> : decantImg ? <img src={decantImg} alt="" loading="lazy" decoding="async" class="size-full object-contain p-[12%] drop-shadow-[0_24px_30px_rgb(0_0_0/.55)]" /> : <Image src={p.decant} alt="" widths={[360, 560]} sizes="(min-width: 1024px) 30vw, 90vw" loading="lazy"
+      {live.decantPhoto ? <Image src={live.decantPhoto} alt="" width={900} height={1125} widths={[360, 560, 800]} sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw" loading="lazy" decoding="async" class="size-full object-cover" /> : decantImg ? <img src={decantImg} alt="" loading="lazy" decoding="async" class="size-full object-contain p-[12%] drop-shadow-[0_24px_30px_rgb(0_0_0/.55)]" /> : <Image src={p.decant} alt="" widths={[360, 560]} sizes="(min-width: 1024px) 30vw, 90vw" loading="lazy"
         class="size-full object-contain p-[12%] drop-shadow-[0_24px_30px_rgb(0_0_0/.55)]" />}
     </div>
     <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_60%,rgb(11_10_13/.7))]"></div>

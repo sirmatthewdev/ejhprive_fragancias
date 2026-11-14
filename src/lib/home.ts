@@ -156,6 +156,9 @@ async function load(): Promise<HomeContent> {
   }
 }
 
+/** true once the panel has answered (the content is not the built-in fallback) */
+export const homeIsLive = () => cache !== null;
+
 export async function getHome(): Promise<HomeContent> {
   if (cache && Date.now() - cache.at < TTL) return cache.data;
   inflight ??= load();

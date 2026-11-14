@@ -4,10 +4,12 @@ import Faq from '../components/ui/Faq.astro';
 import Icon from '../components/ui/Icon.astro';
 import PaymentBadges from '../components/ui/PaymentBadges.astro';
 import { faqJsonLd } from '../data/faq';
-import { getHome } from '../lib/home';
+import { getHome, homeIsLive } from '../lib/home';
+import { cachePage } from '../lib/cms';
 
 export const prerender = false; // questions come from the panel
 const FAQ = (await getHome()).faqs;
+cachePage(Astro.response, homeIsLive());
 
 const steps = [
   { n: '01', title: 'Elige tu perfume', text: 'Explora la colección y elige formato: decant de 3 ml, 5 ml o frasco de 100 ml.' },

@@ -26,6 +26,9 @@ export default defineConfig({
   // pages are prerendered by default; home, catalog, product pages and /api/* run as Vercel functions (live prices/stock)
   adapter: vercel(),
 
+  // photos uploaded in the panel live on Vercel Blob: let the image endpoint resize them and serve WebP
+  image: { remotePatterns: [{ protocol: 'https', hostname: '**.public.blob.vercel-storage.com' }] },
+
   env: {
     schema: {
       // Payload CMS (cms/): prices, stock and orders. Optional so the shop builds and runs without it

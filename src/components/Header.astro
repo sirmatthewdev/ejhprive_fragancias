@@ -76,7 +76,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
                           <li>
                             <a href={productUrl(p)} class="group/t flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-cream/5">
                               {photoOf(p, liveOf(catalog, p.slug), page)
-                                ? <img src={photoOf(p, liveOf(catalog, p.slug), page)!} alt="" width="96" height="120" loading="lazy" class="h-15 w-12 rounded-lg object-cover" />
+                                ? <Image src={photoOf(p, liveOf(catalog, p.slug), page)!} alt="" width={192} height={240} loading="lazy" class="h-15 w-12 rounded-lg object-cover" />
                                 : <Image src={p.img} alt="" width={96} height={120} class="h-15 w-12 rounded-lg object-cover" />}
                               <span class="flex min-w-0 flex-col">
                                 <span class="text-[10px] font-bold uppercase tracking-[0.16em] text-lilac">{p.brand}</span>

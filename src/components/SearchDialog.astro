@@ -13,7 +13,9 @@ const { page } = await getSettings();
 const index = await Promise.all(
   products.map(async (p) => ({
     name: p.name, brand: p.brand, accord: p.accord, href: productUrl(p),
-    img: photoOf(p, liveOf(catalog, p.slug), page) ?? (await getImage({ src: p.img, width: 96, height: 120, format: 'webp' })).src,
+    img: (await getImage(photoOf(p, liveOf(catalog, p.slug), page)
+      ? { src: photoOf(p, liveOf(catalog, p.slug), page)!, width: 192, height: 240, format: 'webp' }
+      : { src: p.img, width: 96, height: 120, format: 'webp' })).src,
     text: [p.brand, p.name, p.family, p.familyLabel, p.accord, ...p.notes.top, ...p.notes.heart, ...p.notes.base]
       .join(' ').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(),
   })),

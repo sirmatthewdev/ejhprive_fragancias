@@ -5,10 +5,11 @@ import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
 import Icon from '../../components/ui/Icon.astro';
 import { GENDERS } from '../../data/products';
 import { visibleProducts, getFamilies } from '../../lib/catalog';
-import { getCatalog, liveOf } from '../../lib/cms';
+import { cachePage, getCatalog, liveOf } from '../../lib/cms';
 
 export const prerender = false; // live prices and stock from the CMS
 const catalog = await getCatalog();
+cachePage(Astro.response, catalog);
 const products = visibleProducts(catalog);
 const families = (await getFamilies()).filter((f) => products.some((p) => p.family === f.id));
 // accent-free, lowercase text the client-side search matches against

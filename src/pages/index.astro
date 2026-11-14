@@ -9,14 +9,15 @@ import Icon from '../components/ui/Icon.astro';
 import Pic from '../components/ui/Pic.astro';
 import { productUrl } from '../data/products';
 import { visibleProducts } from '../lib/catalog';
-import { getCatalog, liveOf } from '../lib/cms';
-import { getHome } from '../lib/home';
+import { cachePage, getCatalog, liveOf } from '../lib/cms';
+import { getHome, homeIsLive } from '../lib/home';
 import { faqJsonLd } from '../data/faq';
 import { waLink } from '../config/site';
 
 export const prerender = false; // live prices, stock and home content from the CMS
 
 const [catalog, H] = await Promise.all([getCatalog(), getHome()]);
+cachePage(Astro.response, catalog && homeIsLive());
 const products = visibleProducts(catalog);
 const bySlug = (s: string) => products.find((p) => p.slug === s);
 // «Productos a mostrar» in the panel, else every visible product
