@@ -131,7 +131,7 @@ const productLd = {
       </div>
       {hasPyramid && <ol class="grid gap-4 md:grid-cols-3" data-reveal>
         {pyramid.filter((t) => t.notes.length).map((t) => (
-          <li class:list={['flex min-h-[220px] flex-col gap-5 rounded-[22px] p-7 transition-transform duration-700 ease-[var(--ease-out-expo)] hover:-translate-y-1', t.cls]}>
+          <li class:list={['flex flex-col gap-4 rounded-[22px] p-5 transition-transform md:min-h-[220px] md:gap-5 md:p-7 duration-700 ease-[var(--ease-out-expo)] hover:-translate-y-1', t.cls]}>
             <p class="flex justify-between text-xs font-bold uppercase tracking-[0.16em]"><span>{t.title}</span><span class="opacity-70">{t.when}</span></p>
             <ul class="mt-auto flex flex-wrap gap-2">{t.notes.map((n) => <li class:list={['rounded-full px-3.5 py-2 text-sm', t.chip]}>{n}</li>)}</ul>
           </li>
@@ -150,7 +150,7 @@ const productLd = {
 
   <section aria-labelledby="h-dec" class="surface-onyx py-[clamp(64px,9vw,112px)]">
     <div class="wrap grid items-center gap-[clamp(28px,5vw,72px)] md:grid-cols-2">
-      <div class="relative aspect-[4/5] max-h-[600px] overflow-hidden rounded-[22px] ring-1 ring-cream/8 bg-[radial-gradient(70%_60%_at_50%_45%,var(--tone),transparent_75%),linear-gradient(180deg,#1a141f,#0b0a0d)]" style={`--tone:${tone}55`} data-clip>
+      <div class="relative aspect-[4/3] max-h-[600px] overflow-hidden rounded-[22px] ring-1 ring-cream/8 md:aspect-[4/5] bg-[radial-gradient(70%_60%_at_50%_45%,var(--tone),transparent_75%),linear-gradient(180deg,#1a141f,#0b0a0d)]" style={`--tone:${tone}55`} data-clip>
         {ownDecant
           ? <Image src={decantImg!} alt={`Decants de ${title}`} width={900} height={1125} widths={[600, 900]} sizes="(min-width: 1024px) 52vw, 92vw" loading="lazy" class="size-full object-cover" />
           : decantImg
@@ -168,9 +168,10 @@ const productLd = {
 
   <section aria-labelledby="h-rel" class="surface-graphite py-[clamp(64px,9vw,120px)]">
     <div class="wrap">
-      <h2 id="h-rel" class="h-section mb-10" data-split>{T.related}</h2>
-      <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3" data-reveal>
-        {related.map((r) => <ProductCard p={r} live={liveOf(catalog, r.slug)} />)}
+      <h2 id="h-rel" class="h-section mb-6 sm:mb-10" data-split>{T.related}</h2>
+      <!-- phones: a row to swipe (the next card peeks in); sm and up: grid -->
+      <div class="-mx-[clamp(16px,4vw,40px)] flex snap-x snap-mandatory scroll-px-[clamp(16px,4vw,40px)] gap-4 overflow-x-auto px-[clamp(16px,4vw,40px)] pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-12 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3" data-reveal>
+        {related.map((r) => <div class="w-[78%] shrink-0 snap-start sm:w-auto"><ProductCard p={r} live={liveOf(catalog, r.slug)} /></div>)}
       </div>
     </div>
   </section>
