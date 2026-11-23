@@ -13,7 +13,7 @@ export const GET: APIRoute = async ({ url }) => {
   const cat = await getCatalog({ fresh: true });
   const out: Record<string, { active: boolean; stock: { sealed: number; decantMl: number } | null; prices?: Record<FormatId, number | null> }> = {};
   for (const slug of slugs) {
-    const p = cat?.get(slug);
+    const p = cat?.get(slug.toLowerCase()); // bags saved before slugs were lowercased
     out[slug] = p
       ? { active: p.active, stock: p.stock, prices: { '3': p.prices['3'].price, '5': p.prices['5'].price, '100': p.prices['100'].price } }
       : { active: true, stock: null };

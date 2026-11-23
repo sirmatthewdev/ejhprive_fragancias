@@ -24,7 +24,7 @@ const fullTitle = title ? `${title} · ${SITE.name}` : `${SITE.name} · Perfumer
 const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url).href;
 const ogImage = new URL(image, Astro.site ?? SITE.url).href;
 const org = {
-  '@context': 'https://schema.org', '@type': 'Store', name: SITE.name, url: SITE.url, image: ogImage,
+  '@context': 'https://schema.org', '@type': 'Store', name: SITE.name, url: SITE.url, image: new URL('/media/og.jpg', Astro.site ?? SITE.url).href,
   description: SITE.description, priceRange: '$$', currenciesAccepted: 'PEN', paymentAccepted: 'Yape, Plin, tarjeta de crédito y débito, Powerpay',
   address: { '@type': 'PostalAddress', addressCountry: 'PE' },
 };

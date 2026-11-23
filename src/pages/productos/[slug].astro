@@ -11,10 +11,14 @@ import { SITE, waLink } from '../../config/site';
 import { cachePage, getCatalog, liveOf } from '../../lib/cms';
 
 export const prerender = false; // live prices and stock from the CMS
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=10, stale-while-revalidate=20'); // CDN copy ≤ 30 s old: no cold start for visitors
 
+// one URL per product: /productos/Vulcan-Feu/ → /productos/vulcan-feu/
+const lower = Astro.params.slug!.toLowerCase();
+if (lower !== Astro.params.slug) return Astro.redirect(`/productos/${lower}/${Astro.url.search}`, 301);
 const catalog = await getCatalog({ fresh: true }); // stock must be current where people add to the bag
 const everything = allProducts(catalog);
-const p = everything.find((x) => x.slug === Astro.params.slug);
+const p = everything.find((x) => x.slug === lower);
 if (!p || !liveOf(catalog, p.slug).active) return new Response(null, { status: 404 }); // the server answers with the 404 page
 const live = liveOf(catalog, p.slug);
 cachePage(Astro.response, catalog); // the buy box re-reads stock from /api/stock as soon as it loads

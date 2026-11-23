@@ -69,7 +69,7 @@ const detailsOf = (d: any): Details => {
     meters: Object.fromEntries(([
       meter('Duración', x.duration), meter('Proyección', x.projection), meter('Dulzor', x.sweetness), meter('Ideal para', x.idealFor, 75),
     ].filter(Boolean) as Meter[]).map((m) => [m.label, m])),
-    related: Array.isArray(x.related) ? x.related.map((r: any) => r?.slug).filter(Boolean) : undefined,
+    related: Array.isArray(x.related) ? x.related.map((r: any) => r?.slug?.toLowerCase()).filter(Boolean) : undefined,
   };
 };
 const NO_PRICE: Price = { price: null, regular: null, onSale: false };
@@ -108,7 +108,8 @@ async function fetchCatalog(): Promise<Map<string, Live> | null> {
     for (const d of docs) {
       const sealed = d.stock?.sealed ?? 0, ml = d.stock?.decantMl ?? 0;
       const can = (f: FormatId) => (f === '100' ? sealed > 0 : ml >= ML[f]);
-      data.set(d.slug, {
+      // slugs are case-insensitive: «Vulcan-Feu» in the panel is /productos/vulcan-feu/
+      data.set(String(d.slug).toLowerCase(), {
         id: d.id, active: d.active !== false, tag: d.tag || null, order: typeof d.order === 'number' ? d.order : undefined,
         prices: { '3': priceOf(d, '3'), '5': priceOf(d, '5'), '100': priceOf(d, '100') },
         available: { '3': can('3'), '5': can('5'), '100': can('100') },

@@ -8,6 +8,7 @@ import { visibleProducts, getFamilies } from '../../lib/catalog';
 import { cachePage, getCatalog, liveOf } from '../../lib/cms';
 
 export const prerender = false; // live prices and stock from the CMS
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=10, stale-while-revalidate=20'); // CDN copy ≤ 30 s old: no cold start for visitors
 const catalog = await getCatalog();
 cachePage(Astro.response, catalog);
 const products = visibleProducts(catalog);

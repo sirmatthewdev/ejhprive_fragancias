@@ -17,7 +17,7 @@ const Order = z.object({
     reference: z.string().trim().max(160).optional(),
     message: z.string().trim().max(500).optional(),
   }),
-  items: z.array(z.object({ slug: z.string().max(60), fmt: z.enum(['3', '5', '100']), qty: z.number().int().min(1).max(9) })).min(1).max(20),
+  items: z.array(z.object({ slug: z.string().max(60).transform((s) => s.toLowerCase()), fmt: z.enum(['3', '5', '100']), qty: z.number().int().min(1).max(9) })).min(1).max(20),
 });
 
 // 10 orders per IP per hour is plenty for real customers

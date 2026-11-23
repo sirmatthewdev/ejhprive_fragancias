@@ -1,6 +1,6 @@
 # EJH PRIVÉ: análisis de maquetación y semántica
 
-Este documento analiza la landing y las páginas de tienda desde el frontend, en función del negocio: una perfumería árabe de catálogo corto (seis fragancias) cuyo diferencial son los **decants de 3 y 5 ml**, con venta asistida por **WhatsApp**.
+Este documento analiza la landing y las páginas de tienda desde el frontend, en función del negocio: una perfumería árabe de catálogo corto (doce fragancias a noviembre de 2026, editables desde el panel) cuyo diferencial son los **decants de 3 y 5 ml**, con venta asistida por **WhatsApp**.
 
 ## 1. Objetivo de la landing
 
@@ -15,7 +15,7 @@ Este documento analiza la landing y las páginas de tienda desde el frontend, en
 
 1. **Hero:** propuesta de valor y dos CTA. El índice tipográfico de las escenas del video lleva a cada perfume.
 2. **Elige cómo descubrirlo:** la decisión central del negocio, frasco o decant. Va primero porque segmenta la intención.
-3. **La colección:** los seis productos. Cada tarjeta muestra frasco y decant al pasar el mouse.
+3. **La colección:** los productos elegidos en el panel («Productos a mostrar»), o todos los visibles. Cada tarjeta muestra frasco y decant al pasar el mouse.
 4. **Decants:** sección en crema que rompe el ritmo oscuro. Explica el proceso y los tamaños, y baja la barrera de entrada.
 5. **Por familia olfativa:** índice editorial para quien ya sabe qué le gusta. Al pasar el mouse se ve una vista previa flotante.
 6. **Las casas:** prueba de marca (Lattafa, Armaf) y marquee de las cuatro casas.
@@ -64,31 +64,32 @@ Este documento analiza la landing y las páginas de tienda desde el frontend, en
 | Elemento | Implementación |
 |---|---|
 | Títulos y descripciones | Uno por página; en producto: «Marca Nombre · EJH PRIVÉ» |
-| URLs | `/productos/khamrah/`, legibles y estables, con barra final consistente |
+| URLs | `/productos/khamrah/`, en minúsculas. Un identificador con mayúsculas del panel (p. ej. `Vulcan-Feu`) redirige con 301 a su versión en minúsculas, y el panel ya guarda los nuevos en minúsculas |
 | Canonical + Open Graph | En `Base.astro`; la imagen OG de cada producto es su foto |
-| JSON-LD | `Store` (global), `ItemList` (Home), `Product` (PDP; `Offer` se emite cuando haya precio), `BreadcrumbList`, `FAQPage` |
-| Sitemap | `@astrojs/sitemap` |
-| `noindex` | En `/cuenta/` y en la 404 |
+| JSON-LD | `Store` (global, siempre con la imagen de marca), `ItemList` (Home), `Product` con `Offer` del frasco y su disponibilidad (PDP), `BreadcrumbList`, `FAQPage` |
+| Sitemaps | `sitemap-index.xml` (páginas fijas, `@astrojs/sitemap`) y `sitemap-productos.xml` (fichas, generado en vivo desde el catálogo) |
+| `robots.txt` | Generado (`src/pages/robots.txt.ts`): bloquea `/admin`, `/cms-api`, `/api/`, `/cuenta/` y `/sistema/` y declara los dos sitemaps |
+| `noindex` | En `/cuenta/`, `/sistema/` y la 404 |
 
 ## 5. Rendimiento
 
 | Recurso | Decisión |
 |---|---|
-| HTML | Estático (SSG): 14 páginas prerenderizadas |
-| JS | Solo las islas que lo necesitan: bolsa, botón de bolsa, compra en la PDP |
-| Imágenes | `astro:assets` → WebP responsive con `srcset`/`sizes`; *eager* + `fetchpriority=high` solo en la imagen LCP |
-| Video del hero | `muted playsinline`, con *poster* y versión vertical para móvil. Se pausa fuera de pantalla |
-| Fuentes | Auto-alojadas con `@fontsource` (sin dependencia de Google Fonts) |
+| HTML | Páginas fijas prerenderizadas. Home, catálogo, fichas y «Cómo comprar» se generan en una función de Vercel (precios y stock en vivo) y el CDN guarda una copia de hasta 30 s (`s-maxage=10, stale-while-revalidate=20`), así el visitante no espera el arranque en frío |
+| Región | Tienda y panel en `iad1` (Washington), junto a la base de datos. Moverlos a `gru1` (São Paulo) solo conviene si se mueven los tres juntos |
+| JS | Solo las islas que lo necesitan: bolsa, botón de bolsa, compra en la PDP (~8 KB comprimidos en la Home sin contar React de las islas) |
+| Imágenes | `astro:assets` → WebP responsive con `srcset`/`sizes`; *eager* + `fetchpriority=high` solo en la imagen LCP. Las fotos subidas al panel viven en Vercel Blob |
+| Video del hero | `muted playsinline`, con *poster* y versión vertical para móvil (~0,9 MB). Se pausa fuera de pantalla |
+| Fuentes | Google Fonts API (Cormorant Garamond y Manrope) con `preconnect` |
 | Navegación | *Prefetch* al pasar el mouse + View Transitions |
 
-## 6. Pendientes del cliente
+## 6. Pendientes del negocio (revisión del 23/11/2026)
 
-- **Precios:** hoy `null` en `src/data/products.ts`. Con el valor cargado, el sitio muestra el precio, calcula subtotales y emite `Offer` en schema.
-- **Contacto:** WhatsApp, Instagram, TikTok, correo y dominio, en `src/config/site.ts`.
+- **Fotos de producto:** varias fotos subidas al panel vienen de otras tiendas (Fragancias Fiord, Amazon, Walmart) y la de Khamrah Qahwa es una miniatura marcada «CAMBIAR». Reemplazarlas por fotos propias (4:5, mínimo 1200 × 1500 px).
+- **Datos legales:** razón social, RUC y dirección fiscal en `src/config/site.ts`; el Libro de Reclamaciones los exige. También Instagram, TikTok y correo.
+- **Stock de decants:** solo Odyssey Spectra y Mandarin Sky tienen ml abiertos; el resto muestra los decants agotados. Abrir frascos desde el panel («Abrir un frasco sellado»).
+- **Precios:** Nitro Red no tiene precio de decants de 3 y 5 ml.
+- **Identificadores:** renombrar `Vulcan-Feu` a `vulcan-feu` en el panel (la tienda ya redirige, pero así queda prolijo).
 - **Legales:** política de devolución y términos.
-- **Ficha técnica:** las barras de duración, proyección y dulzor son estimaciones editoriales que conviene validar.
-- **Backend:**
-  - Cuentas de usuario.
-  - Pagos en línea: en Perú, Izipay, Niubiz o Culqi (tarjetas y Yape), o Mercado Pago.
-  - Newsletter.
-  - Mientras tanto, el pedido se cierra por WhatsApp con el detalle de la bolsa.
+- **Antispam:** el límite de pedidos y reclamos por IP vive en memoria de cada función; si llega spam, pasarlo a Vercel KV/Upstash o sumar Cloudflare Turnstile.
+- **Backend futuro:** pagos en línea (Izipay, Niubiz, Culqi o Mercado Pago), cuentas de cliente y newsletter. Mientras tanto, el pedido se registra en el panel y se cierra por WhatsApp.

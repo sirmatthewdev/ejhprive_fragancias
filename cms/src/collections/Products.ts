@@ -68,7 +68,7 @@ export const Products: CollectionConfig = {
     {
       type: 'row',
       fields: [
-        { name: 'slug', label: 'Identificador web', type: 'text', required: true, unique: true, index: true, access: { update: ({ req }) => req.user?.role === 'admin' }, admin: { description: 'Debe coincidir con la URL de la tienda (/productos/<identificador>/).' } },
+        { name: 'slug', label: 'Identificador web', type: 'text', required: true, unique: true, index: true, access: { update: ({ req }) => req.user?.role === 'admin' }, hooks: { beforeValidate: [({ value }) => (typeof value === 'string' ? value.trim().toLowerCase().replace(/\s+/g, '-') : value)] }, admin: { description: 'Minúsculas y guiones, sin espacios (se convierte solo). Es la URL de la tienda: /productos/<identificador>/.' } },
         { name: 'active', label: 'Visible en la tienda', type: 'checkbox', defaultValue: true },
         { name: 'tag', label: 'Etiqueta', type: 'text', admin: { description: 'Ej.: Más vendido, Nuevo. Vacío = sin etiqueta.' } },
       ],
