@@ -17,8 +17,10 @@ interface Props {
 }
 
 /** Format selector + quantity + add to bag. Emits `ejh:format` so the gallery can follow the choice. */
-export default function ProductBuy({ slug, name, brand, href, images, prices, available: initialAvailable, stock: initialStock, formats, waBase }: Props) {
+export default function ProductBuy({ slug, name, brand, href, images, prices: initialPrices, available: initialAvailable, stock: initialStock, formats, waBase }: Props) {
   const [stock, setStock] = useState<Stock | null>(initialStock);
+  // the page may be a CDN copy: prices are corrected from /api/stock as soon as it loads
+  const [prices, setPrices] = useState(initialPrices);
   const availableOf = (st: Stock | null): Record<FormatId, boolean> =>
     st ? { '3': st.decantMl >= ML['3'], '5': st.decantMl >= ML['5'], '100': st.sealed > 0 } : initialAvailable;
   const available = availableOf(stock);
@@ -36,7 +38,7 @@ export default function ProductBuy({ slug, name, brand, href, images, prices, av
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     hydrateCart(); setMounted(true);
-    fetchStock([slug]).then((r) => { const st = r?.[slug]?.stock; if (st) setStock(st); });
+    fetchStock([slug]).then((r) => { const st = r?.[slug]?.stock, of = r?.[slug]?.offers; if (st) setStock(st); if (of) setPrices(of); });
     setTimeout(() => trackViewItem({ slug, name, brand, fmt, qty: 1, price: prices[fmt].price }), 400);
   }, []);
   // if the chosen format ran out after a refresh, move to one that is still available
@@ -67,12 +69,14 @@ export default function ProductBuy({ slug, name, brand, href, images, prices, av
     if (!inStock || room <= 0 || checking) return;
     // re-check stock at the moment of adding: it may have changed while the page was open
     setChecking(true);
-    const fresh = (await fetchStock([slug]))?.[slug]?.stock ?? stock;
+    const live = (await fetchStock([slug]))?.[slug];
+    const fresh = live?.stock ?? stock, now = live?.offers ?? prices;
     setChecking(false);
     if (fresh) setStock(fresh);
-    const n = addToCart({ slug, name, brand, fmt, price: prices[fmt].price, img: images.frasco, href, stock: fresh }, qty);
+    if (live?.offers) setPrices(live.offers);
+    const n = addToCart({ slug, name, brand, fmt, price: now[fmt].price, img: images.frasco, href, stock: fresh }, qty);
     if (n === 0) { setNotice('Ya no queda stock para este formato.'); return; }
-    trackAddToCart({ slug, name, brand, fmt, qty: n, price: prices[fmt].price });
+    trackAddToCart({ slug, name, brand, fmt, qty: n, price: now[fmt].price });
     setNotice(n < qty ? `Solo pudimos agregar ${n}: es todo el stock disponible.` : null);
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);

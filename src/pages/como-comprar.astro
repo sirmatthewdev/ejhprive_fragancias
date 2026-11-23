@@ -8,7 +8,6 @@ import { getHome, homeIsLive } from '../lib/home';
 import { cachePage } from '../lib/cms';
 
 export const prerender = false; // questions come from the panel
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=10, stale-while-revalidate=20'); // CDN copy ≤ 30 s old: no cold start for visitors
 const FAQ = (await getHome()).faqs;
 cachePage(Astro.response, homeIsLive());
 

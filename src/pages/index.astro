@@ -15,7 +15,6 @@ import { faqJsonLd } from '../data/faq';
 import { waLink } from '../config/site';
 
 export const prerender = false; // live prices, stock and home content from the CMS
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=10, stale-while-revalidate=20'); // CDN copy ≤ 30 s old: no cold start for visitors
 
 const [catalog, H] = await Promise.all([getCatalog(), getHome()]);
 cachePage(Astro.response, catalog && homeIsLive());

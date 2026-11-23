@@ -46,7 +46,7 @@ npm run build                           # genera .vercel/output (producción en 
   - Cada cambio queda en el **Historial** con la fecha y quién lo hizo.
   - El botón **«Avisar al cliente por WhatsApp»** arma el mensaje según el estado.
 - **Stock por fragancia:** frascos sellados (para vender frascos de 100 ml) y ml abiertos para decants (lo único con lo que se venden decants de 3 y 5 ml).
-  - Si no hay ml suficientes, la tienda muestra los decants agotados y no deja agregarlos a la bolsa. Para sumar ml, el equipo marca «Abrir un frasco sellado» en el producto (−1 frasco, +100 ml).
+  - Si no hay ml suficientes, la tienda muestra los decants agotados y no deja agregarlos a la bolsa. El stock lo envía el sistema de gestión (ventas, compras, aperturas de frasco y traslados); en el panel es de solo lectura.
   - Al **confirmar** un pedido se descuenta.
   - Al **cancelar** o volver a Pendiente, se repone.
   - Un pedido que ya descontó stock no permite editar sus productos.

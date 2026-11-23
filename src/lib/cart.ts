@@ -95,7 +95,7 @@ export function setQty(slug: string, fmt: FormatId, qty: number) {
 export const clearCart = () => $cart.set([]);
 
 /** Asks the shop for current stock (and price) of the given fragrances. */
-export async function fetchStock(slugs: string[]): Promise<Record<string, { active: boolean; stock: Stock | null; prices?: Record<FormatId, number | null> }> | null> {
+export async function fetchStock(slugs: string[]): Promise<Record<string, { active: boolean; stock: Stock | null; prices?: Record<FormatId, number | null>; offers?: Record<FormatId, { price: number | null; regular: number | null; onSale: boolean }> }> | null> {
   if (!slugs.length) return {};
   try {
     const r = await fetch(`/api/stock/?slugs=${encodeURIComponent([...new Set(slugs)].join(','))}`, { cache: 'no-store' });

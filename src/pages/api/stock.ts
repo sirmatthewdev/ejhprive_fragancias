@@ -1,21 +1,22 @@
 import type { APIRoute } from 'astro';
-import { getCatalog } from '../../lib/cms';
+import { getCatalog, type Price } from '../../lib/cms';
 import type { FormatId } from '../../data/products';
 
 export const prerender = false;
 
 /**
  * Current stock and price per fragrance: GET /api/stock/?slugs=khamrah,9-pm
- * (stock null = unknown, CMS unreachable; prices are what an order is charged right now).
+ * (stock null = unknown, CMS unreachable; prices are what an order is charged right now, offers the same
+ * with the regular price and sale flag, for the product page to correct a cached copy).
  */
 export const GET: APIRoute = async ({ url }) => {
   const slugs = (url.searchParams.get('slugs') ?? '').split(',').map((s) => s.trim()).filter(Boolean).slice(0, 20);
   const cat = await getCatalog({ fresh: true });
-  const out: Record<string, { active: boolean; stock: { sealed: number; decantMl: number } | null; prices?: Record<FormatId, number | null> }> = {};
+  const out: Record<string, { active: boolean; stock: { sealed: number; decantMl: number } | null; prices?: Record<FormatId, number | null>; offers?: Record<FormatId, Price> }> = {};
   for (const slug of slugs) {
     const p = cat?.get(slug.toLowerCase()); // bags saved before slugs were lowercased
     out[slug] = p
-      ? { active: p.active, stock: p.stock, prices: { '3': p.prices['3'].price, '5': p.prices['5'].price, '100': p.prices['100'].price } }
+      ? { active: p.active, stock: p.stock, prices: { '3': p.prices['3'].price, '5': p.prices['5'].price, '100': p.prices['100'].price }, offers: p.prices }
       : { active: true, stock: null };
   }
   return new Response(JSON.stringify(out), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });

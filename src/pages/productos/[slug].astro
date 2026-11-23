@@ -11,7 +11,6 @@ import { SITE, waLink } from '../../config/site';
 import { cachePage, getCatalog, liveOf } from '../../lib/cms';
 
 export const prerender = false; // live prices and stock from the CMS
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=10, stale-while-revalidate=20'); // CDN copy ≤ 30 s old: no cold start for visitors
 
 // one URL per product: /productos/Vulcan-Feu/ → /productos/vulcan-feu/
 const lower = Astro.params.slug!.toLowerCase();

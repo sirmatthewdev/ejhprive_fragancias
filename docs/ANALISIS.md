@@ -75,7 +75,7 @@ Este documento analiza la landing y las páginas de tienda desde el frontend, en
 
 | Recurso | Decisión |
 |---|---|
-| HTML | Páginas fijas prerenderizadas. Home, catálogo, fichas y «Cómo comprar» se generan en una función de Vercel (precios y stock en vivo) y el CDN guarda una copia de hasta 30 s (`s-maxage=10, stale-while-revalidate=20`), así el visitante no espera el arranque en frío |
+| HTML | Páginas fijas prerenderizadas. Home, catálogo, fichas y «Cómo comprar» se generan en una función de Vercel (precios y stock en vivo) y el CDN guarda la copia (`cachePage` en `src/lib/cms.ts`: `s-maxage=60, stale-while-revalidate=86400`, solo si el panel respondió), así el visitante no espera el arranque en frío. La ficha corrige stock y precio desde `/api/stock` al cargar, la bolsa vuelve a revisar precios y el panel cobra cada pedido al precio vigente |
 | Región | Tienda y panel en `iad1` (Washington), junto a la base de datos. Moverlos a `gru1` (São Paulo) solo conviene si se mueven los tres juntos |
 | JS | Solo las islas que lo necesitan: bolsa, botón de bolsa, compra en la PDP (~8 KB comprimidos en la Home sin contar React de las islas) |
 | Imágenes | `astro:assets` → WebP responsive con `srcset`/`sizes`; *eager* + `fetchpriority=high` solo en la imagen LCP. Las fotos subidas al panel viven en Vercel Blob |
@@ -87,9 +87,9 @@ Este documento analiza la landing y las páginas de tienda desde el frontend, en
 
 - **Fotos de producto:** varias fotos subidas al panel vienen de otras tiendas (Fragancias Fiord, Amazon, Walmart) y la de Khamrah Qahwa es una miniatura marcada «CAMBIAR». Reemplazarlas por fotos propias (4:5, mínimo 1200 × 1500 px).
 - **Datos legales:** razón social, RUC y dirección fiscal en `src/config/site.ts`; el Libro de Reclamaciones los exige. También Instagram, TikTok y correo.
-- **Stock de decants:** solo Odyssey Spectra y Mandarin Sky tienen ml abiertos; el resto muestra los decants agotados. Abrir frascos desde el panel («Abrir un frasco sellado»).
+- **Stock de decants:** solo Odyssey Spectra y Mandarin Sky tienen ml abiertos; el resto muestra los decants agotados. El stock lo maneja el sistema de gestión (en el panel es de solo lectura): registrar ahí las aperturas de frasco.
 - **Precios:** Nitro Red no tiene precio de decants de 3 y 5 ml.
 - **Identificadores:** renombrar `Vulcan-Feu` a `vulcan-feu` en el panel (la tienda ya redirige, pero así queda prolijo).
 - **Legales:** política de devolución y términos.
-- **Antispam:** el límite de pedidos y reclamos por IP vive en memoria de cada función; si llega spam, pasarlo a Vercel KV/Upstash o sumar Cloudflare Turnstile.
+- **Antispam:** resuelto con límites en la base de datos del panel (`cms/src/limits.ts`). Si aun así llega spam, sumar Cloudflare Turnstile.
 - **Backend futuro:** pagos en línea (Izipay, Niubiz, Culqi o Mercado Pago), cuentas de cliente y newsletter. Mientras tanto, el pedido se registra en el panel y se cierra por WhatsApp.
