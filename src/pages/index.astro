@@ -79,7 +79,7 @@ const itemList = {
       <SectionHead id="h-col" kicker={H.collection.kicker} title={H.collection.title}>
         <a href="/productos/" class="btn btn-ghost h-11 px-5" data-magnetic>{H.collection.button} <Icon name="arrow" size={14} /></a>
       </SectionHead>
-      <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3" data-reveal>
+      <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-reveal>
         {collection.map((p) => <ProductCard p={p} live={liveOf(catalog, p.slug)} />)}
       </div>
     </div>

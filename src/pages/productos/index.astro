@@ -72,10 +72,10 @@ const seg = 'h-10 rounded-full px-5 text-[13px] font-semibold tracking-[0.02em] 
       </button>
     </div>
 
-    <ul class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3" data-grid>
+    <ul class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-grid>
       {products.map((p, i) => ['frasco', 'decant'].map((v) => (
         <li data-item data-variant={v} data-family={p.family} data-name={p.name} data-brand={p.brand} data-gender={p.gender} data-order={i} data-search={searchText(p)} hidden={v === 'decant'}>
-          <ProductCard p={p} live={liveOf(catalog, p.slug)} variant={v as 'frasco' | 'decant'} priority={i < 3 && v === 'frasco'} headingLevel="h2" />
+          <ProductCard p={p} live={liveOf(catalog, p.slug)} variant={v as 'frasco' | 'decant'} priority={i < 4 && v === 'frasco'} headingLevel="h2" />
         </li>
       )))}
     </ul>
