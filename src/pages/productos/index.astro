@@ -18,8 +18,8 @@ const searchText = (p: (typeof products)[number]) =>
     .join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
 const COUNT = ['Cero', 'Una', 'Dos', 'Tres', 'Cuatro', 'Cinco', 'Seis', 'Siete', 'Ocho', 'Nueve', 'Diez', 'Once', 'Doce'][products.length] ?? String(products.length);
-const chip = 'h-10 rounded-full border px-4 text-[13px] font-medium transition-[background-color,color,border-color] duration-400 border-cream/16 text-sand hover:border-cream/40 aria-pressed:border-lilac aria-pressed:bg-lilac/18 aria-pressed:text-cream';
-const seg = 'h-10 rounded-full px-5 text-[13px] font-semibold tracking-[0.02em] text-sand transition-colors duration-400 aria-pressed:bg-cream aria-pressed:text-plum';
+const chip = 'h-9 shrink-0 whitespace-nowrap rounded-full border px-3.5 sm:h-10 sm:px-4 text-[13px] font-medium transition-[background-color,color,border-color] duration-400 border-cream/16 text-sand hover:border-cream/40 aria-pressed:border-lilac aria-pressed:bg-lilac/18 aria-pressed:text-cream';
+const seg = 'h-8 whitespace-nowrap rounded-full px-4 sm:h-10 sm:px-5 text-[13px] font-semibold tracking-[0.02em] text-sand transition-colors duration-400 aria-pressed:bg-cream aria-pressed:text-plum';
 ---
 <Base title="Productos" description={`${COUNT} fragancias árabes originales en frasco de 100 ml o decants de 3 y 5 ml: ${products.map((p) => p.name).join(', ')}.`}>
   <section aria-labelledby="h-cat" class="bg-[linear-gradient(180deg,#170E1D,#0B0A0D)]">
@@ -31,37 +31,40 @@ const seg = 'h-10 rounded-full px-5 text-[13px] font-semibold tracking-[0.02em] 
   </section>
 
   <section aria-label="Filtros y resultados" class="wrap pb-24" data-catalog>
-    <div data-toolbar class="sticky top-[72px] z-20 -mx-[clamp(16px,4vw,40px)] mb-8 transition-[top] duration-700 ease-[var(--ease-out-expo)] flex flex-wrap items-center gap-3 border-b border-cream/10 bg-onyx px-[clamp(16px,4vw,40px)] py-3 shadow-[0_18px_30px_-20px_rgb(0_0_0/.8)]">
-      <div role="group" aria-label="Formato" class="inline-flex rounded-full border border-cream/10 bg-graphite p-1">
-        <button type="button" class={seg} data-format="frasco" aria-pressed="true">Frascos 100 ml</button>
-        <button type="button" class={seg} data-format="decant" aria-pressed="false">Decants 3 · 5 ml</button>
+    <!-- phones: two compact rows (formats, audience and families scroll sideways; search + sort); sm and up: one wrapping bar -->
+    <div data-toolbar class="sticky top-[72px] z-20 -mx-[clamp(16px,4vw,40px)] mb-8 transition-[top] duration-700 ease-[var(--ease-out-expo)] flex flex-col gap-2 border-b border-cream/10 bg-onyx px-[clamp(16px,4vw,40px)] py-2 shadow-[0_18px_30px_-20px_rgb(0_0_0/.8)] sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 sm:py-3">
+      <div class="-mx-[clamp(16px,4vw,40px)] flex items-center gap-2 overflow-x-auto px-[clamp(16px,4vw,40px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(90deg,#000_82%,transparent)] sm:contents">
+        <div role="group" aria-label="Formato" class="inline-flex shrink-0 rounded-full border border-cream/10 bg-graphite p-1">
+          <button type="button" class={seg} data-format="frasco" aria-pressed="true">Frascos 100 ml</button>
+          <button type="button" class={seg} data-format="decant" aria-pressed="false">Decants 3 · 5 ml</button>
+        </div>
+        <label class="shrink-0 text-[13px] text-mist sm:order-last sm:ml-auto">
+          <span class="sr-only">Para quién</span>
+          <select data-gender class="h-9 rounded-full border border-cream/16 bg-graphite px-3 text-cream sm:h-10 sm:px-4">
+            <option value="">Hombre y mujer</option>
+            {GENDERS.map((g) => <option value={g.id}>{g.label}</option>)}
+          </select>
+        </label>
+        <div role="group" aria-label="Familia olfativa" class="flex shrink-0 gap-2 sm:shrink sm:flex-wrap">
+          <button type="button" class={chip} data-fam="Todas" aria-pressed="true">Todas</button>
+          {families.map((f) => <button type="button" class={chip} data-fam={f.id} aria-pressed="false">{f.id}</button>)}
+        </div>
       </div>
-      <div role="group" aria-label="Familia olfativa" class="flex flex-wrap gap-2">
-        <button type="button" class={chip} data-fam="Todas" aria-pressed="true">Todas</button>
-        {families.map((f) => <button type="button" class={chip} data-fam={f.id} aria-pressed="false">{f.id}</button>)}
-      </div>
-      <div class="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:ml-auto">
-      <label class="flex items-center gap-3 text-[13px] text-mist">
-        <span class="sr-only">Para quién</span>
-        <select data-gender class="h-10 rounded-full border border-cream/16 bg-graphite px-4 text-cream">
-          <option value="">Hombre y mujer</option>
-          {GENDERS.map((g) => <option value={g.id}>{g.label}</option>)}
-        </select>
-      </label>
-      <form role="search" class="relative w-full sm:w-auto" action="/productos/">
-        <label for="cat-q" class="sr-only">Buscar fragancia</label>
-        <input id="cat-q" name="q" type="search" data-search maxlength="60" autocomplete="off" placeholder="Buscar: vainilla, Lattafa…"
-          class="h-10 w-full rounded-full border border-cream/16 bg-graphite pl-10 pr-4 text-[13px] text-cream placeholder:text-mist focus:border-lilac focus:outline-none sm:w-48" />
-        <Icon name="search" size={16} class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-mist" />
-      </form>
-      <label class="flex items-center gap-3 text-[13px] text-mist">
-        <span class="sr-only">Ordenar</span>
-        <select data-sort class="h-10 rounded-full border border-cream/16 bg-graphite px-4 text-cream">
-          <option value="featured">Destacados</option>
-          <option value="name">Nombre A–Z</option>
-          <option value="brand">Marca</option>
-        </select>
-      </label>
+      <div class="flex w-full items-center gap-2 sm:order-last sm:w-auto sm:gap-3">
+        <form role="search" class="relative min-w-0 flex-1 sm:flex-none" action="/productos/">
+          <label for="cat-q" class="sr-only">Buscar fragancia</label>
+          <input id="cat-q" name="q" type="search" data-search maxlength="60" autocomplete="off" placeholder="Buscar: vainilla, Lattafa…"
+            class="h-9 w-full rounded-full border border-cream/16 bg-graphite pl-10 pr-4 text-[13px] text-cream placeholder:text-mist focus:border-lilac focus:outline-none sm:h-10 sm:w-48" />
+          <Icon name="search" size={16} class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-mist" />
+        </form>
+        <label class="shrink-0 text-[13px] text-mist">
+          <span class="sr-only">Ordenar</span>
+          <select data-sort class="h-9 rounded-full border border-cream/16 bg-graphite px-3 text-cream sm:h-10 sm:px-4">
+            <option value="featured">Destacados</option>
+            <option value="name">Nombre A–Z</option>
+            <option value="brand">Marca</option>
+          </select>
+        </label>
       </div>
     </div>
 
