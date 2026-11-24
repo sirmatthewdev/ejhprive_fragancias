@@ -21,11 +21,19 @@ Este documento analiza la landing y las páginas de tienda desde el frontend, en
 6. **Las casas:** prueba de marca (Lattafa, Armaf) y marquee de las cuatro casas.
 7. **Promesa y manifiesto:** las cuatro garantías.
 8. **FAQ:** responde las objeciones antes de comprar y genera *rich results*.
-9. **CTA final por WhatsApp:** cierre conversacional, el canal real de venta.
+9. **Síguenos:** una tarjeta por red (Instagram y TikTok, `@perfumeriaejh`). Las redes salen de `SOCIALS` en `src/config/site.ts`: si una red no tiene URL, su tarjeta no aparece, y si no queda ninguna, la sección tampoco.
+10. **CTA final por WhatsApp:** cierre conversacional, el canal real de venta.
 
 **Cambio respecto a la versión anterior.** Se quitó la barra de beneficios que estaba justo debajo del hero. Repetía lo que ya dice el anuncio superior y empujaba la decisión principal fuera del primer scroll. Las garantías pasaron a la sección 7, con más peso visual y en el lugar donde aparece la duda.
 
-## 3. Semántica HTML
+## 3. Responsive
+
+- **Grillas de producto (Home y catálogo):** `repeat(auto-fill, minmax(min(100%, 230px), 1fr))`. Las columnas se ajustan solas al ancho: 1 en celular, 2 en tablet, 3 o 4 en escritorio. El contenedor mide 1280 px, así que nunca pasan de 4. Si los precios en oferta se ven apretados, subir el mínimo a 250 px.
+- **Filtros del catálogo en celular:** dos filas compactas. La primera (formato, género y familias) se desliza de lado; la segunda tiene la búsqueda y el orden. Desde `sm` vuelven a ser una sola barra.
+- **Ficha en celular:** pirámide, foto del decant y espaciados más bajos; los relacionados son una fila deslizable (78 % de ancho por tarjeta) en lugar de una columna.
+- **Contacto:** WhatsApp, Instagram y TikTok. El correo está oculto mientras `SITE.email` esté vacío; aparece solo al completarlo.
+
+## 4. Semántica HTML
 
 - **Landmarks:**
   - `header` y `nav[aria-label=Principal]`.
@@ -59,19 +67,19 @@ Este documento analiza la landing y las páginas de tienda desde el frontend, en
   - Todo respeta `prefers-reduced-motion`.
   - El contenido nunca queda oculto si el JS falla: hay una salvaguarda de 3 s.
 
-## 4. SEO técnico
+## 5. SEO técnico
 
 | Elemento | Implementación |
 |---|---|
 | Títulos y descripciones | Uno por página; en producto: «Marca Nombre · EJH PRIVÉ» |
 | URLs | `/productos/khamrah/`, en minúsculas. Un identificador con mayúsculas del panel (p. ej. `Vulcan-Feu`) redirige con 301 a su versión en minúsculas, y el panel ya guarda los nuevos en minúsculas |
 | Canonical + Open Graph | En `Base.astro`; la imagen OG de cada producto es su foto |
-| JSON-LD | `Store` (global, siempre con la imagen de marca), `ItemList` (Home), `Product` con `Offer` del frasco y su disponibilidad (PDP), `BreadcrumbList`, `FAQPage` |
+| JSON-LD | `Store` (global, siempre con la imagen de marca y `sameAs` con las redes), `ItemList` (Home), `Product` con `Offer` del frasco y su disponibilidad (PDP), `BreadcrumbList`, `FAQPage` |
 | Sitemaps | `sitemap-index.xml` (páginas fijas, `@astrojs/sitemap`) y `sitemap-productos.xml` (fichas, generado en vivo desde el catálogo) |
 | `robots.txt` | Generado (`src/pages/robots.txt.ts`): bloquea `/admin`, `/cms-api`, `/api/`, `/cuenta/` y `/sistema/` y declara los dos sitemaps |
 | `noindex` | En `/cuenta/`, `/sistema/` y la 404 |
 
-## 5. Rendimiento
+## 6. Rendimiento
 
 | Recurso | Decisión |
 |---|---|
@@ -83,13 +91,18 @@ Este documento analiza la landing y las páginas de tienda desde el frontend, en
 | Fuentes | Google Fonts API (Cormorant Garamond y Manrope) con `preconnect` |
 | Navegación | *Prefetch* al pasar el mouse + View Transitions |
 
-## 6. Pendientes del negocio (revisión del 23/11/2026)
+## 7. Seguimiento de redes
+
+Los clics en enlaces con `data-social` (sección Síguenos, contacto y pie de página) se registran como contacto con la red correspondiente (`trackContact` en `src/components/Tracking.astro`).
+
+## 8. Pendientes del negocio (revisión del 23/11/2026)
 
 - **Fotos de producto:** varias fotos subidas al panel vienen de otras tiendas (Fragancias Fiord, Amazon, Walmart) y la de Khamrah Qahwa es una miniatura marcada «CAMBIAR». Reemplazarlas por fotos propias (4:5, mínimo 1200 × 1500 px).
-- **Datos legales:** razón social, RUC y dirección fiscal en `src/config/site.ts`; el Libro de Reclamaciones los exige. También Instagram, TikTok y correo.
+- **Datos legales:** razón social, RUC y dirección fiscal en `src/config/site.ts`; el Libro de Reclamaciones los exige. Falta también un correo de contacto: al ponerlo en `SITE.email` vuelve a aparecer en la página de contacto. (Instagram y TikTok ya están.)
 - **Stock de decants:** solo Odyssey Spectra y Mandarin Sky tienen ml abiertos; el resto muestra los decants agotados. El stock lo maneja el sistema de gestión (en el panel es de solo lectura): registrar ahí las aperturas de frasco.
 - **Precios:** Nitro Red no tiene precio de decants de 3 y 5 ml.
 - **Identificadores:** renombrar `Vulcan-Feu` a `vulcan-feu` en el panel (la tienda ya redirige, pero así queda prolijo).
 - **Legales:** política de devolución y términos.
+- **Search Console:** enviar `https://ejhprive-fragancias.vercel.app/sitemap-productos.xml` (o el dominio propio cuando esté activo) además del `sitemap-index.xml`.
 - **Antispam:** resuelto con límites en la base de datos del panel (`cms/src/limits.ts`). Si aun así llega spam, sumar Cloudflare Turnstile.
 - **Backend futuro:** pagos en línea (Izipay, Niubiz, Culqi o Mercado Pago), cuentas de cliente y newsletter. Mientras tanto, el pedido se registra en el panel y se cierra por WhatsApp.
