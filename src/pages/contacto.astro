@@ -7,11 +7,12 @@ import { SITE, SOCIALS, waLink } from '../config/site';
 const channels = [
   { brand: 'whatsapp', title: 'WhatsApp', text: SITE.whatsappDisplay, href: waLink() },
   ...SOCIALS.map((s) => ({ brand: s.brand, title: s.label, text: s.handle, href: s.href })),
-  { brand: null, title: 'Correo', text: SITE.email || '[correo de contacto]', href: SITE.email ? `mailto:${SITE.email}` : '' },
+  // shown only once SITE.email is set
+  ...(SITE.email ? [{ brand: null, title: 'Correo', text: SITE.email, href: `mailto:${SITE.email}` }] : []),
 ] as const;
 const field = 'h-[52px] rounded-xl border border-plum/18 bg-[#FBF6EE] px-4 text-[15px] text-plum placeholder:text-dust/70 focus:border-violet focus:outline-none focus:ring-2 focus:ring-violet/25';
 ---
-<Base title="Contacto" description="Escríbenos por WhatsApp, Instagram, TikTok o correo. Te ayudamos a elegir entre frasco y decant.">
+<Base title="Contacto" description="Escríbenos por WhatsApp, Instagram o TikTok. Te ayudamos a elegir entre frasco y decant.">
   <section aria-labelledby="h-contact" class="wrap grid gap-[clamp(32px,6vw,88px)] py-[clamp(48px,7vw,104px)] lg:grid-cols-2">
     <div class="flex flex-col gap-5">
       <p class="kicker" data-reveal-self>Contacto</p>
