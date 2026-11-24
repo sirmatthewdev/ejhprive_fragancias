@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Hero from '../components/home/Hero.astro';
 import FamilyIndex from '../components/home/FamilyIndex.astro';
+import Socials from '../components/home/Socials.astro';
 import ProductCard from '../components/ProductCard.astro';
 import SectionHead from '../components/ui/SectionHead.astro';
 import Faq from '../components/ui/Faq.astro';
@@ -198,7 +199,10 @@ const itemList = {
   </section>
   )}
 
-  <!-- 8 · final CTA: deep plum with a lit decant shot fading in from the right -->
+  <!-- 8 · social networks -->
+  <Socials />
+
+  <!-- 9 · final CTA: deep plum with a lit decant shot fading in from the right -->
   <section aria-labelledby="h-wa" class="relative isolate overflow-hidden bg-[#160d1d]">
     <div class="absolute inset-y-0 right-0 -z-10 w-full md:w-[62%]" aria-hidden="true">
       <Pic src={H.cta.image} alt="" widths={[640, 1000, 1400]} sizes="(min-width: 768px) 62vw, 100vw" loading="lazy"

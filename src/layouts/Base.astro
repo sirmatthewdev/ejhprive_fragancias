@@ -8,7 +8,7 @@ import CartDrawer from '../components/islands/CartDrawer';
 import WhatsAppFloat from '../components/WhatsAppFloat.astro';
 import SearchDialog from '../components/SearchDialog.astro';
 import Tracking from '../components/Tracking.astro';
-import { SITE, waLink } from '../config/site';
+import { SITE, SOCIALS, waLink } from '../config/site';
 
 interface Props {
   title?: string;
@@ -27,6 +27,7 @@ const org = {
   '@context': 'https://schema.org', '@type': 'Store', name: SITE.name, url: SITE.url, image: new URL('/media/og.jpg', Astro.site ?? SITE.url).href,
   description: SITE.description, priceRange: '$$', currenciesAccepted: 'PEN', paymentAccepted: 'Yape, Plin, tarjeta de crédito y débito, Powerpay',
   address: { '@type': 'PostalAddress', addressCountry: 'PE' },
+  ...(SOCIALS.length && { sameAs: SOCIALS.map((s) => s.href) }),
 };
 ---
 <!doctype html>

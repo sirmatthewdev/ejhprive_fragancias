@@ -2,16 +2,16 @@
 import Base from '../layouts/Base.astro';
 import BrandIcon from '../components/ui/BrandIcon.astro';
 import Icon from '../components/ui/Icon.astro';
-import { SITE, waLink } from '../config/site';
+import { SITE, SOCIALS, waLink } from '../config/site';
 
 const channels = [
   { brand: 'whatsapp', title: 'WhatsApp', text: SITE.whatsappDisplay, href: waLink() },
-  { brand: 'instagram', title: 'Instagram', text: SITE.instagram || '[@usuario]', href: SITE.instagram || '' },
+  ...SOCIALS.map((s) => ({ brand: s.brand, title: s.label, text: s.handle, href: s.href })),
   { brand: null, title: 'Correo', text: SITE.email || '[correo de contacto]', href: SITE.email ? `mailto:${SITE.email}` : '' },
 ] as const;
 const field = 'h-[52px] rounded-xl border border-plum/18 bg-[#FBF6EE] px-4 text-[15px] text-plum placeholder:text-dust/70 focus:border-violet focus:outline-none focus:ring-2 focus:ring-violet/25';
 ---
-<Base title="Contacto" description="Escríbenos por WhatsApp, Instagram o correo. Te ayudamos a elegir entre frasco y decant.">
+<Base title="Contacto" description="Escríbenos por WhatsApp, Instagram, TikTok o correo. Te ayudamos a elegir entre frasco y decant.">
   <section aria-labelledby="h-contact" class="wrap grid gap-[clamp(32px,6vw,88px)] py-[clamp(48px,7vw,104px)] lg:grid-cols-2">
     <div class="flex flex-col gap-5">
       <p class="kicker" data-reveal-self>Contacto</p>
@@ -20,7 +20,7 @@ const field = 'h-[52px] rounded-xl border border-plum/18 bg-[#FBF6EE] px-4 text-
       <ul class="mt-2 flex flex-col gap-2.5" data-reveal>
         {channels.map((c) => (
           <li>
-            <a href={c.href || undefined} aria-disabled={c.href ? undefined : 'true'} target={c.href.startsWith('http') ? '_blank' : undefined} rel="noopener" class="group aria-disabled:pointer-events-none aria-disabled:opacity-60 flex items-center gap-4 rounded-2xl border border-cream/8 bg-graphite p-4 transition-[border-color,transform] duration-500 hover:-translate-y-0.5 hover:border-lilac/45">
+            <a href={c.href || undefined} aria-disabled={c.href ? undefined : 'true'} target={c.href.startsWith('http') ? '_blank' : undefined} rel="noopener" data-social={c.brand === 'instagram' || c.brand === 'tiktok' ? c.brand : undefined} class="group aria-disabled:pointer-events-none aria-disabled:opacity-60 flex items-center gap-4 rounded-2xl border border-cream/8 bg-graphite p-4 transition-[border-color,transform] duration-500 hover:-translate-y-0.5 hover:border-lilac/45">
               <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-lilac/12 text-lilac transition-colors group-hover:bg-lilac group-hover:text-plum">
                 {c.brand ? <BrandIcon name={c.brand} size={18} /> : <Icon name="mail" size={18} />}
               </span>

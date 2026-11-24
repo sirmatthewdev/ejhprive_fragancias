@@ -97,5 +97,7 @@ const needsConsent = !!(PUBLIC_GTM_ID || PUBLIC_GA4_ID || PUBLIC_META_PIXEL_ID |
   // any WhatsApp link (floating button, bag, product, contact) counts as a contact
   document.addEventListener('click', (e) => {
     if ((e.target as Element).closest('a[href*="wa.me"]')) import('../lib/track').then((t) => t.trackContact('whatsapp'));
+    const social = (e.target as Element).closest<HTMLElement>('a[data-social]')?.dataset.social;
+    if (social) import('../lib/track').then((t) => t.trackContact(social));
   });
 </script>

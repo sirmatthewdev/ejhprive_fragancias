@@ -26,7 +26,7 @@ const year = new Date().getFullYear();
       <ul class="flex gap-2" aria-label="Redes sociales">
         {socials.map((s) => (
           <li>
-            <a href={s.href} target={s.href.startsWith('http') ? '_blank' : undefined} rel="noopener" aria-label={s.label}
+            <a href={s.href} target={s.href.startsWith('http') ? '_blank' : undefined} rel="noopener" aria-label={s.label} data-social={s.name === 'whatsapp' ? undefined : s.name}
               class="flex size-11 items-center justify-center rounded-full border border-cream/15 text-cream transition-[background-color,color,border-color,transform] duration-500 hover:-translate-y-0.5 hover:border-cream hover:bg-cream hover:text-plum">
               <BrandIcon name={s.name} size={17} />
             </a>

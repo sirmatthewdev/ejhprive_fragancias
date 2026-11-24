@@ -11,8 +11,8 @@ export const SITE = {
     'Perfumería árabe 100% original: Lattafa, Armaf, Rasasi y Afnan en frasco de 100 ml y decants de 3 y 5 ml fraccionados del frasco original.',
   whatsapp: '51944093055', // único número de atención y pedidos
   whatsappDisplay: '+51 944 093 055',
-  instagram: '', // [https://instagram.com/usuario]
-  tiktok: '', // [https://tiktok.com/@usuario]
+  instagram: 'https://www.instagram.com/perfumeriaejh/',
+  tiktok: 'https://www.tiktok.com/@perfumeriaejh',
   email: '', // [correo de contacto]
   dispatch: '24 a 48 horas hábiles',
   /** Required on the Libro de Reclamaciones (Código de Protección y Defensa del Consumidor). Empty = not shown yet. */
@@ -36,3 +36,9 @@ export const waLink = (text?: string) => {
   const q = text ? `?text=${encodeURIComponent(text)}` : '';
   return SITE.whatsapp ? `https://wa.me/${SITE.whatsapp}${q}` : `https://wa.me/${q}`;
 };
+
+/** Social networks with a URL, for the home section, contact page and Store schema. */
+export const SOCIALS = ([
+  { brand: 'instagram', label: 'Instagram', href: SITE.instagram, text: 'Novedades, nuevas llegadas y reseñas de clientes.' },
+  { brand: 'tiktok', label: 'TikTok', href: SITE.tiktok, text: 'Pruebas en piel, comparaciones y recomendaciones en video.' },
+] as const).filter((s) => s.href).map((s) => ({ ...s, handle: `@${s.href.replace(/\/+$/, '').split('/').pop()!.replace(/^@/, '')}` }));

@@ -1,0 +1,49 @@
+---
+/**
+ * «Síguenos»: one card per network with a URL in src/config/site.ts. Hidden when there is none.
+ */
+import BrandIcon from '../ui/BrandIcon.astro';
+import Icon from '../ui/Icon.astro';
+import { SOCIALS } from '../../config/site';
+
+// a hint of each network's own colours, kept dark so the cards sit in the page's palette
+const GLOW: Record<string, string> = {
+  instagram: 'radial-gradient(90% 80% at 0% 100%, rgb(253 186 76 / .16), transparent 60%), radial-gradient(90% 90% at 100% 0%, rgb(214 41 118 / .2), transparent 60%)',
+  tiktok: 'radial-gradient(90% 80% at 0% 100%, rgb(37 244 238 / .12), transparent 60%), radial-gradient(90% 90% at 100% 0%, rgb(254 44 85 / .16), transparent 60%)',
+};
+---
+{SOCIALS.length > 0 && (
+  <section aria-labelledby="h-social" class="surface-onyx py-[clamp(72px,10vw,128px)]">
+    <div class="wrap flex flex-col gap-10">
+      <div class="flex flex-wrap items-end justify-between gap-6">
+        <div class="flex flex-col gap-4">
+          <p class="kicker" data-reveal-self>Síguenos</p>
+          <h2 id="h-social" class="h-section" data-split>Perfumería en <em class="text-gold">redes.</em></h2>
+        </div>
+        <p class="max-w-[26rem] leading-relaxed text-sand" data-reveal-self>Lanzamientos, pruebas en piel y recomendaciones antes de que lleguen a la tienda.</p>
+      </div>
+      <ul class:list={['grid gap-4', SOCIALS.length > 1 && 'md:grid-cols-2']} data-reveal>
+        {SOCIALS.map((s) => (
+          <li>
+            <a href={s.href} target="_blank" rel="noopener" data-social={s.brand} aria-label={`Seguir a EJH PRIVÉ en ${s.label} (${s.handle})`}
+              class="group relative flex h-full flex-col gap-8 overflow-hidden rounded-[22px] border border-cream/10 bg-graphite p-[clamp(24px,3vw,36px)] transition-[border-color,transform] duration-500 hover:-translate-y-1 hover:border-cream/30"
+              style={`background-image:${GLOW[s.brand]}`}>
+              <span class="flex items-start justify-between">
+                <span class="flex size-14 items-center justify-center rounded-2xl bg-cream text-plum transition-transform duration-500 group-hover:scale-105">
+                  <BrandIcon name={s.brand} size={26} />
+                </span>
+                <Icon name="arrow-up-right" size={20} class="text-mist transition-[transform,color] duration-500 group-hover:rotate-45 group-hover:text-cream" />
+              </span>
+              <span class="flex flex-col gap-2">
+                <span class="text-[11px] font-bold uppercase tracking-[0.18em] text-lilac">{s.label}</span>
+                <strong class="font-serif text-[clamp(1.9rem,3.4vw,2.6rem)] font-medium leading-none">{s.handle}</strong>
+                <span class="text-sm leading-relaxed text-mist">{s.text}</span>
+              </span>
+              <span class="btn btn-cream h-12 self-start px-6 text-sm">Seguir en {s.label}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}
