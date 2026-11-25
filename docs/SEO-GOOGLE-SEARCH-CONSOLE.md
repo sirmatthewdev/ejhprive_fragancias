@@ -1,6 +1,6 @@
 # Google Search Console y Analytics: puesta en marcha
 
-Guía para el propietario de ejhprive.com. Nada de esto se hizo automáticamente: los registros DNS y las variables de Vercel los carga quien administra esas cuentas.
+Guía para el propietario de ejhprive.com. Estado al 25/11/2026: el TXT está en Hostinger y propagado, y `PUBLIC_GTM_ID` está activa en producción; falta verificar la propiedad en Search Console.
 
 ## 1. Registrar la propiedad
 
@@ -38,11 +38,11 @@ El DNS de ejhprive.com está en **Hostinger** (servidores `atlas.dns-parking.com
 nslookup -type=TXT ejhprive.com 8.8.8.8
 ```
 
-Tiene que aparecer el texto `google-site-verification=…`. Suele tardar minutos; puede llegar a unas horas. (Revisado el 25/11/2026: todavía no estaba.) Cuando aparezca, pulsar **Verificar** en Search Console.
+Tiene que aparecer el texto `google-site-verification=…`. Suele tardar minutos; puede llegar a unas horas. (Agregado y propagado el 25/11/2026.) Cuando aparezca, pulsar **Verificar** en Search Console.
 
 ## 4. Enviar el sitemap
 
-Después de publicar esta versión: **Sitemaps → Agregar un sitemap** → `https://www.ejhprive.com/sitemap.xml`.
+**Sitemaps → Agregar un sitemap** → `https://www.ejhprive.com/sitemap.xml`.
 
 - Es el único archivo. Las direcciones anteriores (`sitemap-index.xml`, `sitemap-productos.xml`, `sitemap-0.xml`) redirigen a él; si alguna ya se había enviado, se puede quitar de la lista.
 - Se genera en vivo: un producto publicado u oculto en el panel entra o sale solo (hasta 10 minutos de caché).

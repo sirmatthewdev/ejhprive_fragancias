@@ -1,6 +1,6 @@
 # Informe de implementación SEO
 
-Fecha: 25/11/2026 · Rama: `seo-google-search` · Sin publicar en producción.
+Fecha: 25/11/2026 · Publicado en producción el 25/11/2026 (PR #1).
 
 ## Estado por área
 
@@ -10,14 +10,14 @@ Leyenda: ✅ implementado y probado · 🟡 implementado, falta validación exte
 |------|--------|--------------|
 | Sitemap | ✅ | `/sitemap.xml` único y en vivo, con `lastmod` e imágenes. Los tres anteriores redirigen (301) |
 | Robots.txt | ✅ | Privadas y filtros del catálogo bloqueados; `/sistema/` abierto para que se lea su `noindex` |
-| Canonical | ✅ | Siempre `https://www.`, con barra final y sin parámetros. Sin barra → 308 (reglas evaluadas con el motor de rutas de Vercel; falta verlas en un despliegue) |
-| Metadatos | ✅ | Títulos y descripciones únicos en las 30 URL de prueba; Open Graph y Twitter completos |
-| Schema.org | 🟡 | Precios de los datos estructurados = precios visibles (comprobado en todas las fichas). Falta la prueba de resultados enriquecidos de Google, que exige la URL publicada |
+| Canonical | ✅ | Siempre `https://www.`, con barra final y sin parámetros. Sin barra → 308, comprobado en producción |
+| Metadatos | ✅ | Títulos y descripciones únicos en las 29 URL publicadas; Open Graph y Twitter completos |
+| Schema.org | 🟡 | 52 bloques válidos en producción, con precios iguales a los visibles. Falta la prueba de resultados enriquecidos de Google |
 | Productos | ✅ | Precio por formato visible; una ficha por perfume; variantes como `ProductGroup` |
 | Categorías | ✅ | Decants, hombre, mujer, unisex, marcas y familias. «Diseñador»: ➖ hoy no hay productos |
-| Core Web Vitals | 🟡 | Home y ficha dentro del objetivo en laboratorio; catálogo en 3,4 s de LCP (antes 3,7 s). Faltan datos reales de usuarios |
-| Search Console | 🔧 | Todo listo; falta agregar el TXT en Hostinger y verificar |
-| Analytics | 🔧 | Probado con el contenedor real; falta cargar `PUBLIC_GTM_ID` en Vercel |
+| Core Web Vitals | 🟡 | Las tres páginas medidas cumplen en laboratorio sobre producción (la home, justo: 2,49 s). Faltan datos reales de usuarios |
+| Search Console | 🔧 | TXT agregado en Hostinger y propagado; falta verificar con la cuenta de Google del negocio y enviar el sitemap |
+| Analytics | ✅ | Activo en producción con GTM-NWLRTWMC, tras el consentimiento. Falta decidir sobre los datos del usuario (ver pendientes) |
 | Seguridad | ✅ | API privada cerrada a anónimos (403); el stock exacto ya no se publica; `X-Robots-Tag` en rutas internas |
 
 ## 1. Auditoría inicial
@@ -101,7 +101,14 @@ Mismo equipo, móvil simulado (Lighthouse, mediana de 5), build anterior y nuevo
 
 - El catálogo sigue por encima de 2,5 s **en simulación lenta**; lo que queda es el JavaScript de React (64 KB) y de animación (52 KB), que compiten con la foto. Bajarlo exige cambiar la arquitectura de la bolsa o de las animaciones: no se hizo.
 - INP no se mide en laboratorio; lo da Search Console con usuarios reales. TBT: 10–110 ms.
-- Prueba sin las fotos reales del panel; volver a medir tras publicar con PageSpeed Insights.
+
+**En producción, con las fotos reales** (Lighthouse móvil; antes: una medición, ahora: mediana de 3):
+
+| Página | LCP antes | LCP ahora | CLS ahora | Puntaje antes → ahora |
+|---|---|---|---|---|
+| Inicio | 3,3 s | 2,49 s | 0,000 | 91 → 97 |
+| Catálogo | 3,2 s | 1,59 s | 0,000 | 92 → 100 |
+| Ficha | 3,5 s | 1,47 s | 0,000 | 90 → 100 |
 
 ## 5. Pruebas
 
@@ -125,14 +132,13 @@ El catálogo de prueba fue un panel simulado con los 12 perfumes y casos límite
 
 ## 6. Pendiente del propietario
 
-1. **Autorizar la publicación** de la rama `seo-google-search` (despliega la tienda y el panel).
-2. **TXT en Hostinger** y verificación en Search Console ([guía](SEO-GOOGLE-SEARCH-CONSOLE.md)).
-3. **`PUBLIC_GTM_ID=GTM-NWLRTWMC`** en Vercel y volver a desplegar; confirmar ahí que `SITE_URL=https://www.ejhprive.com`.
-4. **Datos del usuario en GA4:** desactivar la recopilación automática o actualizar la política de privacidad.
-5. **Fotos propias** de producto (4:5, mínimo 1200 × 1500).
-6. **Textos legales:** devoluciones, términos, razón social, RUC, dirección y correo. Mientras tanto esas secciones dicen «Estamos preparando esta sección».
-7. **Panel:** escribir «French Avenue» y «Dumont» sin mayúsculas sostenidas (la marca no coincide con «Marcas» y su logo no aparece); cargar precios de decants de Nitro Red; registrar aperturas de frasco, porque casi todos los decants figuran agotados; revisar «Inspirado en God of Fire…» en Vulcan Feu (marca de terceros).
-8. **Concentración** (EDP/EDT) de cada perfume: confirmarla para sumar un campo en el panel.
-9. Tras publicar: prueba de resultados enriquecidos, PageSpeed Insights y envío del sitemap.
+1. **Search Console:** verificar la propiedad Dominio (el TXT ya está en el DNS) y enviar el sitemap ([guía](SEO-GOOGLE-SEARCH-CONSOLE.md)).
+2. **Gestión:** confirmar que un movimiento de stock llega a la tienda.
+3. **Datos del usuario en GA4:** desactivar la recopilación automática o actualizar la política de privacidad.
+4. **Fotos propias** de producto (4:5, mínimo 1200 × 1500).
+5. **Textos legales:** devoluciones, términos, razón social, RUC, dirección y correo. Mientras tanto esas secciones dicen «Estamos preparando esta sección».
+6. **Panel:** escribir «French Avenue» y «Dumont» sin mayúsculas sostenidas (la marca no coincide con «Marcas» y su logo no aparece); cargar precios de decants de Nitro Red; registrar aperturas de frasco, porque casi todos los decants figuran agotados; revisar «Inspirado en God of Fire…» en Vulcan Feu (marca de terceros).
+7. **Concentración** (EDP/EDT) de cada perfume: confirmarla para sumar un campo en el panel.
+8. Prueba de resultados enriquecidos de Google con una ficha.
 
 Riesgo menor conocido: `/cms-api/media` lista públicamente los nombres de las fotos subidas. No contiene datos privados y la tienda lo necesita para leer las imágenes compartidas.
