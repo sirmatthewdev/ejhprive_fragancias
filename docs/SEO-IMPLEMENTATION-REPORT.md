@@ -16,8 +16,8 @@ Leyenda: ✅ implementado y probado · 🟡 implementado, falta validación exte
 | Productos | ✅ | Precio por formato visible; una ficha por perfume; variantes como `ProductGroup` |
 | Categorías | ✅ | Decants, hombre, mujer, unisex, marcas y familias. «Diseñador»: ➖ hoy no hay productos |
 | Core Web Vitals | 🟡 | Las tres páginas medidas cumplen en laboratorio sobre producción (la home, justo: 2,49 s). Faltan datos reales de usuarios |
-| Search Console | 🔧 | TXT agregado en Hostinger y propagado; falta verificar con la cuenta de Google del negocio y enviar el sitemap |
-| Analytics | ✅ | Activo en producción con GTM-NWLRTWMC, tras el consentimiento. Falta decidir sobre los datos del usuario (ver pendientes) |
+| Search Console | ✅ | Verificada; sitemap enviado (Correcto, 29 páginas) y 8 páginas en cola prioritaria. La indexación la decide Google |
+| Analytics | ✅ | Recibe visitas reales; `generate_lead` es evento clave, vinculado con Search Console, 14 meses de conservación. Falta ver llegar un pedido real |
 | Seguridad | ✅ | API privada cerrada a anónimos (403); el stock exacto ya no se publica; `X-Robots-Tag` en rutas internas |
 
 ## 1. Auditoría inicial
@@ -132,9 +132,9 @@ El catálogo de prueba fue un panel simulado con los 12 perfumes y casos límite
 
 ## 6. Pendiente del propietario
 
-1. **Search Console:** verificar la propiedad Dominio (el TXT ya está en el DNS) y enviar el sitemap ([guía](SEO-GOOGLE-SEARCH-CONSOLE.md)).
+1. **Analytics:** comprobar `generate_lead` con el próximo pedido real.
 2. **Gestión:** confirmar que un movimiento de stock llega a la tienda.
-3. **Datos del usuario en GA4:** desactivar la recopilación automática o actualizar la política de privacidad.
+3. **Privacidad:** no activar la recogida de datos del usuario en GA4 sin actualizar la política.
 4. **Fotos propias** de producto (4:5, mínimo 1200 × 1500).
 5. **Textos legales:** devoluciones, términos, razón social, RUC, dirección y correo. Mientras tanto esas secciones dicen «Estamos preparando esta sección».
 6. **Panel:** escribir «French Avenue» y «Dumont» sin mayúsculas sostenidas (la marca no coincide con «Marcas» y su logo no aparece); cargar precios de decants de Nitro Red; registrar aperturas de frasco, porque casi todos los decants figuran agotados; revisar «Inspirado en God of Fire…» en Vulcan Feu (marca de terceros).

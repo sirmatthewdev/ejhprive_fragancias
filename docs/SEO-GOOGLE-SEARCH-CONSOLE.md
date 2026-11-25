@@ -1,6 +1,6 @@
 # Google Search Console y Analytics: puesta en marcha
 
-Guía para el propietario de ejhprive.com. Estado al 25/11/2026: el TXT está en Hostinger y propagado, y `PUBLIC_GTM_ID` está activa en producción; falta verificar la propiedad en Search Console.
+Guía para el propietario de ejhprive.com. Estado al 25/11/2026: propiedad verificada, sitemap enviado (estado Correcto, 29 páginas), 8 páginas en la cola de rastreo prioritaria y Analytics activo en producción.
 
 ## 1. Registrar la propiedad
 
@@ -123,8 +123,8 @@ Eventos que llegan a GA4, en soles (PEN) y con sus productos:
 Configuración a revisar en Google:
 
 - **GTM:** no agregar etiquetas de evento de GA4 para los eventos de la tabla; ya llegan y se contarían dos veces.
-- **GA4 → Administrar → Eventos:** marcar `generate_lead` como evento clave.
-- **Privacidad (importante):** el contenedor tiene activada la *recopilación automática de datos proporcionados por el usuario* (correo, teléfono y dirección de los formularios, cifrados). La política de privacidad publicada dice «No los compartimos con terceros». Desactivarla en GA4 → *Administrar → Recogida de datos → Datos proporcionados por el usuario*, o actualizar la política con asesoría legal (Ley N.º 29733).
+- **GA4, ya configurado el 25/11/2026:** `generate_lead` es evento clave (sin valor fijo: usa el importe real en soles), la propiedad está vinculada con Search Console y los eventos se conservan 14 meses.
+- **Privacidad:** la *recogida de datos proporcionados por los usuarios* (correo, teléfono, dirección) está **sin activar** en GA4. No activarla sin actualizar antes la política de privacidad, que dice «No los compartimos con terceros» (Ley N.º 29733).
 - **Catálogo:** los filtros cambian la dirección sin recargar, y el contenedor puede contarlos como páginas vistas. Si molesta: GA4 → Flujo web → Medición mejorada → Páginas vistas → quitar «cambios del historial del navegador» (se dejarían de contar también las navegaciones internas).
 
 ## 10. Mantenimiento
