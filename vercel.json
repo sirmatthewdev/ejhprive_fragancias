@@ -1,5 +1,17 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/gestion",
+      "destination": "https://gestion.ejhprive.com/",
+      "permanent": false
+    },
+    {
+      "source": "/gestion/",
+      "destination": "https://gestion.ejhprive.com/",
+      "permanent": false
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
