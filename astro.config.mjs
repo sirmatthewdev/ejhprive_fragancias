@@ -1,9 +1,8 @@
 // @ts-check
-import { defineConfig, envField } from 'astro/config';
+import { defineConfig, envField, fontProviders } from 'astro/config';
 
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
-import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
 
 // public URL for canonical, sitemap and Open Graph: SITE_URL (set it in Vercel once the own domain is live) or,
@@ -17,7 +16,24 @@ export default defineConfig({
   // 'ignore': the proxied panel uses paths without a trailing slash; the shop's links keep theirs
   trailingSlash: 'ignore',
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
-  integrations: [react(), sitemap({ filter: (page) => !/\/(sistema|cuenta|admin)\//.test(page) })],
+  integrations: [react()],
+
+  // addresses that moved or that only group others
+  redirects: {
+    '/sitemap-index.xml': '/sitemap.xml',
+    '/sitemap-0.xml': '/sitemap.xml',
+    '/sitemap-productos.xml': '/sitemap.xml',
+    '/perfumes': '/productos/',
+    '/marcas': '/productos/',
+    '/familias': '/productos/',
+  },
+
+  // downloaded at build time and served from the shop's own domain: no render-blocking request to Google Fonts,
+  // and fallbacks with the same metrics so the text doesn't jump when they load
+  fonts: [
+    { provider: fontProviders.google(), name: 'Cormorant Garamond', cssVariable: '--font-cormorant', weights: [500, 600], styles: ['normal', 'italic'], subsets: ['latin'], fallbacks: ['Georgia', 'serif'] },
+    { provider: fontProviders.google(), name: 'Manrope', cssVariable: '--font-manrope', weights: ['400 800'], styles: ['normal'], subsets: ['latin'], fallbacks: ['Arial', 'sans-serif'] },
+  ],
 
   vite: {
     plugins: [tailwindcss()]

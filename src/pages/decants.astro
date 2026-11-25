@@ -1,0 +1,62 @@
+---
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
+import Breadcrumbs from '../components/ui/Breadcrumbs.astro';
+import Faq from '../components/ui/Faq.astro';
+import Icon from '../components/ui/Icon.astro';
+import { visibleProducts } from '../lib/catalog';
+import { DECANTS_URL } from '../lib/categories';
+import { cachePage, getCatalog, liveOf } from '../lib/cms';
+import { getHome, homeIsLive } from '../lib/home';
+import { collectionPage } from '../lib/seo';
+import { SITE } from '../config/site';
+
+export const prerender = false; // live prices and stock from the CMS
+
+const [catalog, H] = await Promise.all([getCatalog(), getHome()]);
+cachePage(Astro.response, catalog && homeIsLive());
+const ready = (slug: string) => { const a = liveOf(catalog, slug).available; return a['3'] || a['5']; };
+// the ones that can be ordered now go first; the rest keep the catalogue's order
+const products = visibleProducts(catalog).sort((a, b) => Number(ready(b.slug)) - Number(ready(a.slug)));
+const faqs = H.faqs.filter((f) => /decant/i.test(f.q));
+const description = 'Decants de perfumes originales en Perú: muestras de 3 y 5 ml fraccionadas del frasco original, en atomizador de vidrio sellado. Pruébalas antes de comprar.';
+---
+<Base fullTitle={`Decants de Perfumes Originales de 3 y 5 ml | ${SITE.name}`} description={description} jsonLd={[collectionPage({ name: 'Decants de perfumes originales', description, path: DECANTS_URL, products }, Astro.site)]}>
+  <section aria-labelledby="h-cat" class="bg-[linear-gradient(180deg,#170E1D,#0B0A0D)]">
+    <div class="wrap flex flex-col gap-4 pb-8 pt-10">
+      <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Productos', href: '/productos/' }, { label: 'Decants' }]} />
+      <p class="kicker mt-2" data-reveal-self>{H.decants.kicker}</p>
+      <h1 id="h-cat" class="max-w-[16ch] text-[clamp(2.6rem,5.4vw,4.6rem)] leading-none" data-split="load">Decants de perfumes originales</h1>
+      <p class="max-w-[44rem] leading-relaxed text-sand" data-reveal-self="0.2">{H.decants.text}</p>
+    </div>
+  </section>
+
+  <section aria-label="Decants" class="wrap pb-24 pt-4">
+    <p class="mb-6 text-[13px] text-mist">{products.length} {products.length === 1 ? 'fragancia' : 'fragancias'} en decant</p>
+    <ul class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,230px),1fr))] gap-x-6 gap-y-12" data-list="Decants">
+      {products.map((p, i) => <li><ProductCard p={p} live={liveOf(catalog, p.slug)} variant="decant" priority={i === 0} headingLevel="h2" /></li>)}
+    </ul>
+  </section>
+
+  <section aria-labelledby="h-how" class="on-cream surface-cream py-[clamp(64px,9vw,120px)] text-plum">
+    <div class="wrap grid gap-10 lg:grid-cols-[1fr_1.5fr]">
+      <h2 id="h-how" class="h-section" data-split>{H.decants.title} <em class="text-violet">{H.decants.titleAccent}</em></h2>
+      <ol class="border-t border-plum/15" data-reveal>
+        {H.decants.steps.map((s, i) => (
+          <li class="flex items-baseline gap-6 border-b border-plum/15 py-5">
+            <span class="font-serif text-2xl text-violet">{String(i + 1).padStart(2, '0')}</span>
+            <span class="flex flex-col gap-1"><strong class="font-semibold">{s.title}</strong><span class="text-sm text-dust">{s.text}</span></span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  {faqs.length > 0 && (
+    <section aria-labelledby="h-faq" class="wrap max-w-[960px] py-[clamp(64px,8vw,112px)]">
+      <h2 id="h-faq" class="h-section mb-8" data-split>Preguntas sobre decants</h2>
+      <Faq items={faqs} />
+      <p class="mt-8"><a href="/como-comprar/" class="btn btn-ghost h-11 px-5">Cómo comprar <Icon name="arrow" size={14} /></a></p>
+    </section>
+  )}
+</Base>

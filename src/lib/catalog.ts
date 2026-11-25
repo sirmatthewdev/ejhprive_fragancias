@@ -33,7 +33,7 @@ const mergeMeters = (base: Product['meters'], d: Details) =>
 
 const fromPanel = (slug: string, d: Details): Product => ({
   slug, brand: d.brand, name: d.name, gender: d.gender ?? 'Unisex',
-  family: d.family, familyLabel: d.familyLabel ?? d.family ?? 'Eau de Parfum',
+  family: d.family, familyLabel: d.familyLabel ?? d.family ?? '',
   accord: d.accord ?? '', desc: d.desc ?? '',
   notes: { top: d.notes.top ?? [], heart: d.notes.heart ?? [], base: d.notes.base ?? [] },
   meters: mergeMeters([], d), img: placeholder, decant: decantPhoto, related: [], panelRelated: d.related,
@@ -66,6 +66,9 @@ export const photoOf = (p: Product, live: Live, page: PageTexts): string | null 
 
 /** Fills {nombre} in the panel's shared texts. */
 export const withName = (t: string, name: string) => t.replaceAll('{nombre}', name);
+
+/** A sheet with its own text (description or notes): without it the page is not worth indexing. */
+export const hasContent = (p: Product) => !!p.desc || p.notes.top.length + p.notes.heart.length + p.notes.base.length > 0;
 
 /** Products visible in the shop. */
 export const visibleProducts = (cat: Map<string, Live> | null) => allProducts(cat).filter((p) => liveOf(cat, p.slug).active);

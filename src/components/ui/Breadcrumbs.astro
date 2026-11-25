@@ -1,13 +1,12 @@
 ---
 import { safeJson } from '../../lib/safeJson';
-import { SITE } from '../../config/site';
+import { abs } from '../../lib/seo';
 
 interface Props { items: { label: string; href?: string }[] }
 const { items } = Astro.props;
-const base = Astro.site ?? SITE.url;
 const ld = {
   '@context': 'https://schema.org', '@type': 'BreadcrumbList',
-  itemListElement: items.map((it, i) => ({ '@type': 'ListItem', position: i + 1, name: it.label, item: it.href ? new URL(it.href, base).href : undefined })),
+  itemListElement: items.map((it, i) => ({ '@type': 'ListItem', position: i + 1, name: it.label, item: it.href ? abs(it.href, Astro.site) : undefined })),
 };
 ---
 <nav aria-label="Ruta de navegación" class="text-[13px] text-mist">

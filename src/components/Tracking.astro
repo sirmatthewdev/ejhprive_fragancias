@@ -21,7 +21,7 @@ const needsConsent = !!(PUBLIC_GTM_ID || PUBLIC_GA4_ID || PUBLIC_META_PIXEL_ID |
 
 <script>
   import { PUBLIC_GTM_ID, PUBLIC_GA4_ID, PUBLIC_META_PIXEL_ID, PUBLIC_TIKTOK_PIXEL_ID } from 'astro:env/client';
-  import { setTrackers } from '../lib/track';
+  import { forgetPending, setTrackers, trackSelectItem, trackViewList } from '../lib/track';
 
   const KEY = 'ejh-consent-v1';
   const w = window as any;
@@ -35,8 +35,9 @@ const needsConsent = !!(PUBLIC_GTM_ID || PUBLIC_GA4_ID || PUBLIC_META_PIXEL_ID |
       w.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
       load(`https://www.googletagmanager.com/gtm.js?id=${PUBLIC_GTM_ID}`);
     }
-    if (PUBLIC_GA4_ID) {
-      w.gtag = function () { w.dataLayer.push(arguments); };
+    if (PUBLIC_GTM_ID || PUBLIC_GA4_ID) w.gtag = function () { w.dataLayer.push(arguments); };
+    // the GTM container brings its own GA4 property: loading PUBLIC_GA4_ID too would count everything twice
+    if (PUBLIC_GA4_ID && !PUBLIC_GTM_ID) {
       w.gtag('js', new Date());
       w.gtag('config', PUBLIC_GA4_ID, { send_page_view: false });
       load(`https://www.googletagmanager.com/gtag/js?id=${PUBLIC_GA4_ID}`);
@@ -65,8 +66,8 @@ const needsConsent = !!(PUBLIC_GTM_ID || PUBLIC_GA4_ID || PUBLIC_META_PIXEL_ID |
       };
       ttq.load(PUBLIC_TIKTOK_PIXEL_ID);
     }
-    setTrackers(true);
     pageView();
+    setTrackers(true); // after the page view: sends what the page had already shown
     // view transitions don't reload the page: report each client-side navigation
     document.addEventListener('astro:page-load', pageView);
   }
@@ -75,8 +76,8 @@ const needsConsent = !!(PUBLIC_GTM_ID || PUBLIC_GA4_ID || PUBLIC_META_PIXEL_ID |
   function pageView() {
     if (location.pathname + location.search === lastPath) return;
     lastPath = location.pathname + location.search;
-    w.dataLayer?.push({ event: 'page_view', page_path: lastPath, page_title: document.title });
-    w.gtag?.('event', 'page_view', { page_path: lastPath, page_title: document.title, page_location: location.href });
+    // the GTM container already counts page views, also on client-side navigation
+    if (!PUBLIC_GTM_ID) w.gtag?.('event', 'page_view', { page_path: lastPath, page_title: document.title, page_location: location.href });
     w.fbq?.('track', 'PageView');
     w.ttq?.page?.();
   }
@@ -93,6 +94,23 @@ const needsConsent = !!(PUBLIC_GTM_ID || PUBLIC_GA4_ID || PUBLIC_META_PIXEL_ID |
     box.querySelector('[data-consent-reject]')!.addEventListener('click', () => close('essential'), { once: true });
   }
   initConsent();
+
+  // product lists: what is shown when the page opens, and which card is followed
+  const itemOf = (card: HTMLElement) => {
+    const bag = JSON.parse(card.dataset.bag || '{}'), fmt = card.dataset.fmt || '100';
+    return { slug: bag.slug, name: bag.name, brand: bag.brand, fmt, qty: 1, price: JSON.parse(card.dataset.formats || '{}')[fmt]?.p ?? null };
+  };
+  const cardsOf = (list: Element) => [...list.querySelectorAll<HTMLElement>('[data-card]')].filter((c) => !c.closest('[hidden]'));
+  // a moment after the page opens, so the catalogue has applied the filters in its address
+  document.addEventListener('astro:page-load', () => setTimeout(() => {
+    document.querySelectorAll<HTMLElement>('[data-list]').forEach((l) => { const cards = cardsOf(l); if (cards.length) trackViewList(l.dataset.list!, cards.map(itemOf)); });
+  }, 400));
+  document.addEventListener('astro:before-swap', forgetPending);
+  document.addEventListener('click', (e) => {
+    const card = (e.target as Element).closest('a[data-card-link]')?.closest<HTMLElement>('[data-card]');
+    const list = card?.closest<HTMLElement>('[data-list]');
+    if (card && list) trackSelectItem(list.dataset.list!, itemOf(card), cardsOf(list).indexOf(card));
+  });
 
   // any WhatsApp link (floating button, bag, product, contact) counts as a contact
   document.addEventListener('click', (e) => {

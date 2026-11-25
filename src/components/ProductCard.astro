@@ -5,8 +5,10 @@ import { type Product, type FormatId, productUrl } from '../data/products';
 import { getFamilies, getSettings, photoOf, toneOf } from '../lib/catalog';
 import { discount, money } from '../lib/cart';
 import { liveOf, type Live } from '../lib/cms';
+import { publicStock } from '../lib/stock';
 
-interface Props { p: Product; live?: Live; variant?: 'frasco' | 'decant'; priority?: boolean; headingLevel?: 'h2' | 'h3' }
+interface Props { p: Product; live?: Live; variant?: 'frasco' | 'decant'; /** the first photo on screen (one per page: on a phone the next ones are below the fold) */
+  priority?: boolean; headingLevel?: 'h2' | 'h3' }
 const { p, live = liveOf(null, p.slug), variant = 'frasco', priority = false, headingLevel: H = 'h3' } = Astro.props;
 const decant = variant === 'decant';
 const soldOut = decant ? !live.available['3'] && !live.available['5'] : !live.available['100'];
@@ -30,19 +32,19 @@ const info = Object.fromEntries(formats.map((f) => {
 }));
 // what «Agregar» puts in the bag (same thumbnail the product page uses)
 const thumb = (await getImage(photo ? { src: photo, width: 200, height: 250, format: 'webp' } : { src: p.img, width: 200, format: 'webp' })).src;
-const bagItem = { slug: p.slug, name: p.name, brand: p.brand, img: thumb, stock: live.stock };
+const bagItem = { slug: p.slug, name: p.name, brand: p.brand, img: thumb, stock: publicStock(live.stock) };
 ---
 <article class:list={['group/card relative flex flex-col gap-4', soldOut && '[&_img]:grayscale-[.6] [&_img]:opacity-70']}
   data-family={p.family} data-cursor="Ver" data-card data-view={initial === '100' ? 'frasco' : 'decant-off'} data-formats={JSON.stringify(info)} data-fmt={initial} data-bag={JSON.stringify(bagItem)}>
   <div class="relative aspect-[4/5] overflow-hidden rounded-2xl bg-graphite ring-1 ring-cream/8">
     {photo ? (
-      <Image src={photo} alt={`${decant ? 'Decants de ' : ''}${p.brand} ${p.name}`} width={900} height={1125} widths={[360, 560, 800]} sizes="(min-width: 1280px) 290px, (min-width: 1024px) 25vw, (min-width: 560px) 45vw, 92vw" decoding="async"
+      <Image src={photo} alt={`${decant ? 'Decants de ' : ''}${p.brand} ${p.name}`} width={900} height={1125} widths={[360, 560, 680, 800]} sizes="(min-width: 1280px) 290px, (min-width: 1024px) 25vw, (min-width: 560px) 45vw, 92vw" decoding="async"
         loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : undefined}
         class="absolute inset-0 size-full object-cover transition-transform duration-[1400ms] ease-[var(--ease-out-expo)] group-hover/card:scale-[1.06]"
         transition:name={decant ? undefined : `img-${p.slug}`} />
     ) : (
       <Image
-        src={p.img} alt={`${decant ? 'Decants de ' : ''}${p.brand} ${p.name}`} widths={[360, 560, 800]} sizes="(min-width: 1280px) 290px, (min-width: 1024px) 25vw, (min-width: 560px) 45vw, 92vw"
+        src={p.img} alt={`${decant ? 'Decants de ' : ''}${p.brand} ${p.name}`} widths={[360, 560, 680, 800]} sizes="(min-width: 1280px) 290px, (min-width: 1024px) 25vw, (min-width: 560px) 45vw, 92vw"
         loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : undefined}
         class="absolute inset-0 size-full object-cover transition-transform duration-[1400ms] ease-[var(--ease-out-expo)] group-hover/card:scale-[1.06]"
         transition:name={decant ? undefined : `img-${p.slug}`}

@@ -8,7 +8,7 @@ export const SITE = {
   locale: 'es_PE',
   country: 'PE',
   description:
-    'Perfumería árabe 100% original: Lattafa, Armaf, Rasasi y Afnan en frasco de 100 ml y decants de 3 y 5 ml fraccionados del frasco original.',
+    'Perfumería árabe 100% original en Perú: Lattafa, Armaf, Rasasi y Afnan en frasco de 100 ml y decants de 3 y 5 ml fraccionados del frasco original.',
   whatsapp: '51944093055', // único número de atención y pedidos
   whatsappDisplay: '+51 944 093 055',
   instagram: 'https://www.instagram.com/perfumeriaejh/',
@@ -26,7 +26,7 @@ export const SITE = {
 export const NAV = [
   { label: 'Inicio', href: '/' },
   { label: 'Productos', href: '/productos/' },
-  { label: 'Decants', href: '/#decants' },
+  { label: 'Decants', href: '/decants/' },
   { label: 'Quiénes somos', href: '/nosotros/' },
   { label: 'Cómo comprar', href: '/como-comprar/' },
   { label: 'Contacto', href: '/contacto/' },

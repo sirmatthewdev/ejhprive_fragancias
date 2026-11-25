@@ -10,6 +10,13 @@ export interface Stock { sealed: number; decantMl: number }
 export const ML: Record<FormatId, number> = { '3': 3, '5': 5, '100': 100 };
 export const MAX_PER_LINE = 9;
 
+/**
+ * The stock the browser gets to see: capped at the most a bag can hold of one fragrance, so the page and
+ * /api/stock enforce the same limits without publishing the real inventory.
+ */
+export const publicStock = (s: Stock | null): Stock | null =>
+  s && { sealed: Math.min(s.sealed, MAX_PER_LINE), decantMl: Math.min(s.decantMl, MAX_PER_LINE * (ML['3'] + ML['5'])) };
+
 type Line = { fmt: FormatId; qty: number };
 
 /** Can this set of lines (one fragrance) be served from the stock? */

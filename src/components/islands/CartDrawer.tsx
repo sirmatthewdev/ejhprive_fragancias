@@ -1,6 +1,6 @@
 import { useStore } from '@nanostores/react';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { trackBeginCheckout, trackOrder } from '../../lib/track';
+import { trackAddToCart, trackBeginCheckout, trackOrder, trackRemoveFromCart } from '../../lib/track';
 import { $cart, $cartExpired, $cartOpen, $count, $subtotal, clearCart, fmtLabel, hydrateCart, money, roomFor, setQty, syncCartStock, type CartLine } from '../../lib/cart';
 
 interface Props { waBase: string }
@@ -128,7 +128,7 @@ export default function CartDrawer({ waBase }: Props) {
                 <li className="flex h-full flex-col items-center justify-center gap-4 py-16 text-center">
                   <p className="font-serif text-3xl">Tu bolsa está vacía</p>
                   <p className="max-w-[260px] text-sm text-mist">{expired ? 'Pasaron 15 minutos sin cambios y tu bolsa se vació. Vuelve a agregar lo que quieras.' : 'Empieza con un decant de 3 ml: es la mejor forma de encontrar tu firma.'}</p>
-                  <a href="/productos/?formato=decant" onClick={() => $cartOpen.set(false)} className="btn btn-cream mt-2">Ver decants</a>
+                  <a href="/decants/" onClick={() => $cartOpen.set(false)} className="btn btn-cream mt-2">Ver decants</a>
                 </li>
               )}
               {lines.map((l) => (
@@ -142,9 +142,9 @@ export default function CartDrawer({ waBase }: Props) {
                     <span className="text-xs text-mist">{fmtLabel(l.fmt)}{roomFor(l.slug, l.fmt, l.stock) === 0 && <span className="text-[#E5B97A]"> · Máximo disponible</span>}</span>
                     <div className="mt-auto flex items-center justify-between">
                       <div className="inline-flex h-9 items-center rounded-full border border-cream/20">
-                        <button type="button" aria-label={`Quitar uno de ${l.name}`} onClick={() => setQty(l.slug, l.fmt, l.qty - 1)} className="size-9">−</button>
+                        <button type="button" aria-label={`Quitar uno de ${l.name}`} onClick={() => { setQty(l.slug, l.fmt, l.qty - 1); trackRemoveFromCart({ ...l, qty: 1 }); }} className="size-9">−</button>
                         <span className="min-w-5 text-center text-sm font-semibold" aria-live="polite">{l.qty}</span>
-                        <button type="button" aria-label={`Agregar uno de ${l.name}`} onClick={() => setQty(l.slug, l.fmt, l.qty + 1)} disabled={roomFor(l.slug, l.fmt, l.stock) === 0} className="size-9 disabled:cursor-not-allowed disabled:opacity-30">+</button>
+                        <button type="button" aria-label={`Agregar uno de ${l.name}`} onClick={() => { setQty(l.slug, l.fmt, l.qty + 1); trackAddToCart({ ...l, qty: 1 }); }} disabled={roomFor(l.slug, l.fmt, l.stock) === 0} className="size-9 disabled:cursor-not-allowed disabled:opacity-30">+</button>
                       </div>
                       <span className="text-sm font-semibold">{money(l.price == null ? null : l.price * l.qty)}</span>
                     </div>

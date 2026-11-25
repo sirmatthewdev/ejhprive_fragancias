@@ -1,0 +1,10 @@
+---
+import CategoryView from '../../components/CategoryView.astro';
+import { brandCategory, loadCategory } from '../../lib/categories';
+
+export const prerender = false; // live products, prices and stock from the CMS
+
+const page = await loadCategory(brandCategory, Astro.params.slug!, 'marcas', Astro.response);
+if (page instanceof Response) return page;
+---
+<CategoryView {...page} />
