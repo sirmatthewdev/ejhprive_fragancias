@@ -6,9 +6,12 @@ import Breadcrumbs from '../../components/ui/Breadcrumbs.astro';
 import Icon from '../../components/ui/Icon.astro';
 import ProductBuy from '../../components/islands/ProductBuy';
 import { productUrl, FORMATS } from '../../data/products';
-import { allProducts, relatedTo, getFamilies, getSettings, photoOf, toneOf, withName } from '../../lib/catalog';
+import { allProducts, hasContent, relatedTo, getFamilies, getSettings, photoOf, toneOf, withName } from '../../lib/catalog';
 import { SITE, waLink } from '../../config/site';
 import { cachePage, getCatalog, liveOf } from '../../lib/cms';
+import { audienceUrl, brandUrl, familyUrl, MIN_INDEXABLE, unavailable } from '../../lib/categories';
+import { abs, fitTitle, productGraph, slugify } from '../../lib/seo';
+import { publicStock } from '../../lib/stock';
 
 export const prerender = false; // live prices and stock from the CMS
 
@@ -18,9 +21,11 @@ if (lower !== Astro.params.slug) return Astro.redirect(`/productos/${lower}/${As
 const catalog = await getCatalog({ fresh: true }); // stock must be current where people add to the bag
 const everything = allProducts(catalog);
 const p = everything.find((x) => x.slug === lower);
+if (!p && !catalog) return unavailable(); // a panel-only fragrance can't be ruled out while the panel is down
 if (!p || !liveOf(catalog, p.slug).active) return new Response(null, { status: 404 }); // the server answers with the 404 page
 const live = liveOf(catalog, p.slug);
-cachePage(Astro.response, catalog); // the buy box re-reads stock from /api/stock as soon as it loads
+// the buy box re-reads stock from /api/stock as soon as it loads; the structured data can't, so Google never gets a copy older than an hour
+cachePage(Astro.response, catalog, 3600);
 const tone = toneOf(await getFamilies(), p.family);
 const { page } = await getSettings();
 const photo = photoOf(p, live, page);
@@ -41,7 +46,8 @@ const T = {
   decantButton: withName(page.decantButton ?? 'Elegir decant de 3 ml', p.name),
 };
 const formats = FORMATS.map((f) => ({ ...f, detail: page[`format${f.id}` as 'format3' | 'format5' | 'format100'] ?? f.detail }));
-const related = relatedTo(p, everything.filter((r) => liveOf(catalog, r.slug).active));
+const visible = everything.filter((r) => liveOf(catalog, r.slug).active);
+const related = relatedTo(p, visible);
 // panel photos (JPG, 900 × 1125) as small WebP thumbnails
 const small = async (u: string | null) => (u ? (await getImage({ src: u, width: 200, height: 250, format: 'webp' })).src : null);
 const [photoThumb, photo2Thumb, decantThumb] = await Promise.all([small(photo), small(photo2), small(decantImg)]);
@@ -56,28 +62,31 @@ const pyramid = [
   { title: 'Fondo', when: '4 h en adelante', notes: p.notes.base, cls: 'bg-plum text-cream', chip: 'bg-cream/12 text-cream ring-1 ring-cream/20' },
 ];
 const title = `${p.brand} ${p.name}`;
-const desc = `${title}${p.accord ? `: ${p.accord}` : ''}. Original en frasco de 100 ml o decants de 3 y 5 ml fraccionados del frasco original.`;
+const fullTitle = fitTitle(`${title} | Perfume Original en Perú | ${SITE.name}`, `${title} | Perfume Original | ${SITE.name}`, `${title} | ${SITE.name}`);
+// only the formats that have a price are announced
+const decantSizes = (['3', '5'] as const).filter((f) => prices[f].price != null);
+const sizes = [prices['100'].price != null && 'frasco de 100 ml', decantSizes.length && `decants de ${decantSizes.join(' y ')} ml`].filter(Boolean).join(' o ');
+const accord = p.accord.split(' · ').filter(Boolean).join(', ').toLowerCase();
+const desc = `Compra ${title} original en Perú${accord ? `: ${accord}` : ''}. ${sizes ? `${sizes[0].toUpperCase()}${sizes.slice(1)}. ` : ''}Envío a todo el país.`;
+// brand page in the breadcrumb once the brand has enough fragrances to have one
+const brandHasPage = visible.filter((r) => slugify(r.brand) === slugify(p.brand)).length >= MIN_INDEXABLE;
 const ogImg = photo ? { src: photo } : await getImage({ src: p.img, width: 1200, format: 'jpg' });
 const hasPyramid = pyramid.some((t) => t.notes.length);
-const productLd = {
-  '@context': 'https://schema.org', '@type': 'Product', name: title, brand: { '@type': 'Brand', name: p.brand },
-  description: p.desc, image: new URL(ogImg.src, Astro.site ?? SITE.url).href, category: 'Perfume', url: new URL(productUrl(p), Astro.site ?? SITE.url).href,
-  // offers are emitted only once real prices exist
-  ...(prices['100'].price != null && { offers: { '@type': 'Offer', priceCurrency: 'PEN', price: prices['100'].price, availability: live.available['100'] ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' } }),
-};
+// one variant per format with a real price; nothing is emitted while there are no prices
+const productLd = productGraph(p, live, [ogImg.src, ...(photo2 ? [photo2] : [])].map((u) => abs(u, Astro.site)), Astro.site);
 ---
-<Base title={title} description={desc} image={ogImg.src} jsonLd={[productLd]}>
+<Base fullTitle={fullTitle} description={desc} image={ogImg.src} imageAlt={`Frasco de ${title}`} ogType="product" noindex={!hasContent(p)} jsonLd={productLd ? [productLd] : []}>
   <section aria-labelledby="h-pdp" class="wrap pb-20 pt-8" data-pdp>
-    <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Productos', href: '/productos/' }, { label: title }]} />
+    <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Productos', href: '/productos/' }, ...(brandHasPage ? [{ label: p.brand, href: brandUrl(p.brand) }] : []), { label: title }]} />
     <div class="mt-8 grid items-start gap-[clamp(28px,5vw,80px)] lg:grid-cols-[1.1fr_1fr]">
       <!-- gallery -->
       <div class="flex flex-col gap-3 lg:sticky lg:top-28">
         <div class="relative aspect-[4/5] overflow-hidden rounded-[22px] bg-graphite ring-1 ring-cream/8" data-cursor="Zoom" data-zoom>
           {photo ? (
-            <Image src={photo} alt={`Frasco de ${title} 100 ml`} width={900} height={1125} widths={[600, 900]} sizes="(min-width: 1024px) 52vw, 92vw" loading="eager" fetchpriority="high"
+            <Image src={photo} alt={`Frasco de ${title} 100 ml`} width={900} height={1125} widths={[450, 600, 750, 900]} sizes="(min-width: 1024px) 52vw, 92vw" loading="eager" fetchpriority="high"
               class="absolute inset-0 size-full object-cover transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)]" data-view="frasco" transition:name={`img-${p.slug}`} />
           ) : (
-            <Image src={p.img} alt={`Frasco de ${title} 100 ml con sus ingredientes`} widths={[600, 900, 1200]} sizes="(min-width: 1024px) 52vw, 92vw" loading="eager" fetchpriority="high"
+            <Image src={p.img} alt={`Frasco de ${title} 100 ml con sus ingredientes`} widths={[450, 600, 750, 900, 1200]} sizes="(min-width: 1024px) 52vw, 92vw" loading="eager" fetchpriority="high"
               class="absolute inset-0 size-full object-cover transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)]" data-view="frasco" transition:name={`img-${p.slug}`} />
           )}
           {photo2 && <Image src={photo2} alt={`${title}, otra vista`} width={900} height={1125} widths={[600, 900]} sizes="(min-width: 1024px) 52vw, 92vw" loading="lazy"
@@ -103,12 +112,12 @@ const productLd = {
       <!-- buy box -->
       <div class="flex flex-col gap-6">
         <div class="flex flex-col gap-3">
-          <p class="kicker" data-reveal-self>{p.brand} · Eau de Parfum · {p.gender}</p>
+          <p class="kicker" data-reveal-self>{p.brand} · <a href={audienceUrl(p.gender)} class="link-u">{p.gender}</a></p>
           <h1 id="h-pdp" class="text-[clamp(2.8rem,5vw,4.4rem)] leading-[0.98]" data-split="load">{p.name}</h1>
-          <p class="text-[15px] text-sand" data-reveal-self="0.2">{p.familyLabel}</p>
+          <p class="text-[15px] text-sand" data-reveal-self="0.2">{p.familyLabel}{p.family && <> · <a href={familyUrl(p.family)} class="link-u">Familia {p.family.toLowerCase()}</a></>}</p>
         </div>
         <div data-reveal-self="0.3">
-          <ProductBuy client:load slug={p.slug} name={p.name} brand={p.brand} href={productUrl(p)} images={{ frasco: photoThumb ?? thumbFrasco.src, decant: decantThumb ?? thumbDecant.src }} prices={prices} available={live.available} stock={live.stock} formats={formats} waBase={waLink()} />
+          <ProductBuy client:load slug={p.slug} name={p.name} brand={p.brand} href={productUrl(p)} images={{ frasco: photoThumb ?? thumbFrasco.src, decant: decantThumb ?? thumbDecant.src }} prices={prices} available={live.available} stock={publicStock(live.stock)} formats={formats} waBase={waLink()} />
         </div>
         <ul class="grid grid-cols-3 gap-3 rounded-2xl bg-graphite p-4 text-center text-xs text-sand" data-reveal>
           <li class="flex flex-col items-center gap-2"><Icon name="shield" size={18} class="text-lilac" />{T.badges[0]}</li>

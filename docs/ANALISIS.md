@@ -71,12 +71,13 @@ Este documento analiza la landing y las páginas de tienda desde el frontend, en
 
 | Elemento | Implementación |
 |---|---|
-| Títulos y descripciones | Uno por página; en producto: «Marca Nombre · EJH PRIVÉ» |
+| Títulos y descripciones | Uno por página; en producto: «Marca Nombre \| Perfume Original en Perú \| EJH PRIVÉ» (`src/lib/seo.ts`) |
+| Categorías | `/decants/`, `/perfumes/…`, `/marcas/…`, `/familias/…`, en vivo desde el catálogo (`src/lib/categories.ts`); indexables desde 2 productos |
 | URLs | `/productos/khamrah/`, en minúsculas. Un identificador con mayúsculas del panel (p. ej. `Vulcan-Feu`) redirige con 301 a su versión en minúsculas, y el panel ya guarda los nuevos en minúsculas |
 | Canonical + Open Graph | En `Base.astro`; la imagen OG de cada producto es su foto |
-| JSON-LD | `Store` (global, siempre con la imagen de marca y `sameAs` con las redes), `ItemList` (Home), `Product` con `Offer` del frasco y su disponibilidad (PDP), `BreadcrumbList`, `FAQPage` |
-| Sitemaps | `sitemap-index.xml` (páginas fijas, `@astrojs/sitemap`) y `sitemap-productos.xml` (fichas, generado en vivo desde el catálogo) |
-| `robots.txt` | Generado (`src/pages/robots.txt.ts`): bloquea `/admin`, `/cms-api`, `/api/`, `/cuenta/` y `/sistema/` y declara los dos sitemaps |
+| JSON-LD | `OnlineStore` y `WebSite` (global), `ItemList` (Home), `CollectionPage` (catálogo y categorías), `ProductGroup` con una variante por formato (PDP), `BreadcrumbList`, `FAQPage` (Cómo comprar) |
+| Sitemap | `sitemap.xml`, generado en vivo (los anteriores redirigen) |
+| `robots.txt` | Generado (`src/pages/robots.txt.ts`): bloquea `/admin`, `/gestion`, `/cms-api`, `/cms-assets`, `/api/`, `/cuenta` y los filtros `/productos/?…`, y declara el sitemap |
 | `noindex` | En `/cuenta/`, `/sistema/` y la 404 |
 
 ## 6. Rendimiento
@@ -88,7 +89,7 @@ Este documento analiza la landing y las páginas de tienda desde el frontend, en
 | JS | Solo las islas que lo necesitan: bolsa, botón de bolsa, compra en la PDP (~8 KB comprimidos en la Home sin contar React de las islas) |
 | Imágenes | `astro:assets` → WebP responsive con `srcset`/`sizes`; *eager* + `fetchpriority=high` solo en la imagen LCP. Las fotos subidas al panel viven en Vercel Blob |
 | Video del hero | `muted playsinline`, con *poster* y versión vertical para móvil (~0,9 MB). Se pausa fuera de pantalla |
-| Fuentes | Google Fonts API (Cormorant Garamond y Manrope) con `preconnect` |
+| Fuentes | Cormorant Garamond y Manrope propias (API de fuentes de Astro), con *fallback* de métricas iguales; *preload* solo en la Home |
 | Navegación | *Prefetch* al pasar el mouse + View Transitions |
 
 ## 7. Seguimiento de redes
@@ -103,6 +104,6 @@ Los clics en enlaces con `data-social` (sección Síguenos, contacto y pie de p�
 - **Precios:** Nitro Red no tiene precio de decants de 3 y 5 ml.
 - **Identificadores:** renombrar `Vulcan-Feu` a `vulcan-feu` en el panel (la tienda ya redirige, pero así queda prolijo).
 - **Legales:** política de devolución y términos.
-- **Search Console:** enviar `https://ejhprive-fragancias.vercel.app/sitemap-productos.xml` (o el dominio propio cuando esté activo) además del `sitemap-index.xml`.
+- **Search Console:** ver `docs/SEO-GOOGLE-SEARCH-CONSOLE.md`.
 - **Antispam:** resuelto con límites en la base de datos del panel (`cms/src/limits.ts`). Si aun así llega spam, sumar Cloudflare Turnstile.
 - **Backend futuro:** pagos en línea (Izipay, Niubiz, Culqi o Mercado Pago), cuentas de cliente y newsletter. Mientras tanto, el pedido se registra en el panel y se cierra por WhatsApp.

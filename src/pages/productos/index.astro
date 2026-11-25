@@ -6,6 +6,10 @@ import Icon from '../../components/ui/Icon.astro';
 import { GENDERS } from '../../data/products';
 import { visibleProducts, getFamilies } from '../../lib/catalog';
 import { cachePage, getCatalog, liveOf } from '../../lib/cms';
+import { getHome } from '../../lib/home';
+import { allCategories, DECANTS_URL } from '../../lib/categories';
+import { collectionPage, listUpTo } from '../../lib/seo';
+import { SITE } from '../../config/site';
 
 export const prerender = false; // live prices and stock from the CMS
 const catalog = await getCatalog();
@@ -17,15 +21,19 @@ const searchText = (p: (typeof products)[number]) =>
   [p.brand, p.name, p.family, p.familyLabel, p.accord, ...p.notes.top, ...p.notes.heart, ...p.notes.base]
     .join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
+// crawlable links to every category worth a page of its own (the filters above only work in the browser)
+const categories = allCategories({ products, families, brands: (await getHome()).brandList }).filter((c) => c.indexable);
+const description = `Perfumes árabes originales en Perú: ${listUpTo(products.map((p) => p.name), 60)}. Frascos de 100 ml y decants de 3 y 5 ml con envío a todo el país.`;
+
 const COUNT = ['Cero', 'Una', 'Dos', 'Tres', 'Cuatro', 'Cinco', 'Seis', 'Siete', 'Ocho', 'Nueve', 'Diez', 'Once', 'Doce'][products.length] ?? String(products.length);
 const chip = 'h-9 shrink-0 whitespace-nowrap rounded-full border px-3.5 sm:h-10 sm:px-4 text-[13px] font-medium transition-[background-color,color,border-color] duration-400 border-cream/16 text-sand hover:border-cream/40 aria-pressed:border-lilac aria-pressed:bg-lilac/18 aria-pressed:text-cream';
 const seg = 'h-8 whitespace-nowrap rounded-full px-4 sm:h-10 sm:px-5 text-[13px] font-semibold tracking-[0.02em] text-sand transition-colors duration-400 aria-pressed:bg-cream aria-pressed:text-plum';
 ---
-<Base title="Productos" description={`${COUNT} fragancias árabes originales en frasco de 100 ml o decants de 3 y 5 ml: ${products.map((p) => p.name).join(', ')}.`}>
+<Base fullTitle={`Perfumes Árabes Originales en Perú | ${SITE.name}`} description={description} jsonLd={[collectionPage({ name: 'Perfumes árabes originales', description, path: '/productos/', products }, Astro.site)]}>
   <section aria-labelledby="h-cat" class="bg-[linear-gradient(180deg,#170E1D,#0B0A0D)]">
     <div class="wrap flex flex-col gap-4 pb-8 pt-10">
       <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Productos' }]} />
-      <h1 id="h-cat" class="text-[clamp(2.6rem,5.4vw,4.6rem)] leading-none" data-split="load">Productos</h1>
+      <h1 id="h-cat" class="text-[clamp(2.6rem,5.4vw,4.6rem)] leading-none" data-split="load">Perfumes árabes originales</h1>
       <p class="max-w-[36rem] leading-relaxed text-sand" data-reveal-self="0.2">{COUNT} fragancias originales. Elige el formato: frasco de 100 ml o decants de 3 y 5 ml preparados del frasco original.</p>
     </div>
   </section>
@@ -75,10 +83,10 @@ const seg = 'h-8 whitespace-nowrap rounded-full px-4 sm:h-10 sm:px-5 text-[13px]
       </button>
     </div>
 
-    <ul class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,230px),1fr))] gap-x-6 gap-y-12" data-grid>
+    <ul class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,230px),1fr))] gap-x-6 gap-y-12" data-grid data-list="Catálogo">
       {products.map((p, i) => ['frasco', 'decant'].map((v) => (
         <li data-item data-variant={v} data-family={p.family} data-name={p.name} data-brand={p.brand} data-gender={p.gender} data-order={i} data-search={searchText(p)} hidden={v === 'decant'}>
-          <ProductCard p={p} live={liveOf(catalog, p.slug)} variant={v as 'frasco' | 'decant'} priority={i < 4 && v === 'frasco'} headingLevel="h2" />
+          <ProductCard p={p} live={liveOf(catalog, p.slug)} variant={v as 'frasco' | 'decant'} priority={i === 0 && v === 'frasco'} headingLevel="h2" />
         </li>
       )))}
     </ul>
@@ -87,6 +95,14 @@ const seg = 'h-8 whitespace-nowrap rounded-full px-4 sm:h-10 sm:px-5 text-[13px]
       <p class="text-sm text-mist">Prueba con otra familia o borra la búsqueda.</p>
       <button type="button" class="btn btn-ghost h-11 px-5" data-reset>Ver todas</button>
     </div>
+
+    <nav aria-label="Categorías" class="mt-20 flex flex-col gap-4 border-t border-cream/10 pt-8">
+      <p class="kicker">Explora por categoría</p>
+      <ul class="flex flex-wrap gap-2">
+        <li><a href={DECANTS_URL} class="btn btn-ghost h-10 px-4 text-[13px]">Decants de 3 y 5 ml</a></li>
+        {categories.map((c) => <li><a href={c.path} class="btn btn-ghost h-10 px-4 text-[13px]">{c.h1}</a></li>)}
+      </ul>
+    </nav>
 
     <aside class="on-cream mt-20 flex flex-wrap items-center justify-between gap-6 rounded-[22px] bg-cream p-8 text-plum md:p-10" aria-labelledby="h-set">
       <div class="flex max-w-[40rem] flex-col gap-2">

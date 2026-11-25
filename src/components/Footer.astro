@@ -4,6 +4,7 @@ import BrandIcon from './ui/BrandIcon.astro';
 import PaymentBadges from './ui/PaymentBadges.astro';
 import Icon from './ui/Icon.astro';
 import { SITE, waLink } from '../config/site';
+import { audienceUrl, DECANTS_URL } from '../lib/categories';
 
 const socials = ([
   { name: 'instagram', label: 'Instagram', href: SITE.instagram },
@@ -12,7 +13,7 @@ const socials = ([
 ] as const).filter((s) => s.href); // networks without a URL yet stay hidden
 
 const cols = [
-  { title: 'Tienda', links: [['Todos los perfumes', '/productos/'], ['Frascos 100 ml', '/productos/?formato=frasco'], ['Decants 3 y 5 ml', '/productos/?formato=decant'], ['Set descubrimiento', '/productos/?formato=decant']] },
+  { title: 'Tienda', links: [['Todos los perfumes', '/productos/'], ['Decants 3 y 5 ml', DECANTS_URL], ['Perfumes para hombre', audienceUrl('Masculina')], ['Perfumes para mujer', audienceUrl('Femenina')], ['Perfumes unisex', audienceUrl('Unisex')], ['Set descubrimiento', DECANTS_URL]] },
   { title: 'Ayuda', links: [['Cómo comprar', '/como-comprar/'], ['Envíos y pagos', '/como-comprar/#pagos'], ['Cambios y devoluciones', '/politica-de-devolucion/'], ['Libro de Reclamaciones', '/libro-de-reclamaciones/'], ['Contacto', '/contacto/']] },
   { title: 'EJH PRIVÉ', links: [['Quiénes somos', '/nosotros/'], ['Acceso', '/cuenta/'], ['Preguntas frecuentes', '/como-comprar/#faq']] },
 ];
@@ -37,7 +38,7 @@ const year = new Date().getFullYear();
     {cols.map((c) => (
       <nav aria-label={c.title} class="flex flex-col gap-1 text-sm md:gap-2.5">
         <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-cream">{c.title}</p>
-        {c.links.map(([label, href]) => <a href={href} class="link-u self-start py-1.5 transition-colors hover:text-cream md:py-0.5">{label}</a>)}
+        {c.links.map(([label, href]) => <a href={href} rel={href === '/cuenta/' ? 'nofollow' : undefined} class="link-u self-start py-1.5 transition-colors hover:text-cream md:py-0.5">{label}</a>)}
       </nav>
     ))}
   </div>

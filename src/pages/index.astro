@@ -12,7 +12,8 @@ import { productUrl } from '../data/products';
 import { visibleProducts } from '../lib/catalog';
 import { cachePage, getCatalog, liveOf } from '../lib/cms';
 import { getHome, homeIsLive } from '../lib/home';
-import { faqJsonLd } from '../data/faq';
+import { brandUrl, DECANTS_URL } from '../lib/categories';
+import { itemList } from '../lib/seo';
 import { waLink } from '../config/site';
 
 export const prerender = false; // live prices, stock and home content from the CMS
@@ -26,8 +27,8 @@ const picked = H.collection.slugs.map(bySlug).filter((p) => !!p);
 const collection = picked.length ? picked : products;
 const homeFaq = H.faqs.filter((f) => f.home);
 const cats = [
-  { href: '/productos/?formato=frasco', kicker: H.formats.bottleKicker, title: H.formats.bottleTitle, text: H.formats.bottleText, img: H.formats.bottleImage, alt: H.formats.bottleTitle },
-  { href: '/productos/?formato=decant', kicker: H.formats.decantKicker, title: H.formats.decantTitle, text: H.formats.decantText, img: H.formats.decantImage, alt: H.formats.decantTitle, tone: typeof H.formats.decantImage === 'string' ? '' : 'brightness-[.78] saturate-[.85]' },
+  { href: '/productos/', kicker: H.formats.bottleKicker, title: H.formats.bottleTitle, text: H.formats.bottleText, img: H.formats.bottleImage, alt: H.formats.bottleTitle },
+  { href: DECANTS_URL, kicker: H.formats.decantKicker, title: H.formats.decantTitle, text: H.formats.decantText, img: H.formats.decantImage, alt: H.formats.decantTitle, tone: typeof H.formats.decantImage === 'string' ? '' : 'brightness-[.78] saturate-[.85]' },
 ];
 // optical balance between logo shapes
 const ROW_W = { small: 'max-w-[175px]', normal: 'max-w-[220px]', large: 'max-w-[240px]' };
@@ -38,12 +39,8 @@ const houses = H.brandList
   .map((b) => ({ ...b, items: b.house!.slugs.map(bySlug).filter((p) => !!p) }))
   .filter((b) => b.items.length && b.house!.image);
 const scenes = H.hero.scenes.map(bySlug).filter((p) => !!p);
-const itemList = {
-  '@context': 'https://schema.org', '@type': 'ItemList', name: 'Colección EJH PRIVÉ',
-  itemListElement: collection.map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: productUrl(p), name: `${p.brand} ${p.name}` })),
-};
 ---
-<Base overlay jsonLd={[itemList, faqJsonLd(homeFaq)]}>
+<Base overlay description="Perfumes árabes originales en Perú: Lattafa, Armaf, Afnan y Rasasi en frasco de 100 ml o decants de 3 y 5 ml. Envío a todo el país y asesoría por WhatsApp." jsonLd={[itemList(collection, Astro.site, 'Colección EJH PRIVÉ')]}>
   <Hero content={H.hero} scenes={scenes} />
 
   <!-- 1 · formats: the business' core choice -->
@@ -80,7 +77,7 @@ const itemList = {
       <SectionHead id="h-col" kicker={H.collection.kicker} title={H.collection.title}>
         <a href="/productos/" class="btn btn-ghost h-11 px-5" data-magnetic>{H.collection.button} <Icon name="arrow" size={14} /></a>
       </SectionHead>
-      <div class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,230px),1fr))] gap-x-6 gap-y-12" data-reveal>
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,230px),1fr))] gap-x-6 gap-y-12" data-reveal data-list="Inicio">
         {collection.map((p) => <ProductCard p={p} live={liveOf(catalog, p.slug)} />)}
       </div>
     </div>
@@ -107,7 +104,7 @@ const itemList = {
             return <div class:list={['rounded-2xl p-4', last ? 'bg-plum text-cream' : 'bg-cream-2']}><dt class="font-serif text-3xl leading-none">{c.value}</dt><dd class:list={['mt-1 text-xs', last ? 'text-sand' : 'text-dust']}>{c.label}</dd></div>;
           })}
         </dl>
-        <a href="/productos/?formato=decant" class="btn btn-plum btn-fill mt-2 self-start" data-magnetic>{H.decants.button} <Icon name="arrow" size={16} stroke={1.8} /></a>
+        <a href={DECANTS_URL} class="btn btn-plum btn-fill mt-2 self-start" data-magnetic>{H.decants.button} <Icon name="arrow" size={16} stroke={1.8} /></a>
       </div>
       <figure class="relative aspect-[4/5] overflow-hidden rounded-[26px] shadow-[0_50px_100px_-30px_rgb(26_19_32/.45)]" data-clip data-cursor="Ver">
         <div data-parallax="8" class="absolute inset-x-0 -inset-y-[6%]">
@@ -153,7 +150,7 @@ const itemList = {
       <ul class="wrap grid grid-cols-2 items-center gap-x-6 gap-y-10 lg:grid-cols-4" data-reveal>
         {brandRow.map((b) => (
           <li>
-            <a href={`/productos/?marca=${encodeURIComponent(b.name)}`} class="group mx-auto flex h-24 items-center justify-center px-4" aria-label={`Ver fragancias de ${b.name}`}>
+            <a href={brandUrl(b.name)} class="group mx-auto flex h-24 items-center justify-center px-4" aria-label={`Ver fragancias de ${b.name}`}>
               <span class:list={['flex h-full w-full items-center justify-center', ROW_W[b.logoSize]]}>
                 <Pic src={b.logo!} alt={b.name} height={192} class="max-h-full w-auto max-w-full object-contain opacity-70 transition-[opacity,transform] duration-700 ease-[var(--ease-out-expo)] group-hover:scale-105 group-hover:opacity-100" />
               </span>
@@ -220,7 +217,7 @@ const itemList = {
           <a href={waLink(H.cta.whatsappMessage)} target="_blank" rel="noopener" class="btn btn-cream btn-fill h-14 px-8" data-magnetic>
             <Icon name="chat" size={18} /> {H.cta.primary}
           </a>
-          <a href="/productos/?formato=decant" class="btn btn-ghost h-14 px-7">{H.cta.secondary}</a>
+          <a href={DECANTS_URL} class="btn btn-ghost h-14 px-7">{H.cta.secondary}</a>
         </div>
       </div>
     </div>

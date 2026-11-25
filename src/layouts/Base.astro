@@ -2,33 +2,35 @@
 import { safeJson } from '../lib/safeJson';
 import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
+import { Font } from 'astro:assets';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import CartDrawer from '../components/islands/CartDrawer';
 import WhatsAppFloat from '../components/WhatsAppFloat.astro';
 import SearchDialog from '../components/SearchDialog.astro';
 import Tracking from '../components/Tracking.astro';
-import { SITE, SOCIALS, waLink } from '../config/site';
+import { SITE, waLink } from '../config/site';
+import { abs, canonicalUrl, siteGraph } from '../lib/seo';
 
 interface Props {
+  /** short title: «X | EJH PRIVÉ» */
   title?: string;
+  /** the whole <title>, as is */
+  fullTitle?: string;
   description?: string;
   image?: string;
+  imageAlt?: string;
+  ogType?: 'website' | 'product';
   /** Header floats transparent over a full-bleed hero. */
   overlay?: boolean;
   jsonLd?: Record<string, unknown>[];
   noindex?: boolean;
 }
-const { title, description = SITE.description, image = '/media/og.jpg', overlay = false, jsonLd = [], noindex = false } = Astro.props;
-const fullTitle = title ? `${title} · ${SITE.name}` : `${SITE.name} · Perfumería árabe original y decants`;
-const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url).href;
-const ogImage = new URL(image, Astro.site ?? SITE.url).href;
-const org = {
-  '@context': 'https://schema.org', '@type': 'Store', name: SITE.name, url: SITE.url, image: new URL('/media/og.jpg', Astro.site ?? SITE.url).href,
-  description: SITE.description, priceRange: '$$', currenciesAccepted: 'PEN', paymentAccepted: 'Yape, Plin, tarjeta de crédito y débito, Powerpay',
-  address: { '@type': 'PostalAddress', addressCountry: 'PE' },
-  ...(SOCIALS.length && { sameAs: SOCIALS.map((s) => s.href) }),
-};
+const { title, description = SITE.description, image = '/media/og.jpg', imageAlt = SITE.name, ogType = 'website', overlay = false, jsonLd = [], noindex = false } = Astro.props;
+const fullTitle = Astro.props.fullTitle ?? (title ? `${title} | ${SITE.name}` : `${SITE.name} | Perfumes Árabes Originales y Decants en Perú`);
+const canonical = canonicalUrl(Astro.url.pathname, Astro.site);
+const ogImage = abs(image, Astro.site);
+const graph = { '@context': 'https://schema.org', '@graph': [...siteGraph(Astro.site), ...jsonLd] };
 ---
 <!doctype html>
 <html lang="es-PE">
@@ -37,25 +39,29 @@ const org = {
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex" />}
+    {!noindex && <link rel="canonical" href={canonical} />}
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large'} />
     <meta name="theme-color" content="#0B0A0D" />
-    <!-- Google Fonts API: Cormorant Garamond (display) + Manrope (text) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400..800&display=swap" />
+    <!-- Cormorant Garamond (display) + Manrope (text), self-hosted (astro.config.mjs → fonts) -->
+    <!-- preloaded only where the first screen is text (home): elsewhere they would compete with the product photo -->
+    <Font cssVariable="--font-cormorant" preload={overlay && [{ style: 'normal' }]} />
+    <Font cssVariable="--font-manrope" preload={overlay} />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:locale" content={SITE.locale} />
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content={imageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
     <script is:inline>
       (() => {
         const flag = () => { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('js-motion'); };
@@ -65,7 +71,7 @@ const org = {
         if (!window.__ejhFlag) { window.__ejhFlag = 1; document.addEventListener('astro:after-swap', flag); }
       })();
     </script>
-    <script type="application/ld+json" set:html={safeJson([org, ...jsonLd])} />
+    <script type="application/ld+json" set:html={safeJson(graph)} />
     <ClientRouter />
     <slot name="head" />
   </head>

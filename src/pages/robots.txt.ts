@@ -1,20 +1,23 @@
 import type { APIRoute } from 'astro';
 import { SITE } from '../config/site';
 
-// generated so the sitemap URLs follow SITE_URL when the own domain goes live
+// Generated so the sitemap URL follows SITE_URL. This only saves crawling: what must stay private is protected by
+// the panel's own sign-in (cms/src/access.ts). /sistema/ is left open on purpose, so that its noindex can be read.
 export const GET: APIRoute = ({ site }) => {
-  const base = site ?? new URL(SITE.url);
   const body = [
     'User-agent: *',
     'Allow: /',
     'Disallow: /admin',
+    'Disallow: /gestion',
     'Disallow: /cms-api',
-    'Disallow: /cuenta/',
-    'Disallow: /sistema/',
+    'Disallow: /cms-assets',
+    'Disallow: /cuenta',
     'Disallow: /api/',
+    '# Filtros y búsqueda del catálogo: cada categoría tiene su propia página',
+    'Disallow: /productos?',
+    'Disallow: /productos/?',
     '',
-    `Sitemap: ${new URL('/sitemap-index.xml', base).href}`,
-    `Sitemap: ${new URL('/sitemap-productos.xml', base).href}`,
+    `Sitemap: ${new URL('/sitemap.xml', site ?? SITE.url).href}`,
     '',
   ].join('\n');
   return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });

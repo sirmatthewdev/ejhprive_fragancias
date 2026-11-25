@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import { isPlaceholder } from '../lib/seo';
 
 const sections = [
   { id: 'devoluciones', title: 'Cambios y devoluciones', body: ['[Plazo y condiciones a confirmar por EJH PRIVÉ.]', 'Por razones de higiene, los decants y los frascos abiertos solo se aceptan si presentan una falla de origen. Los frascos sellados pueden devolverse en su empaque original y sin uso.'] },
@@ -7,8 +8,10 @@ const sections = [
   { id: 'terminos', title: 'Términos y condiciones', body: ['[Términos de venta a redactar con asesoría legal de EJH PRIVÉ: precios en soles (S/), disponibilidad, medios de pago y envíos.]'] },
   { id: 'privacidad', title: 'Privacidad', body: ['Usamos tus datos de contacto solo para gestionar tu pedido y, si lo aceptas, enviarte novedades. No los compartimos con terceros. Puedes ejercer tus derechos de acceso, rectificación, cancelación y oposición escribiéndonos, conforme a la Ley N.º 29733 de Protección de Datos Personales y su reglamento.'] },
 ];
+// text still pending («[… a confirmar]») is not published; an empty section says how to ask meanwhile
+const bodyOf = (body: string[]) => { const ready = body.filter((p) => !isPlaceholder(p)); return ready.length ? ready : ['Estamos preparando esta sección. Si tienes una consulta, escríbenos por WhatsApp y te respondemos antes de tu compra.']; };
 ---
-<Base title="Cambios, devoluciones y legales" description="Cambios y devoluciones, Libro de Reclamaciones, términos y privacidad de EJH PRIVÉ.">
+<Base title="Cambios, Devoluciones y Legales" description="Cambios y devoluciones de perfumes y decants, Libro de Reclamaciones, términos de venta y privacidad de EJH PRIVÉ, tienda de perfumes en Perú.">
   <div class="wrap grid gap-12 py-[clamp(48px,7vw,104px)] lg:grid-cols-[260px_1fr]">
     <nav aria-label="En esta página" class="lg:sticky lg:top-32 lg:self-start">
       <p class="kicker mb-4">Legales</p>
@@ -21,7 +24,7 @@ const sections = [
       {sections.map((s) => (
         <section id={s.id} aria-labelledby={`h-${s.id}`} class="scroll-mt-32 border-t border-cream/10 py-10">
           <h2 id={`h-${s.id}`} class="mb-4 text-3xl">{s.title}</h2>
-          {s.body.map((p) => <p class="mb-4 leading-[1.8] text-[#D8CCB8]">{p}</p>)}
+          {bodyOf(s.body).map((p) => <p class="mb-4 leading-[1.8] text-[#D8CCB8]">{p}</p>)}
           {s.link && <a href={s.link.href} class="btn btn-cream btn-fill mt-2">{s.link.label}</a>}
         </section>
       ))}

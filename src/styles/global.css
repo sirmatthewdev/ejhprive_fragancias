@@ -15,8 +15,8 @@
   --color-mist: #9d93a8;
   --color-dust: #5e5266;
 
-  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
-  --font-serif: 'Cormorant Garamond', ui-serif, Georgia, serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-silk: cubic-bezier(0.2, 0.7, 0.2, 1);

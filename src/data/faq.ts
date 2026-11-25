@@ -8,7 +8,6 @@ export const FAQ: { q: string; a: string; home?: boolean }[] = [
 ];
 
 export const faqJsonLd = (items = FAQ) => ({
-  '@context': 'https://schema.org',
   '@type': 'FAQPage',
   mainEntity: items.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
 });

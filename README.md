@@ -13,7 +13,7 @@ Sitio de EJH PRIVÉ, perfumería árabe original con frascos de 100 ml y decants
 | Animación | **GSAP** (ScrollTrigger, SplitText, Flip) + **Lenis** | Revelados por línea, cortinas de imagen, parallax, filtros con Flip, scroll suave |
 | Transiciones | **View Transitions** de Astro | Fundido entre páginas e imagen compartida de tarjeta a producto |
 | Íconos de marca | **simple-icons** | Visa, Amex, Mercado Pago, Instagram, TikTok y WhatsApp oficiales |
-| Fuentes | **@fontsource** | Cormorant Garamond y Manrope auto-alojadas |
+| Fuentes | **API de fuentes de Astro** | Cormorant Garamond y Manrope descargadas al compilar y servidas desde el propio dominio |
 
 ## Dos aplicaciones
 
@@ -73,6 +73,8 @@ src/
   components/             Header, Footer, ProductCard, home/Hero, home/FamilyIndex, ui/*
   components/islands/     CartButton, CartDrawer, ProductBuy (React)
   pages/                  index, productos/, productos/[slug], nosotros, como-comprar, contacto, politica-de-devolucion, cuenta (→ panel), api/orders, sistema, 404
+  lib/seo.ts              títulos, canonical y datos estructurados
+  lib/categories.ts       páginas de marca, familia y género
   lib/cms.ts              conexión con el CMS: catálogo en vivo y creación de pedidos
 cms/src/
   collections/            Orders, Products, InventoryMovements, Users, Media
@@ -80,6 +82,7 @@ cms/src/
   components/             Dashboard, aviso por WhatsApp, marca del panel
   seed.ts                 datos iniciales
 docs/ANALISIS.md          análisis de maquetación, semántica y SEO
+docs/SEO-*.md             informe SEO y guía de Search Console / Analytics
 ```
 
 ## Para lanzar
@@ -137,9 +140,9 @@ Sin `CMS_URL`/`CMS_API_KEY` la tienda sigue funcionando (precios «A confirmar»
 ## Seguimiento y analítica
 
 - Google Tag Manager, Google Analytics 4, Meta (Facebook) Pixel y TikTok Pixel cargan **solo si tienen ID y el visitante acepta las cookies** en el aviso inferior (Ley N.º 29733). Cloudflare Web Analytics no usa cookies y carga siempre que tenga token.
-- Eventos de comercio enviados a las cuatro herramientas: `view_item`, `add_to_cart`, `begin_checkout`, `generate_lead` (pedido registrado, con su número) y `contact` (cualquier clic a WhatsApp). Las navegaciones con View Transitions se reportan como `page_view`.
+- Eventos enviados a las cuatro herramientas: `view_item`, `add_to_cart`, `begin_checkout`, `generate_lead` (pedido registrado, con su número) y `contact` (cualquier clic a WhatsApp). Solo a GA4: `view_item_list`, `select_item` y `remove_from_cart`. No hay `purchase`: la web no cobra.
+- Con `PUBLIC_GTM_ID`, GA4 viene dentro del contenedor (que también cuenta las páginas vistas): dejar `PUBLIC_GA4_ID` vacía. Ver `docs/SEO-GOOGLE-SEARCH-CONSOLE.md`.
 - Para que Cloudflare figure como CDN, el dominio debe pasar por Cloudflare (DNS con proxy activado) apuntando a Vercel.
-- Tipografía servida por Google Fonts API (Cormorant Garamond y Manrope).
 
 ## Créditos de imágenes
 

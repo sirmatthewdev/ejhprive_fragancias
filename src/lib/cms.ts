@@ -27,6 +27,8 @@ export interface Live {
   order?: number;
   /** product sheet from the panel; empty fields are left out */
   details?: Details;
+  /** last change in the panel (ISO date), for the sitemap */
+  updatedAt?: string;
 }
 export interface Details {
   name: string;
@@ -49,13 +51,14 @@ const meter = (label: MeterLabel, value: unknown, pct?: number): Meter | undefin
   const v = text(value);
   return v ? { label, value: v, pct: pct ?? LEVEL_PCT[v] ?? 70 } : undefined;
 };
-export interface Price { price: number | null; regular: number | null; onSale: boolean }
+/** until = when the running offer ends (ISO date), if it has an end */
+export interface Price { price: number | null; regular: number | null; onSale: boolean; until?: string }
 
 const priceOf = (d: any, f: FormatId): Price => {
   const regular = d.prices?.[`p${f}`] ?? null, sale = d.prices?.[`s${f}`] ?? null;
   const running = !d.prices?.saleEndsAt || new Date(d.prices.saleEndsAt) > new Date();
   const onSale = sale != null && running && (regular == null || sale < regular);
-  return { price: onSale ? sale : regular, regular, onSale };
+  return { price: onSale ? sale : regular, regular, onSale, ...(onSale && d.prices?.saleEndsAt && { until: d.prices.saleEndsAt }) };
 };
 const text = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
 const list = (v: unknown) => text(v)?.split(',').map((x) => x.trim()).filter(Boolean);
@@ -90,8 +93,8 @@ let cache: { at: number; data: Map<string, Live> } | null = null;
  * HTML: stock and prices are re-read from /api/stock when adding to the bag and the panel prices every order.
  * `live` = the panel answered; a page built from the built-in fallback must never be kept.
  */
-export function cachePage(response: { headers: Headers }, live: unknown) {
-  if (live) response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=86400');
+export function cachePage(response: { headers: Headers }, live: unknown, staleSeconds = 86400) {
+  if (live) response.headers.set('Cache-Control', `public, max-age=0, s-maxage=60, stale-while-revalidate=${staleSeconds}`);
 }
 const auth = () => ({ Authorization: `users API-Key ${CMS_API_KEY}` });
 const ML: Record<FormatId, number> = { '3': 3, '5': 5, '100': 100 };
@@ -118,6 +121,7 @@ async function fetchCatalog(): Promise<Map<string, Live> | null> {
         photo2: mediaUrl(d.photo2),
         decantPhoto: mediaUrl(d.decantPhoto),
         details: detailsOf(d),
+        updatedAt: d.updatedAt,
       });
     }
     cache = { at: Date.now(), data };

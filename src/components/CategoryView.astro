@@ -1,0 +1,43 @@
+---
+/** A category page: what it is, its fragrances and links to the neighbouring categories. */
+import Base from '../layouts/Base.astro';
+import ProductCard from './ProductCard.astro';
+import Breadcrumbs from './ui/Breadcrumbs.astro';
+import Icon from './ui/Icon.astro';
+import { collectionPage } from '../lib/seo';
+import { liveOf, type Live } from '../lib/cms';
+import { DECANTS_URL, type Category } from '../lib/categories';
+
+interface Props { category: Category; siblings: Category[]; catalog: Map<string, Live> | null }
+const { category: c, siblings, catalog } = Astro.props;
+const n = c.products.length;
+---
+<Base fullTitle={c.title} description={c.description} noindex={!c.indexable} jsonLd={[collectionPage({ name: c.h1, description: c.description, path: c.path, products: c.products }, Astro.site)]}>
+  <section aria-labelledby="h-cat" class="bg-[linear-gradient(180deg,#170E1D,#0B0A0D)]">
+    <div class="wrap flex flex-col gap-4 pb-8 pt-10">
+      <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Productos', href: '/productos/' }, { label: c.name }]} />
+      <p class="kicker mt-2" data-reveal-self>{c.kicker}</p>
+      <h1 id="h-cat" class="text-[clamp(2.6rem,5.4vw,4.6rem)] leading-none" data-split="load">{c.h1}</h1>
+      {c.intro.map((t) => <p class="max-w-[44rem] leading-relaxed text-sand" data-reveal-self="0.2">{t}</p>)}
+    </div>
+  </section>
+
+  <section aria-label="Fragancias" class="wrap pb-24 pt-4">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <p class="text-[13px] text-mist">{n} {n === 1 ? 'fragancia' : 'fragancias'}</p>
+      <a href={c.filterHref} rel="nofollow" class="link-u py-2 text-[13px] text-sand hover:text-cream">Combinar filtros en el catálogo</a>
+    </div>
+    <ul class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,230px),1fr))] gap-x-6 gap-y-12" data-list={c.h1}>
+      {c.products.map((p, i) => <li><ProductCard p={p} live={liveOf(catalog, p.slug)} priority={i === 0} headingLevel="h2" /></li>)}
+    </ul>
+
+    <nav aria-label="Otras categorías" class="mt-20 flex flex-col gap-4 border-t border-cream/10 pt-8">
+      <p class="kicker">Sigue explorando</p>
+      <ul class="flex flex-wrap gap-2">
+        {siblings.map((s) => <li><a href={s.path} class="btn btn-ghost h-10 px-4 text-[13px]">{s.h1}</a></li>)}
+        <li><a href={DECANTS_URL} class="btn btn-ghost h-10 px-4 text-[13px]">Decants de 3 y 5 ml</a></li>
+        <li><a href="/productos/" class="btn btn-ghost h-10 px-4 text-[13px]">Toda la colección <Icon name="arrow" size={14} /></a></li>
+      </ul>
+    </nav>
+  </section>
+</Base>

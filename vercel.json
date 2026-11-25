@@ -10,33 +10,43 @@
       "source": "/gestion/",
       "destination": "https://gestion.ejhprive.com/",
       "permanent": false
+    },
+    {
+      "source": "/((?!admin|cms-api|cms-assets|api/|_).*)",
+      "has": [{ "type": "host", "value": "ejhprive-fragancias.vercel.app" }],
+      "destination": "https://www.ejhprive.com/$1",
+      "permanent": true
+    },
+    {
+      "source": "/:page(productos|decants|nosotros|como-comprar|contacto|libro-de-reclamaciones|politica-de-devolucion)",
+      "destination": "/:page/",
+      "permanent": true
+    },
+    {
+      "source": "/:group(perfumes|marcas|familias)/",
+      "destination": "/productos/",
+      "permanent": true
+    },
+    {
+      "source": "/:section(productos|marcas|familias|perfumes)/:slug([^/.]+)",
+      "destination": "/:section/:slug/",
+      "permanent": true
     }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "SAMEORIGIN"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self'"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=()"
-        }
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Content-Security-Policy", "value": "frame-ancestors 'self'" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
       ]
+    },
+    {
+      "source": "/(admin|cms-api|cms-assets|api|cuenta|sistema)(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
     }
   ]
 }

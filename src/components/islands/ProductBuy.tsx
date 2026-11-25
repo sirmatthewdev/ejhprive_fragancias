@@ -113,6 +113,7 @@ export default function ProductBuy({ slug, name, brand, href, images, prices: in
               >
                 <span className="font-serif text-[1.7rem] leading-none">{f.size}</span>
                 <span className="text-xs opacity-80">{f.kind}</span>
+                <span className="text-[13px] font-semibold">{money(prices[f.id].price)}</span>
                 <span className="text-[11px] opacity-65">{out ? 'Agotado' : f.detail}</span>
                 {!out && discount(prices[f.id].regular, prices[f.id].price) && (
                   <span className="absolute right-2 top-2 rounded-full bg-lilac px-1.5 py-0.5 text-[10px] font-bold text-plum">{discount(prices[f.id].regular, prices[f.id].price)}</span>

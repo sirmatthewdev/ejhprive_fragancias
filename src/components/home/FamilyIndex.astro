@@ -4,6 +4,7 @@ import SectionHead from '../ui/SectionHead.astro';
 import Icon from '../ui/Icon.astro';
 import { type Product } from '../../data/products';
 import { getFamilies } from '../../lib/catalog';
+import { familyUrl } from '../../lib/categories';
 
 interface Props { products: Product[]; content: { kicker: string; title: string; lead: string } }
 const { products, content } = Astro.props;
@@ -17,7 +18,7 @@ const rows = (await getFamilies()).map((f) => ({ ...f, items: products.filter((p
       <ul class="border-t border-cream/12" data-reveal>
         {rows.map((f, i) => (
           <li class="fam-row border-b border-cream/12" data-row={i}>
-            <a href={`/productos/?familia=${encodeURIComponent(f.id)}`} class="group/row grid grid-cols-[2.5rem_1fr_auto] items-center gap-x-5 py-7 md:py-8">
+            <a href={familyUrl(f.id)} class="group/row grid grid-cols-[2.5rem_1fr_auto] items-center gap-x-5 py-7 md:py-8">
               <span class="font-sans text-xs tabular-nums text-mist">0{i + 1}</span>
               <span class="flex min-w-0 flex-col gap-2">
                 <span class="fam-name font-serif text-[clamp(2.1rem,4.4vw,3.8rem)] leading-none transition-colors duration-500">{f.id}</span>

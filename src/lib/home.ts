@@ -5,6 +5,7 @@
 import type { ImageMetadata } from 'astro';
 import { CMS_API_KEY, CMS_URL } from 'astro:env/server';
 import { FAQ } from '../data/faq';
+import { isPlaceholder } from './seo';
 import catFrascos from '../assets/img/cat-frascos.jpg';
 import decantsPlate from '../assets/img/decants-plate.jpg';
 import decantsSilk from '../assets/img/decants-silk.jpg';
@@ -130,7 +131,8 @@ function merge(home: any, brands: any[] | null, faqs: any[] | null): HomeContent
             : null,
         }))
       : BUILT_IN_BRANDS,
-    faqs: faqs?.length ? faqs.map((f) => ({ q: f.question, a: f.answer, home: !!f.onHome })) : FAQ.map((f) => ({ q: f.q, a: f.a, home: !!f.home })),
+    // answers still pending («[… a confirmar]») are not shown
+    faqs: (faqs?.length ? faqs.map((f) => ({ q: f.question, a: f.answer, home: !!f.onHome })) : FAQ.map((f) => ({ q: f.q, a: f.a, home: !!f.home }))).filter((f) => !isPlaceholder(f.a)),
   };
 }
 

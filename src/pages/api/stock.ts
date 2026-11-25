@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getCatalog, type Price } from '../../lib/cms';
+import { publicStock } from '../../lib/stock';
 import type { FormatId } from '../../data/products';
 
 export const prerender = false;
@@ -16,7 +17,7 @@ export const GET: APIRoute = async ({ url }) => {
   for (const slug of slugs) {
     const p = cat?.get(slug.toLowerCase()); // bags saved before slugs were lowercased
     out[slug] = p
-      ? { active: p.active, stock: p.stock, prices: { '3': p.prices['3'].price, '5': p.prices['5'].price, '100': p.prices['100'].price }, offers: p.prices }
+      ? { active: p.active, stock: publicStock(p.stock), prices: { '3': p.prices['3'].price, '5': p.prices['5'].price, '100': p.prices['100'].price }, offers: p.prices }
       : { active: true, stock: null };
   }
   return new Response(JSON.stringify(out), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });

@@ -7,6 +7,7 @@ import { NAV } from '../config/site';
 import { productUrl, GENDERS } from '../data/products';
 import { getProducts, getFamilies, getSettings, photoOf } from '../lib/catalog';
 import { liveOf } from '../lib/cms';
+import { audienceUrl, DECANTS_URL, familyUrl } from '../lib/categories';
 
 interface Props { overlay?: boolean }
 const { overlay = false } = Astro.props;
@@ -59,17 +60,17 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
                     <div class="wrap grid grid-cols-[1fr_1fr_0.8fr_2.2fr] gap-10 py-10">
                       <div class="flex flex-col gap-3">
                         <p class="kicker">Formato</p>
-                        <a class="link-u self-start text-[15px] text-sand hover:text-cream" href="/productos/?formato=frasco">Frascos 100 ml</a>
-                        <a class="link-u self-start text-[15px] text-sand hover:text-cream" href="/productos/?formato=decant">Decants 3 y 5 ml</a>
+                        <a class="link-u self-start text-[15px] text-sand hover:text-cream" href="/productos/">Frascos 100 ml</a>
+                        <a class="link-u self-start text-[15px] text-sand hover:text-cream" href={DECANTS_URL}>Decants 3 y 5 ml</a>
                         <a class="link-u self-start text-[15px] text-sand hover:text-cream" href="/#decants">Cómo funcionan los decants</a>
                       </div>
                       <div class="flex flex-col gap-3">
                         <p class="kicker">Familia</p>
-                        {families.map((f) => <a class="link-u self-start text-[15px] text-sand hover:text-cream" href={`/productos/?familia=${encodeURIComponent(f.id)}`}>{f.id}</a>)}
+                        {families.filter((f) => products.some((p) => p.family === f.id)).map((f) => <a class="link-u self-start text-[15px] text-sand hover:text-cream" href={familyUrl(f.id)}>{f.id}</a>)}
                       </div>
                       <div class="flex flex-col gap-3">
                         <p class="kicker">Para</p>
-                        {GENDERS.map((g) => <a class="link-u self-start text-[15px] text-sand hover:text-cream" href={`/productos/?para=${encodeURIComponent(g.id)}`}>{g.label}</a>)}
+                        {GENDERS.map((g) => <a class="link-u self-start text-[15px] text-sand hover:text-cream" href={audienceUrl(g.id)}>{g.label}</a>)}
                       </div>
                       <ul class="grid grid-cols-2 gap-x-3 gap-y-1">
                         {products.map((p) => (
@@ -99,8 +100,8 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
 
       <div class="flex items-center justify-end gap-0.5">
         <button type="button" class="flex size-11 items-center justify-center" aria-label="Buscar fragancias" aria-haspopup="dialog" aria-controls="search" data-search-open><Icon name="search" size={20} stroke={1.5} /></button>
-        <a href="/cuenta/" class="hidden size-11 items-center justify-center sm:flex" aria-label="Acceso al panel"><Icon name="user" size={20} stroke={1.5} /></a>
-        <CartButton client:load />
+        <a href="/cuenta/" rel="nofollow" class="hidden size-11 items-center justify-center sm:flex" aria-label="Acceso al panel"><Icon name="user" size={20} stroke={1.5} /></a>
+        <CartButton client:idle />
       </div>
     </div>
   </div>
@@ -119,7 +120,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
     ))}
   </nav>
   <div class="wrap flex flex-col gap-3 pb-8 text-sm text-sand">
-    <a class="btn btn-cream" href="/productos/?formato=decant">Probar con un decant</a>
+    <a class="btn btn-cream" href={DECANTS_URL}>Probar con un decant</a>
   </div>
 </dialog>
 
